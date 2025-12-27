@@ -356,7 +356,7 @@
             const deviation = Math.abs(currentPrice - meanPrice);
             
             const hasThreeDayMove = Math.abs(threeDayReturn) > 1.0;
-            const hasZScoreSignal = Math.abs(zScore) > 2.0;
+            const hasZScoreSignal = Math.abs(zScore) > 1.5;
             const hasSignal = hasThreeDayMove && hasZScoreSignal;
             
             const direction = threeDayReturn > 0 ? 'SHORT' : 'LONG';
@@ -955,4 +955,5 @@
         updateActiveCount();
     </script>
 </body>
+
 </html>
