@@ -19,6 +19,12 @@
             border-top-color: #3b82f6;
             animation: spin 1s ease-in-out infinite;
         }
+        #assessmentCard {
+            transition: all 0.3s ease;
+        }
+        #assessmentRecommendation {
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen p-6">
@@ -26,7 +32,7 @@
         <!-- Header -->
         <div class="mb-8">
             <h1 class="text-4xl font-bold text-gray-900 mb-2">
-                📊 XAU_USD Mean Reversion Backtest
+                📊 Mean Reversion Backtest
             </h1>
             <p class="text-gray-600">5-Year Historical Performance Analysis</p>
         </div>
@@ -111,6 +117,51 @@
                             📥 Download Results CSV
                         </button>
                         <p class="text-xs text-blue-100 mt-2">Export all trades to Excel</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Assessment -->
+            <div id="assessmentCard" class="rounded-lg shadow-lg p-6 mb-6" style="display:none;">
+                <div class="flex items-start gap-4">
+                    <div id="assessmentIcon" class="text-6xl">⭐</div>
+                    <div class="flex-1">
+                        <h2 class="text-3xl font-bold mb-2" id="assessmentTitle">Excellent Strategy</h2>
+                        <p class="text-lg mb-4" id="assessmentSubtitle">This strategy shows strong performance across all metrics</p>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span id="ratingROI" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>ROI:</strong> <span id="ratingROIText">Good</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="ratingWinRate" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>Win Rate:</strong> <span id="ratingWinRateText">Good</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="ratingPF" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>Profit Factor:</strong> <span id="ratingPFText">Good</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="ratingTrades" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>Trade Count:</strong> <span id="ratingTradesText">Good</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="ratingAvgWin" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>Avg Win:</strong> <span id="ratingAvgWinText">Good</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="ratingHoldTime" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>Hold Time:</strong> <span id="ratingHoldTimeText">Good</span></span>
+                            </div>
+                        </div>
+                        
+                        <div id="assessmentRecommendation" class="bg-white bg-opacity-50 p-4 rounded-lg">
+                            <div class="font-semibold mb-2">💡 Recommendation:</div>
+                            <p id="assessmentRecommendationText" class="text-sm">
+                                This strategy is ready for paper trading. Monitor performance over 1-2 months before going live.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -297,6 +348,139 @@
             
             const recent = trueRanges.slice(-period);
             return recent.reduce((a, b) => a + b, 0) / recent.length;
+        }
+
+        // Evaluate backtest performance
+        function evaluatePerformance(totalReturn, winRate, profitFactor, totalTrades, avgWin, avgLoss, avgHold) {
+            // Normalize ROI to annual (5-year backtest)
+            const annualROI = totalReturn / 5;
+            
+            // Evaluate each metric
+            const ratings = {
+                roi: evaluateROI(annualROI),
+                winRate: evaluateWinRate(winRate),
+                profitFactor: evaluateProfitFactor(profitFactor),
+                trades: evaluateTrades(totalTrades / 5), // per year
+                avgWin: evaluateAvgWin(avgWin),
+                holdTime: evaluateHoldTime(avgHold)
+            };
+            
+            // Calculate overall score
+            const weights = { roi: 30, winRate: 20, profitFactor: 20, trades: 10, avgWin: 10, holdTime: 10 };
+            let totalScore = 0;
+            for (const [key, weight] of Object.entries(weights)) {
+                totalScore += ratings[key].score * weight / 100;
+            }
+            
+            // Determine overall rating
+            let overall;
+            if (totalScore >= 80) {
+                overall = { level: 'Excellent', color: 'from-green-500 to-emerald-600', icon: '🌟', textColor: 'text-white' };
+            } else if (totalScore >= 65) {
+                overall = { level: 'Good', color: 'from-blue-500 to-blue-600', icon: '✅', textColor: 'text-white' };
+            } else if (totalScore >= 50) {
+                overall = { level: 'Acceptable', color: 'from-yellow-400 to-yellow-500', icon: '⚠️', textColor: 'text-slate-900' };
+            } else if (totalScore >= 35) {
+                overall = { level: 'Poor', color: 'from-orange-400 to-orange-500', icon: '❌', textColor: 'text-white' };
+            } else {
+                overall = { level: 'Failed', color: 'from-red-500 to-red-600', icon: '🚫', textColor: 'text-white' };
+            }
+            
+            const recommendation = generateRecommendation(overall.level, ratings, annualROI, totalTrades);
+            
+            return { ratings, overall, recommendation, score: totalScore };
+        }
+        
+        function evaluateROI(annualROI) {
+            if (annualROI >= 20) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (annualROI >= 15) return { score: 85, rating: 'Very Good', icon: '✅', color: 'text-green-600' };
+            if (annualROI >= 10) return { score: 75, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (annualROI >= 5) return { score: 60, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (annualROI >= 2) return { score: 40, rating: 'Poor', icon: '❌', color: 'text-orange-600' };
+            return { score: 0, rating: 'Failed', icon: '🚫', color: 'text-red-600' };
+        }
+        
+        function evaluateWinRate(winRate) {
+            if (winRate >= 60) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (winRate >= 55) return { score: 85, rating: 'Very Good', icon: '✅', color: 'text-green-600' };
+            if (winRate >= 50) return { score: 75, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (winRate >= 45) return { score: 60, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (winRate >= 40) return { score: 40, rating: 'Poor', icon: '❌', color: 'text-orange-600' };
+            return { score: 20, rating: 'Failed', icon: '🚫', color: 'text-red-600' };
+        }
+        
+        function evaluateProfitFactor(pf) {
+            if (pf >= 2.0) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (pf >= 1.7) return { score: 85, rating: 'Very Good', icon: '✅', color: 'text-green-600' };
+            if (pf >= 1.5) return { score: 75, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (pf >= 1.3) return { score: 60, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (pf >= 1.1) return { score: 40, rating: 'Poor', icon: '❌', color: 'text-orange-600' };
+            return { score: 0, rating: 'Failed', icon: '🚫', color: 'text-red-600' };
+        }
+        
+        function evaluateTrades(tradesPerYear) {
+            if (tradesPerYear >= 20 && tradesPerYear <= 100) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (tradesPerYear >= 15 && tradesPerYear <= 150) return { score: 85, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (tradesPerYear >= 10 && tradesPerYear <= 200) return { score: 70, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (tradesPerYear >= 5) return { score: 50, rating: 'Limited', icon: '⚠️', color: 'text-orange-600' };
+            return { score: 30, rating: 'Too Few', icon: '❌', color: 'text-red-600' };
+        }
+        
+        function evaluateAvgWin(avgWin) {
+            if (avgWin >= 500) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (avgWin >= 300) return { score: 85, rating: 'Very Good', icon: '✅', color: 'text-green-600' };
+            if (avgWin >= 200) return { score: 75, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (avgWin >= 100) return { score: 60, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (avgWin >= 50) return { score: 40, rating: 'Poor', icon: '❌', color: 'text-orange-600' };
+            return { score: 20, rating: 'Failed', icon: '🚫', color: 'text-red-600' };
+        }
+        
+        function evaluateHoldTime(avgHold) {
+            if (avgHold >= 2 && avgHold <= 7) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (avgHold >= 1 && avgHold <= 10) return { score: 85, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (avgHold >= 1 && avgHold <= 15) return { score: 70, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (avgHold < 1) return { score: 50, rating: 'Too Fast', icon: '⚠️', color: 'text-orange-600' };
+            return { score: 40, rating: 'Too Slow', icon: '❌', color: 'text-orange-600' };
+        }
+        
+        function generateRecommendation(level, ratings, annualROI, totalTrades) {
+            let rec = '';
+            
+            if (level === 'Excellent') {
+                rec = `🎉 <strong>Outstanding performance!</strong> This strategy shows exceptional mean reversion results. ` +
+                      `Expected annual return: ${annualROI.toFixed(1)}% with ${totalTrades} trades over 5 years. ` +
+                      `Ready for paper trading. Monitor 1-2 months, then consider going live.`;
+            } else if (level === 'Good') {
+                rec = `✅ <strong>Solid strategy!</strong> The results show good mean reversion characteristics. ` +
+                      `Expected annual return: ${annualROI.toFixed(1)}%. Paper trade for 1-2 months to verify. `;
+                
+                if (ratings.winRate.score < 70) rec += `Consider adjusting Z-score threshold to improve win rate. `;
+                if (ratings.avgWin.score < 70) rec += `Review take-profit levels for better average wins. `;
+            } else if (level === 'Acceptable') {
+                rec = `⚠️ <strong>Marginal performance.</strong> Strategy is profitable but could be better. Try: `;
+                
+                const suggestions = [];
+                if (ratings.roi.score < 60) suggestions.push('increase Z-score threshold for better quality signals');
+                if (ratings.winRate.score < 60) suggestions.push('adjust entry criteria');
+                if (ratings.trades.score < 60) suggestions.push('review half-life cutoff');
+                
+                rec += suggestions.slice(0, 2).join(', ') + '. Or test different pair/timeframe.';
+            } else if (level === 'Poor') {
+                rec = `❌ <strong>Weak performance.</strong> Do not trade live. Try: `;
+                
+                const fixes = [];
+                if (ratings.roi.score < 40) fixes.push('test different pairs - may not mean-revert well');
+                if (ratings.profitFactor.score < 40) fixes.push('increase Z-score threshold to 2.5+');
+                if (ratings.winRate.score < 40) fixes.push('adjust half-life cutoff parameter');
+                
+                rec += fixes.slice(0, 3).join('; ') + '.';
+            } else {
+                rec = `🚫 <strong>Failed strategy - do NOT trade!</strong> `;
+                if (annualROI < 0) rec += `Strategy loses money. `;
+                rec += `This pair may not exhibit mean reversion characteristics. Try different instrument.`;
+            }
+            
+            return rec;
         }
 
         // Run backtest
@@ -490,6 +674,51 @@
             const totalWins = trades.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0);
             const totalLosses = Math.abs(trades.filter(t => t.pnl <= 0).reduce((sum, t) => sum + t.pnl, 0));
             const profitFactor = totalLosses > 0 ? (totalWins / totalLosses) : 0;
+            
+            const avgWin = wins > 0 ? totalWins / wins : 0;
+            const avgLoss = (trades.length - wins) > 0 ? totalLosses / (trades.length - wins) : 0;
+            const avgHold = trades.reduce((sum, t) => sum + t.daysHeld, 0) / trades.length;
+            
+            // Evaluate performance
+            const assessment = evaluatePerformance(totalReturn, winRate, profitFactor, trades.length, avgWin, avgLoss, avgHold);
+            
+            // Update assessment card
+            const assessmentCard = document.getElementById('assessmentCard');
+            assessmentCard.className = `rounded-lg shadow-lg p-6 mb-6 bg-gradient-to-r ${assessment.overall.color}`;
+            assessmentCard.style.display = 'block';
+            
+            document.getElementById('assessmentIcon').textContent = assessment.overall.icon;
+            document.getElementById('assessmentTitle').textContent = `${assessment.overall.level} Strategy`;
+            document.getElementById('assessmentTitle').className = `text-3xl font-bold mb-2 ${assessment.overall.textColor}`;
+            document.getElementById('assessmentSubtitle').textContent = `Overall Score: ${Math.round(assessment.score)}/100`;
+            document.getElementById('assessmentSubtitle').className = `text-lg mb-4 ${assessment.overall.textColor}`;
+            
+            // Update individual ratings
+            document.getElementById('ratingROI').textContent = assessment.ratings.roi.icon;
+            document.getElementById('ratingROIText').textContent = assessment.ratings.roi.rating;
+            document.getElementById('ratingROIText').className = assessment.ratings.roi.color;
+            
+            document.getElementById('ratingWinRate').textContent = assessment.ratings.winRate.icon;
+            document.getElementById('ratingWinRateText').textContent = assessment.ratings.winRate.rating;
+            document.getElementById('ratingWinRateText').className = assessment.ratings.winRate.color;
+            
+            document.getElementById('ratingPF').textContent = assessment.ratings.profitFactor.icon;
+            document.getElementById('ratingPFText').textContent = assessment.ratings.profitFactor.rating;
+            document.getElementById('ratingPFText').className = assessment.ratings.profitFactor.color;
+            
+            document.getElementById('ratingTrades').textContent = assessment.ratings.trades.icon;
+            document.getElementById('ratingTradesText').textContent = assessment.ratings.trades.rating;
+            document.getElementById('ratingTradesText').className = assessment.ratings.trades.color;
+            
+            document.getElementById('ratingAvgWin').textContent = assessment.ratings.avgWin.icon;
+            document.getElementById('ratingAvgWinText').textContent = assessment.ratings.avgWin.rating;
+            document.getElementById('ratingAvgWinText').className = assessment.ratings.avgWin.color;
+            
+            document.getElementById('ratingHoldTime').textContent = assessment.ratings.holdTime.icon;
+            document.getElementById('ratingHoldTimeText').textContent = assessment.ratings.holdTime.rating;
+            document.getElementById('ratingHoldTimeText').className = assessment.ratings.holdTime.color;
+            
+            document.getElementById('assessmentRecommendationText').innerHTML = assessment.recommendation;
             
             // Summary cards
             document.getElementById('totalReturn').textContent = totalReturn.toFixed(2) + '%';
