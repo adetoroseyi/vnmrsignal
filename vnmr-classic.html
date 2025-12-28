@@ -105,7 +105,7 @@
                     <div id="confluenceSignals" class="text-3xl font-bold text-purple-600">-</div>
                 </div>
                 <div>
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between mb-2">
                         <div>
                             <div class="text-sm text-slate-500 mb-1">Status</div>
                             <div id="status" class="text-sm font-semibold text-slate-900">Loading...</div>
@@ -113,6 +113,10 @@
                         <button onclick="refreshData()" id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
                             Refresh
                         </button>
+                    </div>
+                    <!-- Progress bar -->
+                    <div id="progressBarContainer" style="display:none;" class="w-full bg-slate-200 rounded-full h-2 mt-2">
+                        <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
@@ -361,6 +365,80 @@
         let newsEvents = [];
         let newsEventsLoaded = false;
         let newsLockoutActive = false;
+        
+        // Candle cache (5 minute TTL)
+        let candleCache = {};
+        const CANDLE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+        // Fetch candles with caching
+        async function fetchCandles(pair, granularity, count = 500) {
+            const cacheKey = `${pair}_${granularity}`;
+            const now = Date.now();
+            
+            // Check cache
+            if (candleCache[cacheKey] && (now - candleCache[cacheKey].timestamp < CANDLE_CACHE_TTL)) {
+                console.log(`✅ Cache hit: ${pair} ${granularity}`);
+                return candleCache[cacheKey].data;
+            }
+            
+            try {
+                const response = await fetch(
+                    `${PROXY_URL}/v3/instruments/${pair}/candles?count=${count}&granularity=${granularity}&price=M`
+                );
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                const candles = data.candles.map(c => ({
+                    time: c.time,
+                    close: parseFloat(c.mid.c),
+                    open: parseFloat(c.mid.o),
+                    high: parseFloat(c.mid.h),
+                    low: parseFloat(c.mid.l)
+                }));
+                
+                // Cache the data
+                candleCache[cacheKey] = {
+                    data: candles,
+                    timestamp: now
+                };
+                
+                console.log(`📡 Fetched: ${pair} ${granularity}`);
+                return candles;
+            } catch (error) {
+                console.error(`Error fetching ${pair} ${granularity}:`, error);
+                return null;
+            }
+        }
+        
+        // Default settings
+        const DEFAULT_SETTINGS = {
+            deviationThreshold: 1.5,
+            deviationThresholdGold: 2.0,
+            atrSlopeMax: 0,
+            rrFilter: true,
+            sessionFilter: true,
+            minConfluence: 2,
+            rsiFilter: false,
+            rsiPeriod: 14,
+            rsiOversold: 30,
+            rsiOverbought: 70,
+            rsiOversoldGold: 25,
+            rsiOverboughtGold: 75
+        };
+
+        // Load settings
+        function loadSettings() {
+            const saved = localStorage.getItem('vnmrClassicSettings');
+            return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+        }
+
+        let SETTINGS = loadSettings();
+        let marketData = {};
+        let pairSignals = {};
+        let newsEvents = [];
+        let newsEventsLoaded = false;
+        let newsLockoutActive = false;
 
         // Settings functions
         function openSettings() {
@@ -574,8 +652,15 @@
                     return newsEvents;
                 }
                 
-                // Fetch from backend
-                const response = await fetch('https://oanda-proxy.onrender.com/api/news-events');
+                // Fetch with timeout
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                
+                const response = await fetch('https://oanda-proxy.onrender.com/api/news-events', {
+                    signal: controller.signal
+                });
+                clearTimeout(timeout);
+                
                 const data = await response.json();
                 
                 if (data.success && data.data && Array.isArray(data.data)) {
@@ -590,7 +675,7 @@
                 throw new Error('Invalid news data format');
                 
             } catch (error) {
-                console.error('❌ News fetch error:', error);
+                console.error('❌ News fetch error:', error.message);
                 
                 // Try to use old cache
                 const cached = localStorage.getItem('newsEvents');
@@ -599,7 +684,7 @@
                     newsEvents = JSON.parse(cached);
                     newsEventsLoaded = true;
                 } else {
-                    console.log('⚠️ No news events available');
+                    console.log('⚠️ No news events available - continuing without news filter');
                     newsEvents = [];
                     newsEventsLoaded = false;
                 }
@@ -731,28 +816,6 @@
         }
 
         // Fetch candles
-        async function fetchCandles(pair, granularity, count = 500) {
-            try {
-                const response = await fetch(
-                    `${PROXY_URL}/v3/instruments/${pair}/candles?count=${count}&granularity=${granularity}&price=M`
-                );
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const data = await response.json();
-                return data.candles.map(c => ({
-                    time: c.time,
-                    close: parseFloat(c.mid.c),
-                    open: parseFloat(c.mid.o),
-                    high: parseFloat(c.mid.h),
-                    low: parseFloat(c.mid.l)
-                }));
-            } catch (error) {
-                console.error(`Error fetching ${pair} ${granularity}:`, error);
-                return null;
-            }
-        }
-
         // Calculate EMA(50)
         function calculateEMA(prices, period = 50) {
             if (prices.length < period) return null;
@@ -1076,11 +1139,18 @@
         async function analyzePair(pair) {
             const results = {};
             
-            for (const timeframe of TIMEFRAMES) {
+            // Fetch all timeframes in parallel for maximum speed
+            const timeframePromises = TIMEFRAMES.map(async (timeframe) => {
                 const candles = await fetchCandles(pair, timeframe, 500);
-                results[timeframe] = analyzeTimeframe(pair, candles, timeframe);
-                await new Promise(r => setTimeout(r, 100));
-            }
+                return { timeframe, result: analyzeTimeframe(pair, candles, timeframe) };
+            });
+            
+            const timeframeResults = await Promise.all(timeframePromises);
+            
+            // Build results object
+            timeframeResults.forEach(({ timeframe, result }) => {
+                results[timeframe] = result;
+            });
             
             // Calculate confluence
             const signals = Object.values(results).filter(r => r.direction);
@@ -1310,30 +1380,49 @@
             }
         }
 
-        // Refresh data
+        // Refresh data with parallel loading
         async function refreshData() {
             const btn = document.getElementById('refreshBtn');
             const status = document.getElementById('status');
+            const progressContainer = document.getElementById('progressBarContainer');
+            const progressBar = document.getElementById('progressBar');
             
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span>';
             status.textContent = 'Loading...';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
             
-            // Fetch news events first
-            status.textContent = 'Loading news events...';
-            await fetchNewsEvents();
-            updateNewsStatus();
+            // Fetch news events in background (non-blocking)
+            fetchNewsEvents().then(() => {
+                updateNewsStatus();
+            }).catch(err => {
+                console.log('News fetch failed, continuing without:', err);
+            });
             
             pairSignals = {};
+            let processed = 0;
+            const total = PAIRS.length;
             
-            for (const pair of PAIRS) {
-                status.textContent = `Loading ${pair.replace('_', '/')}...`;
-                pairSignals[pair] = await analyzePair(pair);
+            // Process pairs in parallel batches of 4 for faster loading
+            const BATCH_SIZE = 4;
+            for (let i = 0; i < PAIRS.length; i += BATCH_SIZE) {
+                const batch = PAIRS.slice(i, i + BATCH_SIZE);
+                
+                // Process batch in parallel
+                await Promise.all(batch.map(async (pair) => {
+                    pairSignals[pair] = await analyzePair(pair);
+                    processed++;
+                    const percentage = Math.round((processed / total) * 100);
+                    status.textContent = `${pair.replace('_', '/')} (${processed}/${total})`;
+                    progressBar.style.width = `${percentage}%`;
+                }));
             }
             
             const now = new Date();
             document.getElementById('lastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
             status.textContent = 'Live';
+            progressContainer.style.display = 'none';
             
             renderSignals();
             
