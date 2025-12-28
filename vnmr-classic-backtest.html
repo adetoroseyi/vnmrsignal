@@ -52,7 +52,7 @@
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <h2 class="text-2xl font-bold text-slate-900 mb-4">Backtest Configuration</h2>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <!-- Pair Selection -->
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -85,6 +85,19 @@
                             <option value="M30">30 Minutes (M30)</option>
                             <option value="H1" selected>1 Hour (H1)</option>
                             <option value="H4">4 Hours (H4)</option>
+                        </select>
+                    </div>
+
+                    <!-- Historical Period Selection -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            Historical Period
+                        </label>
+                        <select id="yearsSelect" class="w-full p-3 border-2 border-green-500 rounded-lg text-lg font-semibold">
+                            <option value="1">1 Year (Fast)</option>
+                            <option value="2" selected>2 Years (Recommended)</option>
+                            <option value="3">3 Years</option>
+                            <option value="5">5 Years (Slow)</option>
                         </select>
                     </div>
 
@@ -197,11 +210,18 @@
                 <div class="text-6xl mb-4">📊</div>
                 <h2 class="text-2xl font-bold text-slate-900 mb-2">Ready to Backtest</h2>
                 <p class="text-slate-600 mb-4">
-                    Select a currency pair and timeframe, then click "Run Backtest"
+                    Select a currency pair, timeframe, and historical period, then click "Run Backtest"
                 </p>
-                <p class="text-sm text-slate-500">
-                    The system will download 5 years of historical data and apply the VNMR Classic strategy
+                <p class="text-sm text-slate-500 mb-2">
+                    <strong>⚡ Speed Tips:</strong>
                 </p>
+                <ul class="text-sm text-slate-500 text-left max-w-md mx-auto">
+                    <li>• <strong>1 Year:</strong> Fast (15-30 sec) - Good for quick testing</li>
+                    <li>• <strong>2 Years:</strong> Recommended (30-60 sec) - Best balance</li>
+                    <li>• <strong>5 Years:</strong> Slow (2-3 min) - Most comprehensive</li>
+                    <li>• <strong>H4 timeframe:</strong> Fastest to load</li>
+                    <li>• <strong>M30 timeframe:</strong> Slowest (more data points)</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -421,69 +441,96 @@
             document.getElementById('settingsRSIOverbought').value = DEFAULT_SETTINGS.rsiOverbought;
         }
 
-        // Fetch historical data
-        async function fetchHistoricalData(pair, granularity, yearsBack = 5) {
-            const allCandles = [];
-            const now = new Date();
-            const startDate = new Date(now.getTime() - yearsBack * 365 * 24 * 60 * 60 * 1000);
-            
+        // Fetch historical data - ULTRA FAST PARALLEL VERSION
+        async function fetchHistoricalData(pair, granularity, yearsBack) {
             const progressContainer = document.getElementById('progressContainer');
             const progressBar = document.getElementById('progressBar');
             const progressText = document.getElementById('progressText');
             const progressPercent = document.getElementById('progressPercent');
             
             progressContainer.style.display = 'block';
-            progressText.textContent = 'Fetching historical data...';
+            progressText.textContent = 'Preparing to fetch data...';
             
+            const now = new Date();
+            const startDate = new Date(now.getTime() - yearsBack * 365 * 24 * 60 * 60 * 1000);
+            
+            // Fetch in parallel batches - 4 requests at once for maximum speed
+            const PARALLEL_REQUESTS = 4;
+            const allCandles = [];
             let currentDate = new Date(startDate);
-            let fetchCount = 0;
+            let totalRequests = 0;
             
             while (currentDate < now) {
-                try {
+                // Create batch of parallel requests
+                const batchPromises = [];
+                
+                for (let i = 0; i < PARALLEL_REQUESTS; i++) {
+                    if (currentDate >= now) break;
+                    
                     const toDate = currentDate.toISOString();
-                    const response = await fetch(
-                        `${PROXY_URL}/v3/instruments/${pair}/candles?count=5000&granularity=${granularity}&to=${toDate}&price=M`
+                    
+                    batchPromises.push(
+                        fetch(`${PROXY_URL}/v3/instruments/${pair}/candles?count=5000&granularity=${granularity}&to=${toDate}&price=M`)
+                            .then(r => r.json())
+                            .then(data => data.candles.map(c => ({
+                                time: c.time,
+                                close: parseFloat(c.mid.c),
+                                open: parseFloat(c.mid.o),
+                                high: parseFloat(c.mid.h),
+                                low: parseFloat(c.mid.l)
+                            })))
+                            .catch(err => {
+                                console.error('Fetch error:', err);
+                                return [];
+                            })
                     );
                     
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    
-                    const data = await response.json();
-                    const candles = data.candles.map(c => ({
-                        time: c.time,
-                        close: parseFloat(c.mid.c),
-                        open: parseFloat(c.mid.o),
-                        high: parseFloat(c.mid.h),
-                        low: parseFloat(c.mid.l)
-                    }));
-                    
-                    if (candles.length === 0) break;
-                    
-                    allCandles.push(...candles);
-                    
-                    // Update current date to the last candle's time
-                    currentDate = new Date(candles[candles.length - 1].time);
-                    currentDate.setSeconds(currentDate.getSeconds() + 1);
-                    
-                    fetchCount++;
-                    const progress = Math.min(((currentDate - startDate) / (now - startDate)) * 100, 100);
-                    progressBar.style.width = `${progress}%`;
-                    progressPercent.textContent = `${Math.round(progress)}%`;
-                    progressText.textContent = `Fetched ${allCandles.length.toLocaleString()} candles (${fetchCount} requests)`;
-                    
-                    // Small delay to avoid rate limiting
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                    break;
+                    // Move date forward by ~5000 candles worth of time
+                    const millisPerCandle = granularity === 'M30' ? 30*60*1000 : 
+                                           granularity === 'H1' ? 60*60*1000 : 
+                                           4*60*60*1000;
+                    currentDate = new Date(currentDate.getTime() + 5000 * millisPerCandle);
+                }
+                
+                // Wait for all requests in batch to complete
+                const batchResults = await Promise.all(batchPromises);
+                
+                // Add results
+                for (const candles of batchResults) {
+                    if (candles.length > 0) {
+                        allCandles.push(...candles);
+                    }
+                }
+                
+                totalRequests += batchResults.length;
+                
+                // Update progress
+                const progress = Math.min(((currentDate - startDate) / (now - startDate)) * 100, 99);
+                progressBar.style.width = `${progress}%`;
+                progressPercent.textContent = `${Math.round(progress)}%`;
+                progressText.textContent = `⚡ Fetched ${allCandles.length.toLocaleString()} candles (${totalRequests} requests, ${PARALLEL_REQUESTS} parallel)`;
+                
+                // Check if last batch was small (means we're done)
+                const lastBatchTotal = batchResults.reduce((sum, c) => sum + c.length, 0);
+                if (lastBatchTotal < 5000) break;
+            }
+            
+            // Sort by time and remove duplicates
+            allCandles.sort((a, b) => new Date(a.time) - new Date(b.time));
+            const uniqueCandles = [];
+            let lastTime = null;
+            for (const candle of allCandles) {
+                if (candle.time !== lastTime) {
+                    uniqueCandles.push(candle);
+                    lastTime = candle.time;
                 }
             }
             
-            progressText.textContent = `✅ Fetched ${allCandles.length.toLocaleString()} candles total`;
-            progressPercent.textContent = '100%';
             progressBar.style.width = '100%';
+            progressPercent.textContent = '100%';
+            progressText.textContent = `✅ Fetched ${uniqueCandles.length.toLocaleString()} candles in ${totalRequests} requests`;
             
-            return allCandles;
+            return uniqueCandles;
         }
 
         // Calculate EMA
@@ -621,6 +668,7 @@
         async function runBacktest() {
             const pair = document.getElementById('pairSelect').value;
             const granularity = document.getElementById('timeframeSelect').value;
+            const yearsBack = parseInt(document.getElementById('yearsSelect').value);
             
             const runBtn = document.getElementById('runBtn');
             runBtn.disabled = true;
@@ -631,7 +679,7 @@
             
             try {
                 // Fetch historical data
-                const candles = await fetchHistoricalData(pair, granularity, 5);
+                const candles = await fetchHistoricalData(pair, granularity, yearsBack);
                 
                 if (candles.length < SETTINGS.emaPeriod + SETTINGS.atrPeriod + 10) {
                     alert('Insufficient data fetched. Please try again.');
