@@ -205,6 +205,72 @@
                             <option value="3">3 Timeframes (All agree)</option>
                         </select>
                     </div>
+
+                    <!-- RSI Settings -->
+                    <div class="border-t pt-6 mt-6">
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">📊 RSI Settings (Momentum Filter)</h3>
+                        
+                        <!-- Enable RSI Filter -->
+                        <div class="mb-4">
+                            <label class="flex items-center gap-3">
+                                <input type="checkbox" id="settingsRSIFilter" class="w-5 h-5">
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-700">Enable RSI Filter</div>
+                                    <div class="text-xs text-slate-500">Require RSI confirmation for signals (BUY: RSI < oversold, SELL: RSI > overbought)</div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- RSI Period -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                    RSI Period
+                                </label>
+                                <input type="number" id="settingsRSIPeriod" step="1" min="7" max="21" 
+                                    class="w-full p-3 border-2 border-blue-500 rounded-lg text-lg font-semibold">
+                                <p class="text-xs text-slate-500 mt-1">Default: 14 | Lower = more sensitive</p>
+                            </div>
+
+                            <!-- RSI Oversold -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                    RSI Oversold (BUY)
+                                </label>
+                                <input type="number" id="settingsRSIOversold" step="1" min="20" max="40" 
+                                    class="w-full p-3 border-2 border-green-500 rounded-lg text-lg font-semibold">
+                                <p class="text-xs text-slate-500 mt-1">Default: 30 | Lower = stricter</p>
+                            </div>
+
+                            <!-- RSI Overbought -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                    RSI Overbought (SELL)
+                                </label>
+                                <input type="number" id="settingsRSIOverbought" step="1" min="60" max="80" 
+                                    class="w-full p-3 border-2 border-red-500 rounded-lg text-lg font-semibold">
+                                <p class="text-xs text-slate-500 mt-1">Default: 70 | Higher = stricter</p>
+                            </div>
+                        </div>
+
+                        <!-- Gold-specific RSI -->
+                        <div class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="text-sm font-semibold text-yellow-900 mb-2">🏆 Gold (XAU/USD) RSI Settings</div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs text-yellow-700 mb-1">Oversold</label>
+                                    <input type="number" id="settingsRSIOversoldGold" step="1" min="20" max="40" 
+                                        class="w-full p-2 border border-yellow-400 rounded text-sm font-semibold">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-yellow-700 mb-1">Overbought</label>
+                                    <input type="number" id="settingsRSIOverboughtGold" step="1" min="60" max="80" 
+                                        class="w-full p-2 border border-yellow-400 rounded text-sm font-semibold">
+                                </div>
+                            </div>
+                            <p class="text-xs text-yellow-700 mt-2">Recommended: 25/75 (wider bands for Gold's volatility)</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-8 flex gap-3">
@@ -235,7 +301,13 @@
             atrSlopeMax: 0,
             rrFilter: true,
             sessionFilter: true,
-            minConfluence: 2
+            minConfluence: 2,
+            rsiFilter: false,
+            rsiPeriod: 14,
+            rsiOversold: 30,
+            rsiOverbought: 70,
+            rsiOversoldGold: 25,
+            rsiOverboughtGold: 75
         };
 
         // Load settings
@@ -256,6 +328,12 @@
             document.getElementById('settingsRRFilter').checked = SETTINGS.rrFilter;
             document.getElementById('settingsSessionFilter').checked = SETTINGS.sessionFilter;
             document.getElementById('settingsMinConfluence').value = SETTINGS.minConfluence;
+            document.getElementById('settingsRSIFilter').checked = SETTINGS.rsiFilter;
+            document.getElementById('settingsRSIPeriod').value = SETTINGS.rsiPeriod;
+            document.getElementById('settingsRSIOversold').value = SETTINGS.rsiOversold;
+            document.getElementById('settingsRSIOverbought').value = SETTINGS.rsiOverbought;
+            document.getElementById('settingsRSIOversoldGold').value = SETTINGS.rsiOversoldGold;
+            document.getElementById('settingsRSIOverboughtGold').value = SETTINGS.rsiOverboughtGold;
             document.getElementById('settingsModal').style.display = 'flex';
         }
 
@@ -270,6 +348,12 @@
             SETTINGS.rrFilter = document.getElementById('settingsRRFilter').checked;
             SETTINGS.sessionFilter = document.getElementById('settingsSessionFilter').checked;
             SETTINGS.minConfluence = parseInt(document.getElementById('settingsMinConfluence').value);
+            SETTINGS.rsiFilter = document.getElementById('settingsRSIFilter').checked;
+            SETTINGS.rsiPeriod = parseInt(document.getElementById('settingsRSIPeriod').value);
+            SETTINGS.rsiOversold = parseInt(document.getElementById('settingsRSIOversold').value);
+            SETTINGS.rsiOverbought = parseInt(document.getElementById('settingsRSIOverbought').value);
+            SETTINGS.rsiOversoldGold = parseInt(document.getElementById('settingsRSIOversoldGold').value);
+            SETTINGS.rsiOverboughtGold = parseInt(document.getElementById('settingsRSIOverboughtGold').value);
             
             localStorage.setItem('vnmrClassicSettings', JSON.stringify(SETTINGS));
             closeSettings();
@@ -285,6 +369,12 @@
             document.getElementById('settingsRRFilter').checked = DEFAULT_SETTINGS.rrFilter;
             document.getElementById('settingsSessionFilter').checked = DEFAULT_SETTINGS.sessionFilter;
             document.getElementById('settingsMinConfluence').value = DEFAULT_SETTINGS.minConfluence;
+            document.getElementById('settingsRSIFilter').checked = DEFAULT_SETTINGS.rsiFilter;
+            document.getElementById('settingsRSIPeriod').value = DEFAULT_SETTINGS.rsiPeriod;
+            document.getElementById('settingsRSIOversold').value = DEFAULT_SETTINGS.rsiOversold;
+            document.getElementById('settingsRSIOverbought').value = DEFAULT_SETTINGS.rsiOverbought;
+            document.getElementById('settingsRSIOversoldGold').value = DEFAULT_SETTINGS.rsiOversoldGold;
+            document.getElementById('settingsRSIOverboughtGold').value = DEFAULT_SETTINGS.rsiOverboughtGold;
         }
 
         // Session management
@@ -539,6 +629,38 @@
             return Math.round((distanceScore + slopeScore) / 2);
         }
 
+        // Calculate RSI (Relative Strength Index)
+        function calculateRSI(prices, period = 14) {
+            if (prices.length < period + 1) return null;
+            
+            // Calculate price changes
+            const changes = [];
+            for (let i = 1; i < prices.length; i++) {
+                changes.push(prices[i] - prices[i - 1]);
+            }
+            
+            // Separate gains and losses
+            const gains = changes.map(change => change > 0 ? change : 0);
+            const losses = changes.map(change => change < 0 ? -change : 0);
+            
+            // Calculate initial average gain and loss (SMA for first period)
+            let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            
+            // Apply Wilder's smoothing for subsequent periods
+            for (let i = period; i < changes.length; i++) {
+                avgGain = (avgGain * (period - 1) + gains[i]) / period;
+                avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
+            }
+            
+            // Calculate RS and RSI
+            if (avgLoss === 0) return 100; // If no losses, RSI = 100
+            const rs = avgGain / avgLoss;
+            const rsi = 100 - (100 / (1 + rs));
+            
+            return rsi;
+        }
+
         // Analyze single timeframe
         function analyzeTimeframe(pair, candles, timeframe) {
             if (!candles || candles.length < 50) {
@@ -593,8 +715,21 @@
             // Calculate deviation
             const deviation = Math.abs(latestPrice - ema50) / atr20;
             
-            // Get appropriate threshold
+            // Calculate RSI
+            const rsi = calculateRSI(prices, SETTINGS.rsiPeriod);
+            if (!rsi) {
+                return {
+                    pair,
+                    timeframe,
+                    signal: 'NO SIGNAL',
+                    reason: 'RSI calculation failed'
+                };
+            }
+            
+            // Get appropriate thresholds
             const devThreshold = pair === 'XAU_USD' ? SETTINGS.deviationThresholdGold : SETTINGS.deviationThreshold;
+            const rsiOversold = pair === 'XAU_USD' ? SETTINGS.rsiOversoldGold : SETTINGS.rsiOversold;
+            const rsiOverbought = pair === 'XAU_USD' ? SETTINGS.rsiOverboughtGold : SETTINGS.rsiOverbought;
             
             // Check filters
             const blockingReasons = [];
@@ -617,16 +752,47 @@
             let entry = latestPrice;
             let tp = ema50;
             let sl = null;
+            let rsiConfirms = false;
             
             if (blockingReasons.length === 0) {
                 if (latestPrice < ema50) {
-                    signal = 'BUY';
+                    // Potential BUY signal
                     direction = 'BUY';
                     sl = entry - 2.5 * atr20;
+                    
+                    // Check RSI confirmation
+                    if (SETTINGS.rsiFilter) {
+                        if (rsi < rsiOversold) {
+                            rsiConfirms = true;
+                            signal = 'BUY';
+                        } else {
+                            blockingReasons.push(`RSI not oversold (${rsi.toFixed(1)} >= ${rsiOversold})`);
+                            direction = null;
+                        }
+                    } else {
+                        // RSI not required, but note if it confirms
+                        rsiConfirms = rsi < rsiOversold;
+                        signal = 'BUY';
+                    }
                 } else if (latestPrice > ema50) {
-                    signal = 'SELL';
+                    // Potential SELL signal
                     direction = 'SELL';
                     sl = entry + 2.5 * atr20;
+                    
+                    // Check RSI confirmation
+                    if (SETTINGS.rsiFilter) {
+                        if (rsi > rsiOverbought) {
+                            rsiConfirms = true;
+                            signal = 'SELL';
+                        } else {
+                            blockingReasons.push(`RSI not overbought (${rsi.toFixed(1)} <= ${rsiOverbought})`);
+                            direction = null;
+                        }
+                    } else {
+                        // RSI not required, but note if it confirms
+                        rsiConfirms = rsi > rsiOverbought;
+                        signal = 'SELL';
+                    }
                 } else {
                     blockingReasons.push('Price equals EMA (no direction)');
                 }
@@ -669,6 +835,8 @@
                 atr20: atr20.toFixed(5),
                 deviation: deviation.toFixed(2),
                 atrSlope: atrSlope.toFixed(6),
+                rsi: rsi.toFixed(1),
+                rsiConfirms,
                 riskPips: riskPips ? riskPips.toFixed(1) : null,
                 rewardPips: rewardPips ? rewardPips.toFixed(1) : null,
                 rr: rr ? rr.toFixed(2) : null,
@@ -831,6 +999,32 @@
                                                 </div>
                                             </div>
                                             
+                                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                                <div class="bg-purple-50 p-3 rounded">
+                                                    <div class="flex justify-between items-center">
+                                                        <div class="text-xs text-purple-700">RSI (${SETTINGS.rsiPeriod})</div>
+                                                        <div class="text-xs ${result.rsiConfirms ? 'text-green-600' : 'text-slate-500'}">
+                                                            ${result.rsiConfirms ? '✅ Confirms' : SETTINGS.rsiFilter ? '❌ No confirm' : '○ Reference'}
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-2xl font-bold ${result.direction === 'BUY' ? (parseFloat(result.rsi) < SETTINGS.rsiOversold ? 'text-green-600' : 'text-slate-600') : (parseFloat(result.rsi) > SETTINGS.rsiOverbought ? 'text-red-600' : 'text-slate-600')}">
+                                                        ${result.rsi}
+                                                    </div>
+                                                    <div class="text-xs text-slate-600 mt-1">
+                                                        ${result.direction === 'BUY' ? `Target: < ${pair.includes('XAU') ? SETTINGS.rsiOversoldGold : SETTINGS.rsiOversold}` : `Target: > ${pair.includes('XAU') ? SETTINGS.rsiOverboughtGold : SETTINGS.rsiOverbought}`}
+                                                    </div>
+                                                </div>
+                                                <div class="bg-slate-50 p-3 rounded">
+                                                    <div class="text-xs text-slate-600 mb-1">RSI Status</div>
+                                                    <div class="text-lg font-bold ${parseFloat(result.rsi) < 30 ? 'text-green-600' : parseFloat(result.rsi) > 70 ? 'text-red-600' : 'text-yellow-600'}">
+                                                        ${parseFloat(result.rsi) < 30 ? 'OVERSOLD 🔽' : parseFloat(result.rsi) > 70 ? 'OVERBOUGHT 🔼' : 'NEUTRAL ↔️'}
+                                                    </div>
+                                                    <div class="text-xs text-slate-500 mt-1">
+                                                        ${parseFloat(result.rsi) < 30 ? 'Strong buy momentum' : parseFloat(result.rsi) > 70 ? 'Strong sell momentum' : 'Normal range'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
                                             <div class="bg-slate-50 p-4 rounded">
                                                 <div class="flex justify-between items-center">
                                                     <div>
@@ -855,8 +1049,14 @@
                                                 <ul class="text-sm text-slate-600 list-disc list-inside">
                                                     ${result.blockingReasons.map(r => `<li>${r}</li>`).join('')}
                                                 </ul>
-                                                <div class="mt-3 text-xs text-slate-500">
-                                                    EMA(50): ${result.ema50} | ATR(20): ${result.atr20} | Deviation: ${result.deviation} | ATR Slope: ${result.atrSlope}
+                                                <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500">
+                                                    <div>EMA(50): ${result.ema50}</div>
+                                                    <div>ATR(20): ${result.atr20}</div>
+                                                    <div>Deviation: ${result.deviation}</div>
+                                                    <div>ATR Slope: ${result.atrSlope}</div>
+                                                    <div class="${parseFloat(result.rsi) < 30 ? 'text-green-600 font-semibold' : parseFloat(result.rsi) > 70 ? 'text-red-600 font-semibold' : ''}">
+                                                        RSI(${SETTINGS.rsiPeriod}): ${result.rsi} ${parseFloat(result.rsi) < 30 ? '🔽' : parseFloat(result.rsi) > 70 ? '🔼' : ''}
+                                                    </div>
                                                 </div>
                                             </div>
                                         `}
