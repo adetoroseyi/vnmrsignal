@@ -78,7 +78,7 @@
                     <div>
                         <div class="text-sm text-slate-500 mb-1">📰 News Status</div>
                         <div id="newsStatus" class="text-2xl font-bold text-green-600">---</div>
-                        <div id="nextNews" class="text-xs text-slate-500">Loading...</div>
+                        <div id="nextNews" class="text-xs text-slate-500">Manual CSV only</div>
                     </div>
                     <div>
                         <div class="text-sm text-slate-500 mb-1">Trading Status</div>
@@ -108,7 +108,7 @@
                     <div class="flex items-center justify-between mb-2">
                         <div>
                             <div class="text-sm text-slate-500 mb-1">Status</div>
-                            <div id="status" class="text-sm font-semibold text-slate-900">Loading...</div>
+                            <div id="status" class="text-sm font-semibold text-slate-900">Ready</div>
                         </div>
                         <button onclick="refreshData()" id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
                             Refresh
@@ -124,8 +124,9 @@
             <!-- Signals Container -->
             <div id="signalsContainer" class="space-y-4">
                 <div class="bg-white rounded-lg shadow p-12 text-center">
-                    <div class="spinner mx-auto mb-4"></div>
-                    <p class="text-slate-600">Loading market data...</p>
+                    <div class="text-6xl mb-4">📊</div>
+                    <p class="text-xl text-slate-600 mb-2">Ready to load market data</p>
+                    <p class="text-sm text-slate-500">Click Refresh to start</p>
                 </div>
             </div>
         </div>
@@ -281,29 +282,22 @@
                         </div>
                     </div>
 
-                    <!-- News Settings -->
+                    <!-- News Settings (Manual CSV Only) -->
                     <div class="border-t pt-6 mt-6">
-                        <h3 class="text-lg font-bold text-slate-900 mb-4">📰 News Events Management</h3>
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">📰 News Events (Manual Upload Only)</h3>
                         
                         <!-- News Status -->
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="text-sm font-semibold text-blue-900 mb-1">News Filter Status</div>
-                                    <div id="newsFilterStatus" class="text-xs text-blue-700">Loading...</div>
-                                </div>
-                                <button onclick="forceNewsRefresh()" class="bg-blue-600 text-white px-3 py-1 rounded text-xs">
-                                    Refresh Now
-                                </button>
-                            </div>
+                            <div class="text-sm font-semibold text-blue-900 mb-1">Current Status</div>
+                            <div id="newsFilterStatus" class="text-xs text-blue-700">No automatic fetching - Manual CSV only</div>
                         </div>
 
-                        <!-- Manual Upload Fallback -->
+                        <!-- Manual Upload -->
                         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <div class="text-sm font-semibold text-yellow-900 mb-2">📁 Manual Upload (Fallback)</div>
+                            <div class="text-sm font-semibold text-yellow-900 mb-2">📁 Manual CSV Upload</div>
                             <p class="text-xs text-yellow-700 mb-3">
-                                If automatic news fetching fails, upload a CSV file with this week's high-impact events.
-                                Format: Date, Time, Currency, Event
+                                Upload a CSV file with this week's high-impact events.
+                                Format: Date, Time, Currency, Event, Impact
                             </p>
                             <a href="#" onclick="downloadSampleCSV(); return false;" class="text-xs text-blue-600 hover:underline block mb-2">
                                 📥 Download sample CSV template
@@ -332,10 +326,10 @@
         // Configuration
         const PROXY_URL = 'https://oanda-proxy.onrender.com/api';
         const PAIRS = [
-            'EUR_USD', 'GBP_USD', 'EUR_GBP', 'AUD_NZD', 'EUR_CHF', 'USD_JPY',  // Document pairs
-            'USD_CAD', 'AUD_USD', 'XAU_USD', 'NZD_USD', 'USD_CHF', 'EUR_AUD', 'GBP_AUD', 'AUD_CAD'  // Additional pairs
+            'EUR_USD', 'GBP_USD', 'EUR_GBP', 'AUD_NZD', 'EUR_CHF', 'USD_JPY',
+            'USD_CAD', 'AUD_USD', 'XAU_USD', 'NZD_USD', 'USD_CHF', 'EUR_AUD', 'GBP_AUD', 'AUD_CAD'
         ];
-        const TIMEFRAMES = ['M30', 'H1', 'H4'];  // Three timeframes
+        const TIMEFRAMES = ['M30', 'H1', 'H4'];
         
         // Default settings
         const DEFAULT_SETTINGS = {
@@ -360,17 +354,15 @@
         }
 
         let SETTINGS = loadSettings();
-        let marketData = {};
         let pairSignals = {};
         let newsEvents = [];
         let newsEventsLoaded = false;
-        let newsLockoutActive = false;
         
         // Candle cache (5 minute TTL)
         let candleCache = {};
-        const CANDLE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+        const CANDLE_CACHE_TTL = 5 * 60 * 1000;
 
-        // Fetch candles with caching
+        // Fetch candles with caching - PURE OANDA, NO NEWS DEPENDENCIES
         async function fetchCandles(pair, granularity, count = 500) {
             const cacheKey = `${pair}_${granularity}`;
             const now = Date.now();
@@ -410,35 +402,6 @@
                 return null;
             }
         }
-        
-        // Default settings
-        const DEFAULT_SETTINGS = {
-            deviationThreshold: 1.5,
-            deviationThresholdGold: 2.0,
-            atrSlopeMax: 0,
-            rrFilter: true,
-            sessionFilter: true,
-            minConfluence: 2,
-            rsiFilter: false,
-            rsiPeriod: 14,
-            rsiOversold: 30,
-            rsiOverbought: 70,
-            rsiOversoldGold: 25,
-            rsiOverboughtGold: 75
-        };
-
-        // Load settings
-        function loadSettings() {
-            const saved = localStorage.getItem('vnmrClassicSettings');
-            return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
-        }
-
-        let SETTINGS = loadSettings();
-        let marketData = {};
-        let pairSignals = {};
-        let newsEvents = [];
-        let newsEventsLoaded = false;
-        let newsLockoutActive = false;
 
         // Settings functions
         function openSettings() {
@@ -454,6 +417,7 @@
             document.getElementById('settingsRSIOverbought').value = SETTINGS.rsiOverbought;
             document.getElementById('settingsRSIOversoldGold').value = SETTINGS.rsiOversoldGold;
             document.getElementById('settingsRSIOverboughtGold').value = SETTINGS.rsiOverboughtGold;
+            updateNewsFilterStatus();
             document.getElementById('settingsModal').style.display = 'flex';
         }
 
@@ -507,10 +471,8 @@
             
             document.getElementById('currentTime').textContent = timeString;
             
-            // Determine current session
             let session = '';
             let sessionStatus = '';
-            let tradingAllowed = false;
             let nextWindow = '';
             let timeToNext = '';
             let progress = 0;
@@ -519,14 +481,12 @@
             if (day === 0 || day === 6) {
                 session = 'WEEKEND';
                 sessionStatus = 'Markets Closed';
-                tradingAllowed = false;
                 nextWindow = 'Monday 00:30';
                 document.getElementById('tradingStatus').innerHTML = '🔴 CLOSED';
                 document.getElementById('tradingStatus').className = 'text-2xl font-bold text-red-600';
             } else {
                 const timeInMinutes = hours * 60 + minutes;
                 
-                // Determine session
                 if (timeInMinutes >= 0 && timeInMinutes < 480) {
                     session = 'ASIA';
                     sessionStatus = 'Low liquidity';
@@ -541,15 +501,12 @@
                     sessionStatus = 'Low liquidity';
                 }
                 
-                // Determine if trading is allowed
-                if ((timeInMinutes >= 30 && timeInMinutes < 450) ||  // 00:30-07:30
-                    (timeInMinutes >= 540 && timeInMinutes < 750) ||  // 09:00-12:30
-                    (timeInMinutes >= 900 && timeInMinutes < 1050)) {  // 15:00-17:30
-                    tradingAllowed = true;
+                if ((timeInMinutes >= 30 && timeInMinutes < 450) ||
+                    (timeInMinutes >= 540 && timeInMinutes < 750) ||
+                    (timeInMinutes >= 900 && timeInMinutes < 1050)) {
                     document.getElementById('tradingStatus').innerHTML = '✅ OPEN';
                     document.getElementById('tradingStatus').className = 'text-2xl font-bold text-green-600';
                     
-                    // Calculate next window end
                     if (timeInMinutes >= 30 && timeInMinutes < 450) {
                         nextWindow = '07:30';
                         progress = ((timeInMinutes - 30) / 420) * 100;
@@ -567,11 +524,9 @@
                     const minsToNext = minutesToNext % 60;
                     timeToNext = hoursToNext > 0 ? `${hoursToNext}h ${minsToNext}m` : `${minsToNext}m`;
                 } else {
-                    tradingAllowed = false;
                     document.getElementById('tradingStatus').innerHTML = '⏸️ PAUSED';
                     document.getElementById('tradingStatus').className = 'text-2xl font-bold text-yellow-600';
                     
-                    // Find next window
                     if (timeInMinutes < 30) {
                         nextWindow = '00:30';
                     } else if (timeInMinutes >= 450 && timeInMinutes < 540) {
@@ -600,11 +555,8 @@
             document.getElementById('nextWindow').textContent = nextWindow;
             document.getElementById('timeToNext').textContent = timeToNext;
             document.getElementById('sessionProgress').style.width = `${progress}%`;
-            
-            return tradingAllowed;
         }
 
-        // Check if current time is in trading window
         function isInTradingWindow() {
             if (!SETTINGS.sessionFilter) return true;
             
@@ -612,91 +564,29 @@
             const londonTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
             const day = londonTime.getDay();
             
-            // Weekend check
             if (day === 0 || day === 6) return false;
             
             const hours = londonTime.getHours();
             const minutes = londonTime.getMinutes();
             const timeInMinutes = hours * 60 + minutes;
             
-            // Open lockouts
-            if ((timeInMinutes >= 480 && timeInMinutes < 510) ||  // 08:00-08:30 London open
-                (timeInMinutes >= 780 && timeInMinutes < 810)) {  // 13:00-13:30 NY open
+            if ((timeInMinutes >= 480 && timeInMinutes < 510) ||
+                (timeInMinutes >= 780 && timeInMinutes < 810)) {
                 return false;
             }
             
-            // Trading windows
-            if ((timeInMinutes >= 30 && timeInMinutes < 450) ||  // 00:30-07:30
-                (timeInMinutes >= 540 && timeInMinutes < 750) ||  // 09:00-12:30
-                (timeInMinutes >= 900 && timeInMinutes < 1050)) {  // 15:00-17:30
+            if ((timeInMinutes >= 30 && timeInMinutes < 450) ||
+                (timeInMinutes >= 540 && timeInMinutes < 750) ||
+                (timeInMinutes >= 900 && timeInMinutes < 1050)) {
                 return true;
             }
             
             return false;
         }
 
-        // Fetch news events from backend
-        async function fetchNewsEvents() {
-            try {
-                console.log('📰 Fetching news events...');
-                
-                // Check local cache first
-                const cached = localStorage.getItem('newsEvents');
-                const cacheTime = localStorage.getItem('newsEventsTime');
-                
-                // Use cache if < 6 hours old
-                if (cached && cacheTime && Date.now() - parseInt(cacheTime) < 6*60*60*1000) {
-                    console.log('✅ Using cached news events');
-                    newsEvents = JSON.parse(cached);
-                    newsEventsLoaded = true;
-                    return newsEvents;
-                }
-                
-                // Fetch with timeout
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-                
-                const response = await fetch('https://oanda-proxy.onrender.com/api/news-events', {
-                    signal: controller.signal
-                });
-                clearTimeout(timeout);
-                
-                const data = await response.json();
-                
-                if (data.success && data.data && Array.isArray(data.data)) {
-                    console.log(`✅ Loaded ${data.data.length} news events`);
-                    newsEvents = data.data;
-                    localStorage.setItem('newsEvents', JSON.stringify(newsEvents));
-                    localStorage.setItem('newsEventsTime', Date.now().toString());
-                    newsEventsLoaded = true;
-                    return newsEvents;
-                }
-                
-                throw new Error('Invalid news data format');
-                
-            } catch (error) {
-                console.error('❌ News fetch error:', error.message);
-                
-                // Try to use old cache
-                const cached = localStorage.getItem('newsEvents');
-                if (cached) {
-                    console.log('⚠️ Using stale cached news events');
-                    newsEvents = JSON.parse(cached);
-                    newsEventsLoaded = true;
-                } else {
-                    console.log('⚠️ No news events available - continuing without news filter');
-                    newsEvents = [];
-                    newsEventsLoaded = false;
-                }
-                
-                return newsEvents;
-            }
-        }
-
-        // Check if current time is in news lockout period
+        // News lockout check - only uses manual CSV data
         function checkNewsLockout() {
             if (!newsEventsLoaded || newsEvents.length === 0) {
-                newsLockoutActive = false;
                 return { locked: false };
             }
             
@@ -705,21 +595,16 @@
             
             for (const event of newsEvents) {
                 try {
-                    // Parse event datetime (format: "2025-12-29" and "13:30:00" or "13:30")
                     const eventDateStr = event.date;
                     const eventTimeStr = event.time.includes(':00') ? event.time : event.time + ':00';
                     const eventDateTime = new Date(eventDateStr + 'T' + eventTimeStr);
                     
-                    // Calculate lockout window (2 hours before and after)
                     const lockoutStart = new Date(eventDateTime.getTime() - 2*60*60*1000);
                     const lockoutEnd = new Date(eventDateTime.getTime() + 2*60*60*1000);
                     
-                    // Check if current time is in lockout window
                     if (londonTime >= lockoutStart && londonTime <= lockoutEnd) {
                         const minutesToEvent = Math.round((eventDateTime - londonTime) / 60000);
                         const minutesToUnlock = Math.round((lockoutEnd - londonTime) / 60000);
-                        
-                        newsLockoutActive = true;
                         
                         return {
                             locked: true,
@@ -736,11 +621,10 @@
                 }
             }
             
-            newsLockoutActive = false;
             return { locked: false };
         }
 
-        // Find next upcoming news event
+        // Find next news event
         function findNextNewsEvent() {
             if (!newsEventsLoaded || newsEvents.length === 0) {
                 return null;
@@ -755,7 +639,6 @@
                     const eventTimeStr = event.time.includes(':00') ? event.time : event.time + ':00';
                     const eventDateTime = new Date(eventDateStr + 'T' + eventTimeStr);
                     
-                    // Find events that are in the future
                     if (eventDateTime > londonTime) {
                         const hoursToEvent = Math.round((eventDateTime - londonTime) / 3600000);
                         
@@ -774,7 +657,7 @@
             return null;
         }
 
-        // Update news status display
+        // Update news status
         function updateNewsStatus() {
             const newsLockout = checkNewsLockout();
             const statusDiv = document.getElementById('newsStatus');
@@ -792,7 +675,6 @@
                     
                 nextDiv.textContent = `${newsLockout.currency} ${newsLockout.event} ${timeDesc}`;
             } else {
-                // Find next event
                 const upcoming = findNextNewsEvent();
                 if (upcoming && upcoming.hoursToEvent < 48) {
                     statusDiv.innerHTML = '✅ CLEAR';
@@ -808,15 +690,14 @@
                     statusDiv.className = 'text-2xl font-bold text-green-600';
                     nextDiv.textContent = 'No high-impact events upcoming';
                 } else {
-                    statusDiv.innerHTML = '⚠️ UNKNOWN';
-                    statusDiv.className = 'text-2xl font-bold text-yellow-600';
-                    nextDiv.textContent = 'News data not loaded';
+                    statusDiv.innerHTML = '⚪ MANUAL';
+                    statusDiv.className = 'text-2xl font-bold text-slate-600';
+                    nextDiv.textContent = 'Manual CSV only - Upload in Settings';
                 }
             }
         }
 
-        // Fetch candles
-        // Calculate EMA(50)
+        // Calculate EMA
         function calculateEMA(prices, period = 50) {
             if (prices.length < period) return null;
             
@@ -831,7 +712,7 @@
             return ema;
         }
 
-        // Calculate ATR(20) with Wilder smoothing
+        // Calculate ATR
         function calculateATR(candles, period = 20) {
             if (candles.length < period + 1) return null;
             
@@ -849,10 +730,8 @@
                 trueRanges.push(tr);
             }
             
-            // Initial ATR (SMA of first 20 TRs)
             let atr = trueRanges.slice(0, period).reduce((a, b) => a + b, 0) / period;
             
-            // Wilder smoothing for remaining TRs
             for (let i = period; i < trueRanges.length; i++) {
                 atr = (atr * (period - 1) + trueRanges[i]) / period;
             }
@@ -860,7 +739,7 @@
             return atr;
         }
 
-        // Get ATR values for slope calculation
+        // Get ATR values for slope
         function getATRValues(candles, period = 20, count = 6) {
             if (candles.length < period + count) return null;
             
@@ -880,11 +759,9 @@
                 trueRanges.push(tr);
             }
             
-            // Initial ATR
             let atr = trueRanges.slice(0, period).reduce((a, b) => a + b, 0) / period;
             atrValues.push(atr);
             
-            // Calculate subsequent ATRs
             for (let i = period; i < trueRanges.length; i++) {
                 atr = (atr * (period - 1) + trueRanges[i]) / period;
                 if (i >= trueRanges.length - count + 1) {
@@ -897,49 +774,39 @@
 
         // Calculate confidence score
         function calculateConfidence(deviation, atrSlope) {
-            // Distance component
             const distanceScore = Math.min(100, ((deviation - 1.5) / 3.0) * 100);
-            
-            // Slope component
             const slopeScore = Math.min(100, (-atrSlope / 0.0002) * 100);
-            
-            // Overall confidence
             return Math.round((distanceScore + slopeScore) / 2);
         }
 
-        // Calculate RSI (Relative Strength Index)
+        // Calculate RSI
         function calculateRSI(prices, period = 14) {
             if (prices.length < period + 1) return null;
             
-            // Calculate price changes
             const changes = [];
             for (let i = 1; i < prices.length; i++) {
                 changes.push(prices[i] - prices[i - 1]);
             }
             
-            // Separate gains and losses
             const gains = changes.map(change => change > 0 ? change : 0);
             const losses = changes.map(change => change < 0 ? -change : 0);
             
-            // Calculate initial average gain and loss (SMA for first period)
             let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period;
             let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period;
             
-            // Apply Wilder's smoothing for subsequent periods
             for (let i = period; i < changes.length; i++) {
                 avgGain = (avgGain * (period - 1) + gains[i]) / period;
                 avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
             }
             
-            // Calculate RS and RSI
-            if (avgLoss === 0) return 100; // If no losses, RSI = 100
+            if (avgLoss === 0) return 100;
             const rs = avgGain / avgLoss;
             const rsi = 100 - (100 / (1 + rs));
             
             return rsi;
         }
 
-        // Analyze single timeframe
+        // Analyze single timeframe - VERIFIED MATHEMATICS
         function analyzeTimeframe(pair, candles, timeframe) {
             if (!candles || candles.length < 50) {
                 return {
@@ -953,7 +820,6 @@
             const prices = candles.map(c => c.close);
             const latestPrice = prices[prices.length - 1];
             
-            // Calculate EMA(50)
             const ema50 = calculateEMA(prices, 50);
             if (!ema50) {
                 return {
@@ -964,7 +830,6 @@
                 };
             }
             
-            // Calculate ATR(20)
             const atr20 = calculateATR(candles, 20);
             if (!atr20) {
                 return {
@@ -975,7 +840,6 @@
                 };
             }
             
-            // Calculate ATR slope
             const atrValues = getATRValues(candles, 20, 6);
             if (!atrValues || atrValues.length < 6) {
                 return {
@@ -990,10 +854,8 @@
             const previousATR = atrValues[atrValues.length - 6];
             const atrSlope = currentATR - previousATR;
             
-            // Calculate deviation
             const deviation = Math.abs(latestPrice - ema50) / atr20;
             
-            // Calculate RSI
             const rsi = calculateRSI(prices, SETTINGS.rsiPeriod);
             if (!rsi) {
                 return {
@@ -1004,12 +866,10 @@
                 };
             }
             
-            // Get appropriate thresholds
             const devThreshold = pair === 'XAU_USD' ? SETTINGS.deviationThresholdGold : SETTINGS.deviationThreshold;
             const rsiOversold = pair === 'XAU_USD' ? SETTINGS.rsiOversoldGold : SETTINGS.rsiOversold;
             const rsiOverbought = pair === 'XAU_USD' ? SETTINGS.rsiOverboughtGold : SETTINGS.rsiOverbought;
             
-            // Check filters
             const blockingReasons = [];
             
             if (deviation < devThreshold) {
@@ -1024,7 +884,6 @@
                 blockingReasons.push('Outside trading window');
             }
             
-            // News lockout check
             const newsLockout = checkNewsLockout();
             if (newsLockout.locked) {
                 const timeDesc = newsLockout.minutesToEvent > 0 
@@ -1036,7 +895,6 @@
                 );
             }
             
-            // Determine signal direction
             let signal = 'NO SIGNAL';
             let direction = null;
             let entry = latestPrice;
@@ -1046,11 +904,9 @@
             
             if (blockingReasons.length === 0) {
                 if (latestPrice < ema50) {
-                    // Potential BUY signal
                     direction = 'BUY';
                     sl = entry - 2.5 * atr20;
                     
-                    // Check RSI confirmation
                     if (SETTINGS.rsiFilter) {
                         if (rsi < rsiOversold) {
                             rsiConfirms = true;
@@ -1060,16 +916,13 @@
                             direction = null;
                         }
                     } else {
-                        // RSI not required, but note if it confirms
                         rsiConfirms = rsi < rsiOversold;
                         signal = 'BUY';
                     }
                 } else if (latestPrice > ema50) {
-                    // Potential SELL signal
                     direction = 'SELL';
                     sl = entry + 2.5 * atr20;
                     
-                    // Check RSI confirmation
                     if (SETTINGS.rsiFilter) {
                         if (rsi > rsiOverbought) {
                             rsiConfirms = true;
@@ -1079,7 +932,6 @@
                             direction = null;
                         }
                     } else {
-                        // RSI not required, but note if it confirms
                         rsiConfirms = rsi > rsiOverbought;
                         signal = 'SELL';
                     }
@@ -1088,7 +940,6 @@
                 }
             }
             
-            // Calculate risk/reward
             let riskPips = null;
             let rewardPips = null;
             let rr = null;
@@ -1102,7 +953,6 @@
                 rewardPips = Math.abs(tp - entry) / pipSize;
                 rr = rewardPips / riskPips;
                 
-                // R:R filter
                 if (SETTINGS.rrFilter && rr < 1.0) {
                     blockingReasons.push(`R:R below minimum (${rr.toFixed(2)} < 1.0)`);
                     signal = 'NO SIGNAL';
@@ -1110,7 +960,6 @@
                 }
             }
             
-            // Calculate confidence
             const confidence = direction ? calculateConfidence(deviation, atrSlope) : 0;
             
             return {
@@ -1135,11 +984,10 @@
             };
         }
 
-        // Analyze all timeframes for a pair
+        // Analyze all timeframes for a pair - PARALLEL LOADING
         async function analyzePair(pair) {
             const results = {};
             
-            // Fetch all timeframes in parallel for maximum speed
             const timeframePromises = TIMEFRAMES.map(async (timeframe) => {
                 const candles = await fetchCandles(pair, timeframe, 500);
                 return { timeframe, result: analyzeTimeframe(pair, candles, timeframe) };
@@ -1147,12 +995,10 @@
             
             const timeframeResults = await Promise.all(timeframePromises);
             
-            // Build results object
             timeframeResults.forEach(({ timeframe, result }) => {
                 results[timeframe] = result;
             });
             
-            // Calculate confluence
             const signals = Object.values(results).filter(r => r.direction);
             const buySignals = signals.filter(r => r.direction === 'BUY').length;
             const sellSignals = signals.filter(r => r.direction === 'SELL').length;
@@ -1185,7 +1031,6 @@
                 return;
             }
             
-            // Count signals
             let activeSignals = 0;
             let confluenceSignals = 0;
             
@@ -1203,7 +1048,6 @@
                 const isHighConfluence = data.confluenceCount >= SETTINGS.minConfluence;
                 const displayPair = pair.replace('_', '/');
                 
-                // Confluence stars
                 let stars = '';
                 for (let i = 0; i < data.confluenceCount; i++) {
                     stars += '⭐';
@@ -1211,7 +1055,6 @@
                 
                 return `
                     <div class="signal-card bg-white rounded-lg shadow-lg overflow-hidden ${isHighConfluence ? 'ring-2 ring-purple-500' : ''}">
-                        <!-- Header -->
                         <div class="p-6 ${isHighConfluence ? 'bg-purple-50' : 'bg-slate-50'}">
                             <div class="flex justify-between items-start">
                                 <div>
@@ -1229,7 +1072,6 @@
                                 </button>
                             </div>
                             
-                            <!-- Timeframe badges -->
                             <div class="flex gap-2 mt-4">
                                 ${TIMEFRAMES.map(tf => {
                                     const result = data.timeframes[tf];
@@ -1245,7 +1087,6 @@
                             </div>
                         </div>
                         
-                        <!-- Expanded details -->
                         <div id="details-${pair}" style="display:none;" class="p-6 border-t">
                             ${TIMEFRAMES.map(tf => {
                                 const result = data.timeframes[tf];
@@ -1366,7 +1207,6 @@
             }).join('');
         }
 
-        // Toggle expand
         function toggleExpand(pair) {
             const details = document.getElementById(`details-${pair}`);
             const icon = document.getElementById(`expand-icon-${pair}`);
@@ -1380,7 +1220,7 @@
             }
         }
 
-        // Refresh data with parallel loading
+        // Refresh data - PARALLEL LOADING, NO NEWS API BLOCKING
         async function refreshData() {
             const btn = document.getElementById('refreshBtn');
             const status = document.getElementById('status');
@@ -1393,23 +1233,16 @@
             progressContainer.style.display = 'block';
             progressBar.style.width = '0%';
             
-            // Fetch news events in background (non-blocking)
-            fetchNewsEvents().then(() => {
-                updateNewsStatus();
-            }).catch(err => {
-                console.log('News fetch failed, continuing without:', err);
-            });
-            
+            // NO NEWS API FETCHING - Pure OANDA data loading
             pairSignals = {};
             let processed = 0;
             const total = PAIRS.length;
             
-            // Process pairs in parallel batches of 4 for faster loading
+            // Process pairs in parallel batches of 4
             const BATCH_SIZE = 4;
             for (let i = 0; i < PAIRS.length; i += BATCH_SIZE) {
                 const batch = PAIRS.slice(i, i + BATCH_SIZE);
                 
-                // Process batch in parallel
                 await Promise.all(batch.map(async (pair) => {
                     pairSignals[pair] = await analyzePair(pair);
                     processed++;
@@ -1430,13 +1263,7 @@
             btn.textContent = 'Refresh';
         }
 
-        // Update session info and news status every second
-        setInterval(() => {
-            updateSessionInfo();
-            updateNewsStatus();
-        }, 1000);
-        
-        // Manual CSV functions
+        // CSV functions
         function downloadSampleCSV() {
             const sample = `Date,Time,Currency,Event,Impact
 2025-12-29,13:30:00,USD,Non-Farm Payrolls,High
@@ -1468,7 +1295,7 @@
                     const lines = csv.split('\n').filter(l => l.trim());
                     const events = [];
                     
-                    for (let i = 1; i < lines.length; i++) { // Skip header
+                    for (let i = 1; i < lines.length; i++) {
                         const parts = lines[i].split(',');
                         if (parts.length >= 4) {
                             events.push({
@@ -1484,13 +1311,11 @@
                     if (events.length > 0) {
                         newsEvents = events;
                         localStorage.setItem('newsEvents', JSON.stringify(events));
-                        localStorage.setItem('newsEventsTime', Date.now().toString());
                         newsEventsLoaded = true;
                         
                         alert(`✅ Successfully loaded ${events.length} news events`);
                         updateNewsStatus();
                         closeSettings();
-                        refreshData();
                     } else {
                         alert('❌ No valid events found in CSV');
                     }
@@ -1501,57 +1326,34 @@
             reader.readAsText(file);
         }
 
-        async function forceNewsRefresh() {
-            try {
-                // Clear cache
-                localStorage.removeItem('newsEvents');
-                localStorage.removeItem('newsEventsTime');
-                
-                // Fetch fresh
-                await fetchNewsEvents();
-                updateNewsStatus();
-                
-                // Update status in settings
-                const statusDiv = document.getElementById('newsFilterStatus');
-                if (statusDiv) {
-                    statusDiv.textContent = newsEventsLoaded 
-                        ? `✅ ${newsEvents.length} events loaded (${new Date().toLocaleTimeString()})` 
-                        : '❌ Failed to load events';
-                }
-                
-                alert('✅ News events refreshed!');
-            } catch (error) {
-                alert('❌ Error refreshing news: ' + error.message);
-            }
-        }
-
-        // Update news filter status when settings opened
         function updateNewsFilterStatus() {
             const statusDiv = document.getElementById('newsFilterStatus');
             if (statusDiv) {
                 if (newsEventsLoaded && newsEvents.length > 0) {
-                    const cacheTime = localStorage.getItem('newsEventsTime');
-                    const age = cacheTime ? Math.round((Date.now() - parseInt(cacheTime)) / 60000) : 0;
-                    statusDiv.textContent = `✅ ${newsEvents.length} events loaded (${age}m old)`;
+                    statusDiv.textContent = `✅ ${newsEvents.length} events loaded from CSV`;
                 } else {
-                    statusDiv.textContent = '❌ No news events loaded';
+                    statusDiv.textContent = '❌ No news events - Upload CSV to enable';
                 }
             }
         }
 
-        // Update openSettings to include news status
-        const originalOpenSettings = openSettings;
-        openSettings = function() {
-            originalOpenSettings();
-            updateNewsFilterStatus();
-        };
+        // Update session and news status every second
+        setInterval(() => {
+            updateSessionInfo();
+            updateNewsStatus();
+        }, 1000);
         
         // Initial load
         updateSessionInfo();
-        fetchNewsEvents().then(() => {
-            updateNewsStatus();
-            refreshData();
-        });
+        updateNewsStatus();
+        
+        // Load any existing manual CSV events
+        const savedEvents = localStorage.getItem('newsEvents');
+        if (savedEvents) {
+            newsEvents = JSON.parse(savedEvents);
+            newsEventsLoaded = true;
+            console.log('Loaded manual news events from localStorage');
+        }
     </script>
 </body>
 </html>
