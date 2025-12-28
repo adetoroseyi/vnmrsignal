@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNMR Classic - Mean Reversion Trading Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+        .signal-card {
+            transition: all 0.3s ease;
+        }
+        .signal-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+        }
+        .timeframe-badge {
+            transition: all 0.2s ease;
+        }
+        .timeframe-badge:hover {
+            transform: scale(1.05);
+        }
+        .session-progress {
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100">
+    <div class="min-h-screen p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h1 class="text-4xl font-bold text-slate-900 mb-2">
+                            🎯 VNMR Classic
+                        </h1>
+                        <p class="text-slate-600">
+                            Mean Reversion Trading • EMA(50) + ATR(20) • Multi-Timeframe Analysis
+                        </p>
+                        <p id="lastUpdate" class="text-sm text-slate-500 mt-1"></p>
+                    </div>
+                    <button onclick="openSettings()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
+                        ⚙️ Settings
+                    </button>
+                </div>
+            </div>
+
+            <!-- Session Status Bar -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <div class="text-sm text-slate-500 mb-1">🕐 Current Time</div>
+                        <div id="currentTime" class="text-2xl font-bold text-slate-900">--:--</div>
+                        <div class="text-xs text-slate-500">London (GMT)</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-slate-500 mb-1">📊 Current Session</div>
+                        <div id="currentSession" class="text-2xl font-bold text-blue-600">---</div>
+                        <div id="sessionStatus" class="text-xs text-slate-500">---</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-slate-500 mb-1">⏱️ Next Trading Window</div>
+                        <div id="nextWindow" class="text-2xl font-bold text-slate-900">--:--</div>
+                        <div id="timeToNext" class="text-xs text-slate-500">---</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-slate-500 mb-1">Trading Status</div>
+                        <div id="tradingStatus" class="text-2xl font-bold text-green-600">✅ OPEN</div>
+                        <div class="h-2 bg-slate-200 rounded-full mt-2 overflow-hidden">
+                            <div id="sessionProgress" class="session-progress h-full bg-blue-600"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-slate-500 mb-1">Total Pairs</div>
+                    <div id="totalPairs" class="text-3xl font-bold text-slate-900">-</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-slate-500 mb-1">Active Signals</div>
+                    <div id="activeSignals" class="text-3xl font-bold text-green-600">-</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-slate-500 mb-1">High Confluence</div>
+                    <div id="confluenceSignals" class="text-3xl font-bold text-purple-600">-</div>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm text-slate-500 mb-1">Status</div>
+                            <div id="status" class="text-sm font-semibold text-slate-900">Loading...</div>
+                        </div>
+                        <button onclick="refreshData()" id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signals Container -->
+            <div id="signalsContainer" class="space-y-4">
+                <div class="bg-white rounded-lg shadow p-12 text-center">
+                    <div class="spinner mx-auto mb-4"></div>
+                    <p class="text-slate-600">Loading market data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" style="display:none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">VNMR Classic Settings</h2>
+                    <button onclick="closeSettings()" class="text-slate-500 hover:text-slate-700 text-2xl">&times;</button>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Deviation Threshold (Standard) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            Deviation Threshold (Standard Pairs)
+                            <span class="text-xs text-slate-500 font-normal">(Distance from EMA in ATRs)</span>
+                        </label>
+                        <input type="number" id="settingsDeviation" step="0.1" min="0.5" max="5.0" 
+                            class="w-full p-3 border-2 border-blue-500 rounded-lg text-lg font-semibold">
+                        <p class="text-xs text-slate-500 mt-1">
+                            Default: 1.5 | Lower = more signals, Higher = fewer signals
+                        </p>
+                    </div>
+
+                    <!-- Deviation Threshold (Gold) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            Deviation Threshold (Gold XAU/USD)
+                            <span class="text-xs text-slate-500 font-normal">(Gold has wider swings)</span>
+                        </label>
+                        <input type="number" id="settingsDeviationGold" step="0.1" min="0.5" max="5.0" 
+                            class="w-full p-3 border-2 border-yellow-500 rounded-lg text-lg font-semibold">
+                        <p class="text-xs text-slate-500 mt-1">
+                            Default: 2.0 | Gold typically needs higher threshold due to volatility
+                        </p>
+                    </div>
+
+                    <!-- ATR Slope Max -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            ATR Slope Maximum
+                            <span class="text-xs text-slate-500 font-normal">(Volatility filter)</span>
+                        </label>
+                        <input type="number" id="settingsATRSlope" step="0.00001" min="-0.001" max="0.001" 
+                            class="w-full p-3 border-2 border-blue-500 rounded-lg text-lg font-semibold">
+                        <p class="text-xs text-slate-500 mt-1">
+                            Default: 0 | Must be ≤ this value (0 = no expanding volatility allowed)
+                        </p>
+                    </div>
+
+                    <!-- R:R Filter -->
+                    <div>
+                        <label class="flex items-center gap-3">
+                            <input type="checkbox" id="settingsRRFilter" class="w-5 h-5">
+                            <div>
+                                <div class="text-sm font-semibold text-slate-700">Enable R:R Filter (Min 1.0)</div>
+                                <div class="text-xs text-slate-500">Block signals where Risk:Reward ratio < 1.0</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Session Filter -->
+                    <div>
+                        <label class="flex items-center gap-3">
+                            <input type="checkbox" id="settingsSessionFilter" class="w-5 h-5">
+                            <div>
+                                <div class="text-sm font-semibold text-slate-700">Enable Session Filter</div>
+                                <div class="text-xs text-slate-500">Block trades outside allowed windows and during open lockouts</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Minimum Confluence -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            Highlight High Confluence (Min Timeframes)
+                            <span class="text-xs text-slate-500 font-normal">(Visual highlighting only)</span>
+                        </label>
+                        <select id="settingsMinConfluence" class="w-full p-3 border-2 border-blue-500 rounded-lg text-lg font-semibold">
+                            <option value="1">1 Timeframe (Show all signals)</option>
+                            <option value="2" selected>2 Timeframes (Moderate confluence)</option>
+                            <option value="3">3 Timeframes (All agree)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-3">
+                    <button onclick="resetSettings()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-6 rounded-lg">
+                        Reset to Defaults
+                    </button>
+                    <button onclick="saveSettings()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg">
+                        Save & Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const PROXY_URL = 'https://oanda-proxy.onrender.com/api';
+        const PAIRS = [
+            'EUR_USD', 'GBP_USD', 'EUR_GBP', 'AUD_NZD', 'EUR_CHF', 'USD_JPY',  // Document pairs
+            'USD_CAD', 'AUD_USD', 'XAU_USD', 'NZD_USD', 'USD_CHF', 'EUR_AUD', 'GBP_AUD', 'AUD_CAD'  // Additional pairs
+        ];
+        const TIMEFRAMES = ['M30', 'H1', 'H4'];  // Three timeframes
+        
+        // Default settings
+        const DEFAULT_SETTINGS = {
+            deviationThreshold: 1.5,
+            deviationThresholdGold: 2.0,
+            atrSlopeMax: 0,
+            rrFilter: true,
+            sessionFilter: true,
+            minConfluence: 2
+        };
+
+        // Load settings
+        function loadSettings() {
+            const saved = localStorage.getItem('vnmrClassicSettings');
+            return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+        }
+
+        let SETTINGS = loadSettings();
+        let marketData = {};
+        let pairSignals = {};
+
+        // Settings functions
+        function openSettings() {
+            document.getElementById('settingsDeviation').value = SETTINGS.deviationThreshold;
+            document.getElementById('settingsDeviationGold').value = SETTINGS.deviationThresholdGold;
+            document.getElementById('settingsATRSlope').value = SETTINGS.atrSlopeMax;
+            document.getElementById('settingsRRFilter').checked = SETTINGS.rrFilter;
+            document.getElementById('settingsSessionFilter').checked = SETTINGS.sessionFilter;
+            document.getElementById('settingsMinConfluence').value = SETTINGS.minConfluence;
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function saveSettings() {
+            SETTINGS.deviationThreshold = parseFloat(document.getElementById('settingsDeviation').value);
+            SETTINGS.deviationThresholdGold = parseFloat(document.getElementById('settingsDeviationGold').value);
+            SETTINGS.atrSlopeMax = parseFloat(document.getElementById('settingsATRSlope').value);
+            SETTINGS.rrFilter = document.getElementById('settingsRRFilter').checked;
+            SETTINGS.sessionFilter = document.getElementById('settingsSessionFilter').checked;
+            SETTINGS.minConfluence = parseInt(document.getElementById('settingsMinConfluence').value);
+            
+            localStorage.setItem('vnmrClassicSettings', JSON.stringify(SETTINGS));
+            closeSettings();
+            alert('✅ Settings saved! Refreshing signals...');
+            refreshData();
+        }
+
+        function resetSettings() {
+            SETTINGS = {...DEFAULT_SETTINGS};
+            document.getElementById('settingsDeviation').value = DEFAULT_SETTINGS.deviationThreshold;
+            document.getElementById('settingsDeviationGold').value = DEFAULT_SETTINGS.deviationThresholdGold;
+            document.getElementById('settingsATRSlope').value = DEFAULT_SETTINGS.atrSlopeMax;
+            document.getElementById('settingsRRFilter').checked = DEFAULT_SETTINGS.rrFilter;
+            document.getElementById('settingsSessionFilter').checked = DEFAULT_SETTINGS.sessionFilter;
+            document.getElementById('settingsMinConfluence').value = DEFAULT_SETTINGS.minConfluence;
+        }
+
+        // Session management
+        function updateSessionInfo() {
+            const now = new Date();
+            const londonTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+            const hours = londonTime.getHours();
+            const minutes = londonTime.getMinutes();
+            const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            
+            document.getElementById('currentTime').textContent = timeString;
+            
+            // Determine current session
+            let session = '';
+            let sessionStatus = '';
+            let tradingAllowed = false;
+            let nextWindow = '';
+            let timeToNext = '';
+            let progress = 0;
+            
+            const day = londonTime.getDay();
+            if (day === 0 || day === 6) {
+                session = 'WEEKEND';
+                sessionStatus = 'Markets Closed';
+                tradingAllowed = false;
+                nextWindow = 'Monday 00:30';
+                document.getElementById('tradingStatus').innerHTML = '🔴 CLOSED';
+                document.getElementById('tradingStatus').className = 'text-2xl font-bold text-red-600';
+            } else {
+                const timeInMinutes = hours * 60 + minutes;
+                
+                // Determine session
+                if (timeInMinutes >= 0 && timeInMinutes < 480) {
+                    session = 'ASIA';
+                    sessionStatus = 'Low liquidity';
+                } else if (timeInMinutes >= 480 && timeInMinutes < 960) {
+                    session = 'LONDON';
+                    sessionStatus = 'High liquidity';
+                } else if (timeInMinutes >= 780 && timeInMinutes < 1260) {
+                    session = 'NEW YORK';
+                    sessionStatus = 'High liquidity';
+                } else {
+                    session = 'ASIA';
+                    sessionStatus = 'Low liquidity';
+                }
+                
+                // Determine if trading is allowed
+                if ((timeInMinutes >= 30 && timeInMinutes < 450) ||  // 00:30-07:30
+                    (timeInMinutes >= 540 && timeInMinutes < 750) ||  // 09:00-12:30
+                    (timeInMinutes >= 900 && timeInMinutes < 1050)) {  // 15:00-17:30
+                    tradingAllowed = true;
+                    document.getElementById('tradingStatus').innerHTML = '✅ OPEN';
+                    document.getElementById('tradingStatus').className = 'text-2xl font-bold text-green-600';
+                    
+                    // Calculate next window end
+                    if (timeInMinutes >= 30 && timeInMinutes < 450) {
+                        nextWindow = '07:30';
+                        progress = ((timeInMinutes - 30) / 420) * 100;
+                    } else if (timeInMinutes >= 540 && timeInMinutes < 750) {
+                        nextWindow = '12:30';
+                        progress = ((timeInMinutes - 540) / 210) * 100;
+                    } else {
+                        nextWindow = '17:30';
+                        progress = ((timeInMinutes - 900) / 150) * 100;
+                    }
+                    
+                    const [nextHour, nextMin] = nextWindow.split(':').map(Number);
+                    const minutesToNext = (nextHour * 60 + nextMin) - timeInMinutes;
+                    const hoursToNext = Math.floor(minutesToNext / 60);
+                    const minsToNext = minutesToNext % 60;
+                    timeToNext = hoursToNext > 0 ? `${hoursToNext}h ${minsToNext}m` : `${minsToNext}m`;
+                } else {
+                    tradingAllowed = false;
+                    document.getElementById('tradingStatus').innerHTML = '⏸️ PAUSED';
+                    document.getElementById('tradingStatus').className = 'text-2xl font-bold text-yellow-600';
+                    
+                    // Find next window
+                    if (timeInMinutes < 30) {
+                        nextWindow = '00:30';
+                    } else if (timeInMinutes >= 450 && timeInMinutes < 540) {
+                        nextWindow = '09:00';
+                    } else if (timeInMinutes >= 750 && timeInMinutes < 900) {
+                        nextWindow = '15:00';
+                    } else {
+                        nextWindow = 'Tomorrow 00:30';
+                    }
+                    
+                    if (nextWindow !== 'Tomorrow 00:30') {
+                        const [nextHour, nextMin] = nextWindow.split(':').map(Number);
+                        const minutesToNext = (nextHour * 60 + nextMin) - timeInMinutes;
+                        const hoursToNext = Math.floor(minutesToNext / 60);
+                        const minsToNext = minutesToNext % 60;
+                        timeToNext = hoursToNext > 0 ? `${hoursToNext}h ${minsToNext}m` : `${minsToNext}m`;
+                    } else {
+                        timeToNext = '---';
+                    }
+                    progress = 0;
+                }
+            }
+            
+            document.getElementById('currentSession').textContent = session;
+            document.getElementById('sessionStatus').textContent = sessionStatus;
+            document.getElementById('nextWindow').textContent = nextWindow;
+            document.getElementById('timeToNext').textContent = timeToNext;
+            document.getElementById('sessionProgress').style.width = `${progress}%`;
+            
+            return tradingAllowed;
+        }
+
+        // Check if current time is in trading window
+        function isInTradingWindow() {
+            if (!SETTINGS.sessionFilter) return true;
+            
+            const now = new Date();
+            const londonTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+            const day = londonTime.getDay();
+            
+            // Weekend check
+            if (day === 0 || day === 6) return false;
+            
+            const hours = londonTime.getHours();
+            const minutes = londonTime.getMinutes();
+            const timeInMinutes = hours * 60 + minutes;
+            
+            // Open lockouts
+            if ((timeInMinutes >= 480 && timeInMinutes < 510) ||  // 08:00-08:30 London open
+                (timeInMinutes >= 780 && timeInMinutes < 810)) {  // 13:00-13:30 NY open
+                return false;
+            }
+            
+            // Trading windows
+            if ((timeInMinutes >= 30 && timeInMinutes < 450) ||  // 00:30-07:30
+                (timeInMinutes >= 540 && timeInMinutes < 750) ||  // 09:00-12:30
+                (timeInMinutes >= 900 && timeInMinutes < 1050)) {  // 15:00-17:30
+                return true;
+            }
+            
+            return false;
+        }
+
+        // Fetch candles
+        async function fetchCandles(pair, granularity, count = 500) {
+            try {
+                const response = await fetch(
+                    `${PROXY_URL}/v3/instruments/${pair}/candles?count=${count}&granularity=${granularity}&price=M`
+                );
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                return data.candles.map(c => ({
+                    time: c.time,
+                    close: parseFloat(c.mid.c),
+                    open: parseFloat(c.mid.o),
+                    high: parseFloat(c.mid.h),
+                    low: parseFloat(c.mid.l)
+                }));
+            } catch (error) {
+                console.error(`Error fetching ${pair} ${granularity}:`, error);
+                return null;
+            }
+        }
+
+        // Calculate EMA(50)
+        function calculateEMA(prices, period = 50) {
+            if (prices.length < period) return null;
+            
+            const alpha = 2 / (period + 1);
+            const sma = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            
+            let ema = sma;
+            for (let i = period; i < prices.length; i++) {
+                ema = alpha * prices[i] + (1 - alpha) * ema;
+            }
+            
+            return ema;
+        }
+
+        // Calculate ATR(20) with Wilder smoothing
+        function calculateATR(candles, period = 20) {
+            if (candles.length < period + 1) return null;
+            
+            const trueRanges = [];
+            for (let i = 1; i < candles.length; i++) {
+                const high = candles[i].high;
+                const low = candles[i].low;
+                const prevClose = candles[i - 1].close;
+                
+                const tr = Math.max(
+                    high - low,
+                    Math.abs(high - prevClose),
+                    Math.abs(low - prevClose)
+                );
+                trueRanges.push(tr);
+            }
+            
+            // Initial ATR (SMA of first 20 TRs)
+            let atr = trueRanges.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            
+            // Wilder smoothing for remaining TRs
+            for (let i = period; i < trueRanges.length; i++) {
+                atr = (atr * (period - 1) + trueRanges[i]) / period;
+            }
+            
+            return atr;
+        }
+
+        // Get ATR values for slope calculation
+        function getATRValues(candles, period = 20, count = 6) {
+            if (candles.length < period + count) return null;
+            
+            const atrValues = [];
+            const trueRanges = [];
+            
+            for (let i = 1; i < candles.length; i++) {
+                const high = candles[i].high;
+                const low = candles[i].low;
+                const prevClose = candles[i - 1].close;
+                
+                const tr = Math.max(
+                    high - low,
+                    Math.abs(high - prevClose),
+                    Math.abs(low - prevClose)
+                );
+                trueRanges.push(tr);
+            }
+            
+            // Initial ATR
+            let atr = trueRanges.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            atrValues.push(atr);
+            
+            // Calculate subsequent ATRs
+            for (let i = period; i < trueRanges.length; i++) {
+                atr = (atr * (period - 1) + trueRanges[i]) / period;
+                if (i >= trueRanges.length - count + 1) {
+                    atrValues.push(atr);
+                }
+            }
+            
+            return atrValues.slice(-count);
+        }
+
+        // Calculate confidence score
+        function calculateConfidence(deviation, atrSlope) {
+            // Distance component
+            const distanceScore = Math.min(100, ((deviation - 1.5) / 3.0) * 100);
+            
+            // Slope component
+            const slopeScore = Math.min(100, (-atrSlope / 0.0002) * 100);
+            
+            // Overall confidence
+            return Math.round((distanceScore + slopeScore) / 2);
+        }
+
+        // Analyze single timeframe
+        function analyzeTimeframe(pair, candles, timeframe) {
+            if (!candles || candles.length < 50) {
+                return {
+                    pair,
+                    timeframe,
+                    signal: 'NO SIGNAL',
+                    reason: 'Insufficient data'
+                };
+            }
+
+            const prices = candles.map(c => c.close);
+            const latestPrice = prices[prices.length - 1];
+            
+            // Calculate EMA(50)
+            const ema50 = calculateEMA(prices, 50);
+            if (!ema50) {
+                return {
+                    pair,
+                    timeframe,
+                    signal: 'NO SIGNAL',
+                    reason: 'EMA calculation failed'
+                };
+            }
+            
+            // Calculate ATR(20)
+            const atr20 = calculateATR(candles, 20);
+            if (!atr20) {
+                return {
+                    pair,
+                    timeframe,
+                    signal: 'NO SIGNAL',
+                    reason: 'ATR calculation failed'
+                };
+            }
+            
+            // Calculate ATR slope
+            const atrValues = getATRValues(candles, 20, 6);
+            if (!atrValues || atrValues.length < 6) {
+                return {
+                    pair,
+                    timeframe,
+                    signal: 'NO SIGNAL',
+                    reason: 'ATR slope calculation failed'
+                };
+            }
+            
+            const currentATR = atrValues[atrValues.length - 1];
+            const previousATR = atrValues[atrValues.length - 6];
+            const atrSlope = currentATR - previousATR;
+            
+            // Calculate deviation
+            const deviation = Math.abs(latestPrice - ema50) / atr20;
+            
+            // Get appropriate threshold
+            const devThreshold = pair === 'XAU_USD' ? SETTINGS.deviationThresholdGold : SETTINGS.deviationThreshold;
+            
+            // Check filters
+            const blockingReasons = [];
+            
+            if (deviation < devThreshold) {
+                blockingReasons.push(`Deviation below threshold (${deviation.toFixed(2)} < ${devThreshold})`);
+            }
+            
+            if (atrSlope > SETTINGS.atrSlopeMax) {
+                blockingReasons.push(`Volatility expanding (ATR slope ${atrSlope.toFixed(6)} > ${SETTINGS.atrSlopeMax})`);
+            }
+            
+            if (!isInTradingWindow()) {
+                blockingReasons.push('Outside trading window');
+            }
+            
+            // Determine signal direction
+            let signal = 'NO SIGNAL';
+            let direction = null;
+            let entry = latestPrice;
+            let tp = ema50;
+            let sl = null;
+            
+            if (blockingReasons.length === 0) {
+                if (latestPrice < ema50) {
+                    signal = 'BUY';
+                    direction = 'BUY';
+                    sl = entry - 2.5 * atr20;
+                } else if (latestPrice > ema50) {
+                    signal = 'SELL';
+                    direction = 'SELL';
+                    sl = entry + 2.5 * atr20;
+                } else {
+                    blockingReasons.push('Price equals EMA (no direction)');
+                }
+            }
+            
+            // Calculate risk/reward
+            let riskPips = null;
+            let rewardPips = null;
+            let rr = null;
+            
+            if (direction) {
+                const isJPY = pair.includes('JPY');
+                const isGold = pair.includes('XAU');
+                const pipSize = isGold ? 1 : (isJPY ? 0.01 : 0.0001);
+                
+                riskPips = Math.abs(entry - sl) / pipSize;
+                rewardPips = Math.abs(tp - entry) / pipSize;
+                rr = rewardPips / riskPips;
+                
+                // R:R filter
+                if (SETTINGS.rrFilter && rr < 1.0) {
+                    blockingReasons.push(`R:R below minimum (${rr.toFixed(2)} < 1.0)`);
+                    signal = 'NO SIGNAL';
+                    direction = null;
+                }
+            }
+            
+            // Calculate confidence
+            const confidence = direction ? calculateConfidence(deviation, atrSlope) : 0;
+            
+            return {
+                pair,
+                timeframe,
+                signal: direction || 'NO SIGNAL',
+                direction,
+                entry: entry.toFixed(5),
+                tp: tp.toFixed(5),
+                sl: sl ? sl.toFixed(5) : null,
+                ema50: ema50.toFixed(5),
+                atr20: atr20.toFixed(5),
+                deviation: deviation.toFixed(2),
+                atrSlope: atrSlope.toFixed(6),
+                riskPips: riskPips ? riskPips.toFixed(1) : null,
+                rewardPips: rewardPips ? rewardPips.toFixed(1) : null,
+                rr: rr ? rr.toFixed(2) : null,
+                confidence,
+                blockingReasons
+            };
+        }
+
+        // Analyze all timeframes for a pair
+        async function analyzePair(pair) {
+            const results = {};
+            
+            for (const timeframe of TIMEFRAMES) {
+                const candles = await fetchCandles(pair, timeframe, 500);
+                results[timeframe] = analyzeTimeframe(pair, candles, timeframe);
+                await new Promise(r => setTimeout(r, 100));
+            }
+            
+            // Calculate confluence
+            const signals = Object.values(results).filter(r => r.direction);
+            const buySignals = signals.filter(r => r.direction === 'BUY').length;
+            const sellSignals = signals.filter(r => r.direction === 'SELL').length;
+            
+            const confluenceCount = Math.max(buySignals, sellSignals);
+            const confluenceDirection = buySignals > sellSignals ? 'BUY' : sellSignals > buySignals ? 'SELL' : null;
+            
+            return {
+                pair,
+                timeframes: results,
+                confluenceCount,
+                confluenceDirection,
+                hasSignal: confluenceCount > 0
+            };
+        }
+
+        // Render signals
+        function renderSignals() {
+            const container = document.getElementById('signalsContainer');
+            const pairs = Object.keys(pairSignals).sort();
+            
+            if (pairs.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-lg shadow p-12 text-center">
+                        <div class="text-6xl mb-4">📊</div>
+                        <p class="text-xl text-slate-600 mb-2">No signals available</p>
+                        <p class="text-sm text-slate-500">Click Refresh to load market data</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Count signals
+            let activeSignals = 0;
+            let confluenceSignals = 0;
+            
+            pairs.forEach(pair => {
+                if (pairSignals[pair].hasSignal) activeSignals++;
+                if (pairSignals[pair].confluenceCount >= SETTINGS.minConfluence) confluenceSignals++;
+            });
+            
+            document.getElementById('totalPairs').textContent = pairs.length;
+            document.getElementById('activeSignals').textContent = activeSignals;
+            document.getElementById('confluenceSignals').textContent = confluenceSignals;
+            
+            container.innerHTML = pairs.map(pair => {
+                const data = pairSignals[pair];
+                const isHighConfluence = data.confluenceCount >= SETTINGS.minConfluence;
+                const displayPair = pair.replace('_', '/');
+                
+                // Confluence stars
+                let stars = '';
+                for (let i = 0; i < data.confluenceCount; i++) {
+                    stars += '⭐';
+                }
+                
+                return `
+                    <div class="signal-card bg-white rounded-lg shadow-lg overflow-hidden ${isHighConfluence ? 'ring-2 ring-purple-500' : ''}">
+                        <!-- Header -->
+                        <div class="p-6 ${isHighConfluence ? 'bg-purple-50' : 'bg-slate-50'}">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-2xl font-bold text-slate-900">${displayPair}</h3>
+                                    ${data.confluenceCount > 0 ? `
+                                        <div class="mt-2">
+                                            <span class="text-sm font-semibold ${data.confluenceDirection === 'BUY' ? 'text-green-600' : 'text-red-600'}">
+                                                Confluence: ${data.confluenceCount}/3 ${data.confluenceDirection} ${stars}
+                                            </span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <button onclick="toggleExpand('${pair}')" class="text-slate-500 hover:text-slate-700">
+                                    <span id="expand-icon-${pair}">▼</span> Details
+                                </button>
+                            </div>
+                            
+                            <!-- Timeframe badges -->
+                            <div class="flex gap-2 mt-4">
+                                ${TIMEFRAMES.map(tf => {
+                                    const result = data.timeframes[tf];
+                                    const badge = result.direction === 'BUY' ? 'bg-green-500 text-white' :
+                                                 result.direction === 'SELL' ? 'bg-red-500 text-white' :
+                                                 'bg-slate-300 text-slate-600';
+                                    return `
+                                        <span class="timeframe-badge px-3 py-1 rounded font-semibold text-sm ${badge}">
+                                            ${tf}: ${result.direction || 'NO SIGNAL'}
+                                        </span>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        
+                        <!-- Expanded details -->
+                        <div id="details-${pair}" style="display:none;" class="p-6 border-t">
+                            ${TIMEFRAMES.map(tf => {
+                                const result = data.timeframes[tf];
+                                return `
+                                    <div class="mb-6 pb-6 border-b last:border-b-0">
+                                        <h4 class="text-lg font-bold mb-3 ${result.direction === 'BUY' ? 'text-green-600' : result.direction === 'SELL' ? 'text-red-600' : 'text-slate-600'}">
+                                            📊 ${tf} ${result.direction === 'BUY' ? '- BUY SIGNAL' : result.direction === 'SELL' ? '- SELL SIGNAL' : '- NO SIGNAL'}
+                                        </h4>
+                                        
+                                        ${result.direction ? `
+                                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                                <div class="bg-blue-50 p-3 rounded">
+                                                    <div class="text-xs text-slate-600 mb-1">Entry</div>
+                                                    <div class="text-lg font-bold">${result.entry}</div>
+                                                </div>
+                                                <div class="bg-green-50 p-3 rounded">
+                                                    <div class="text-xs text-slate-600 mb-1">Take Profit</div>
+                                                    <div class="text-lg font-bold text-green-600">${result.tp}</div>
+                                                </div>
+                                                <div class="bg-red-50 p-3 rounded">
+                                                    <div class="text-xs text-slate-600 mb-1">Stop Loss</div>
+                                                    <div class="text-lg font-bold text-red-600">${result.sl}</div>
+                                                </div>
+                                                <div class="bg-purple-50 p-3 rounded">
+                                                    <div class="text-xs text-slate-600 mb-1">R:R Ratio</div>
+                                                    <div class="text-lg font-bold text-purple-600">${result.rr}</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                                <div>
+                                                    <div class="text-xs text-slate-600">Risk</div>
+                                                    <div class="text-sm font-semibold">${result.riskPips} pips</div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-xs text-slate-600">Reward</div>
+                                                    <div class="text-sm font-semibold">${result.rewardPips} pips</div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-xs text-slate-600">Deviation</div>
+                                                    <div class="text-sm font-semibold">${result.deviation} ATR</div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-xs text-slate-600">ATR Slope</div>
+                                                    <div class="text-sm font-semibold ${parseFloat(result.atrSlope) <= 0 ? 'text-green-600' : 'text-red-600'}">
+                                                        ${result.atrSlope} ${parseFloat(result.atrSlope) <= 0 ? '✅' : '❌'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="bg-slate-50 p-4 rounded">
+                                                <div class="flex justify-between items-center">
+                                                    <div>
+                                                        <div class="text-xs text-slate-600 mb-1">Confidence Score</div>
+                                                        <div class="text-2xl font-bold">${result.confidence}/100</div>
+                                                    </div>
+                                                    <div class="text-3xl">
+                                                        ${result.confidence >= 80 ? '⭐⭐⭐⭐' : 
+                                                          result.confidence >= 60 ? '⭐⭐⭐' : 
+                                                          result.confidence >= 40 ? '⭐⭐' : '⭐'}
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2 text-xs text-slate-600">
+                                                    EMA(50): ${result.ema50} | ATR(20): ${result.atr20}
+                                                </div>
+                                            </div>
+                                        ` : `
+                                            <div class="bg-slate-50 p-4 rounded">
+                                                <div class="text-sm text-slate-600 mb-2">
+                                                    <strong>Blocking Reasons:</strong>
+                                                </div>
+                                                <ul class="text-sm text-slate-600 list-disc list-inside">
+                                                    ${result.blockingReasons.map(r => `<li>${r}</li>`).join('')}
+                                                </ul>
+                                                <div class="mt-3 text-xs text-slate-500">
+                                                    EMA(50): ${result.ema50} | ATR(20): ${result.atr20} | Deviation: ${result.deviation} | ATR Slope: ${result.atrSlope}
+                                                </div>
+                                            </div>
+                                        `}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Toggle expand
+        function toggleExpand(pair) {
+            const details = document.getElementById(`details-${pair}`);
+            const icon = document.getElementById(`expand-icon-${pair}`);
+            
+            if (details.style.display === 'none') {
+                details.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                details.style.display = 'none';
+                icon.textContent = '▼';
+            }
+        }
+
+        // Refresh data
+        async function refreshData() {
+            const btn = document.getElementById('refreshBtn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>';
+            status.textContent = 'Loading...';
+            
+            pairSignals = {};
+            
+            for (const pair of PAIRS) {
+                status.textContent = `Loading ${pair.replace('_', '/')}...`;
+                pairSignals[pair] = await analyzePair(pair);
+            }
+            
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+            status.textContent = 'Live';
+            
+            renderSignals();
+            
+            btn.disabled = false;
+            btn.textContent = 'Refresh';
+        }
+
+        // Update session info every second
+        setInterval(updateSessionInfo, 1000);
+        
+        // Initial load
+        updateSessionInfo();
+        refreshData();
+    </script>
+</body>
+</html>
