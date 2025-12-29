@@ -21,6 +21,19 @@
         .category-metals { border-left: 4px solid #f59e0b; }
         .category-indices { border-left: 4px solid #8b5cf6; }
         .category-commodities { border-left: 4px solid #10b981; }
+        
+        /* Stat animation */
+        #stat-active, #stat-high-conf, #stat-winrate, #stat-instruments {
+            transition: transform 0.2s ease;
+        }
+        .scale-125 {
+            transform: scale(1.25);
+        }
+        
+        /* Notification slide animation */
+        #notification {
+            transform: translateX(400px);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen text-white">
@@ -41,7 +54,7 @@
                             <span class="font-semibold text-green-400">ONLINE</span>
                         </div>
                     </div>
-                    <button onclick="refreshSignals()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold transition">
+                    <button onclick="refreshSignals()" id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold transition transform hover:scale-105 active:scale-95">
                         🔄 Refresh
                     </button>
                 </div>
@@ -354,9 +367,91 @@
 
         // Refresh signals
         function refreshSignals() {
-            console.log('Refreshing signals...');
-            // In production: fetch fresh data from API
-            loadSignals();
+            // Disable button and show loading
+            const btn = document.getElementById('refreshBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Refreshing...';
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Show loading notification
+            showNotification('🔄 Refreshing signals...', 'info');
+            document.getElementById('signals-container').style.opacity = '0.5';
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // Simulate slight variations in signals
+                mockSignals.forEach(signal => {
+                    // Randomly adjust confidence slightly (±5%)
+                    const variation = (Math.random() - 0.5) * 0.1;
+                    signal.confidence = Math.max(0.6, Math.min(0.95, signal.confidence + variation));
+                    
+                    // Update model confidences proportionally
+                    signal.models.lstm = Math.max(0.6, Math.min(0.95, signal.models.lstm + variation));
+                    signal.models.svm = Math.max(0.6, Math.min(0.95, signal.models.svm + variation));
+                    signal.models.rf = Math.max(0.6, Math.min(0.95, signal.models.rf + variation));
+                    
+                    // Update timestamp
+                    signal.timestamp = new Date().toISOString();
+                });
+                
+                // Reload signals
+                loadSignals();
+                document.getElementById('signals-container').style.opacity = '1';
+                
+                // Re-enable button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                // Success notification
+                showNotification('✅ Signals refreshed successfully!', 'success');
+                
+                // Animate stats
+                animateStats();
+            }, 1500);
+        }
+        
+        // Animate stats update
+        function animateStats() {
+            const stats = ['stat-active', 'stat-high-conf', 'stat-winrate', 'stat-instruments'];
+            stats.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('scale-125');
+                setTimeout(() => el.classList.remove('scale-125'), 200);
+            });
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Remove existing notification
+            const existing = document.getElementById('notification');
+            if (existing) existing.remove();
+            
+            // Create notification
+            const notification = document.createElement('div');
+            notification.id = 'notification';
+            notification.className = `fixed top-20 right-6 z-50 px-6 py-4 rounded-lg shadow-2xl transform transition-all duration-300 ${
+                type === 'success' ? 'bg-green-600' : 
+                type === 'error' ? 'bg-red-600' : 
+                'bg-blue-600'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-3 text-white font-semibold">
+                    <span class="text-xl">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => notification.style.transform = 'translateX(0)', 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
 
         // Initialize on page load
