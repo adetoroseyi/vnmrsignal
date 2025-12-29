@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNMR Classic - Position Size Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .result-card {
+            transition: all 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.15);
+        }
+        .risk-indicator {
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <div class="container mx-auto p-6 max-w-6xl">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-2">
+                <h1 class="text-4xl font-bold text-slate-900">
+                    💰 Position Size Calculator
+                </h1>
+                <a href="/" class="text-blue-600 hover:text-blue-700 font-semibold">
+                    ← Back to Dashboard
+                </a>
+            </div>
+            <p class="text-slate-600">
+                Calculate precise position sizes with VNMR Classic risk management
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Column: Inputs -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Account Information -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">📊 Account Information</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Account Balance ($)
+                            </label>
+                            <input type="number" id="accountBalance" value="10000" min="100" step="100"
+                                   class="w-full p-3 border-2 border-slate-300 rounded-lg text-lg font-semibold focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                   onchange="calculatePosition()">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Risk per Trade (%)
+                            </label>
+                            <input type="number" id="riskPercent" value="1.5" min="0.1" max="5" step="0.1"
+                                   class="w-full p-3 border-2 border-slate-300 rounded-lg text-lg font-semibold focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                   onchange="calculatePosition()">
+                            <p class="text-xs text-slate-500 mt-1">VNMR Classic: 1-3% recommended</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Current Drawdown (%)
+                            </label>
+                            <input type="number" id="currentDrawdown" value="0" min="0" max="100" step="1"
+                                   class="w-full p-3 border-2 border-slate-300 rounded-lg text-lg font-semibold focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                   onchange="calculatePosition()">
+                            <p class="text-xs text-slate-500 mt-1">Peak to current equity decline</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Account Currency
+                            </label>
+                            <select id="accountCurrency" class="w-full p-3 border-2 border-slate-300 rounded-lg text-lg font-semibold focus:border-blue-500"
+                                    onchange="calculatePosition()">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="conservativeMode" checked onchange="calculatePosition()"
+                                   class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                            <span class="font-semibold text-slate-700">
+                                Conservative Mode (reduce risk during drawdown)
+                            </span>
+                        </label>
+                        <p class="text-xs text-slate-500 mt-1 ml-7">
+                            Automatically reduces position size when drawdown > 10%
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Trade Details -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">🎯 Trade Details</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Currency Pair
+                            </label>
+                            <select id="currencyPair" class="w-full p-3 border-2 border-slate-300 rounded-lg text-lg font-semibold focus:border-blue-500"
+                                    onchange="calculatePosition()">
+                                <option value="EUR_USD">EUR/USD</option>
+                                <option value="GBP_USD">GBP/USD</option>
+                                <option value="USD_JPY">USD/JPY</option>
+                                <option value="USD_CAD">USD/CAD</option>
+                                <option value="AUD_USD">AUD/USD</option>
+                                <option value="NZD_USD">NZD/USD</option>
+                                <option value="USD_CHF">USD/CHF</option>
+                                <option value="EUR_GBP">EUR/GBP</option>
+                                <option value="EUR_CHF">EUR/CHF</option>
+                                <option value="EUR_AUD">EUR/AUD</option>
+                                <option value="GBP_AUD">GBP/AUD</option>
+                                <option value="AUD_NZD">AUD/NZD</option>
+                                <option value="AUD_CAD">AUD/CAD</option>
+                                <option value="XAU_USD">XAU/USD (Gold)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Direction
+                            </label>
+                            <select id="tradeDirection" class="w-full p-3 border-2 border-slate-300 rounded-lg text-lg font-semibold focus:border-blue-500"
+                                    onchange="calculatePosition()">
+                                <option value="BUY">BUY (Long)</option>
+                                <option value="SELL">SELL (Short)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Entry Price
+                            </label>
+                            <input type="number" id="entryPrice" value="1.10000" step="0.00001"
+                                   class="w-full p-3 border-2 border-slate-300 rounded-lg text-lg font-semibold focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                   onchange="calculatePosition()">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Stop Loss Price
+                            </label>
+                            <input type="number" id="stopLoss" value="1.09500" step="0.00001"
+                                   class="w-full p-3 border-2 border-slate-300 rounded-lg text-lg font-semibold focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                   onchange="calculatePosition()">
+                            <p id="pipDistance" class="text-xs text-slate-500 mt-1">Distance: -- pips</p>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Take Profit Price (Optional)
+                            </label>
+                            <input type="number" id="takeProfit" value="" step="0.00001" placeholder="Leave empty if unknown"
+                                   class="w-full p-3 border-2 border-slate-300 rounded-lg text-lg font-semibold focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                   onchange="calculatePosition()">
+                            <p id="tpDistance" class="text-xs text-slate-500 mt-1">For R:R ratio calculation</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button onclick="calculatePosition()" 
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg shadow-lg transform hover:scale-105 transition">
+                            🧮 Calculate Position Size
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Calculation History -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-slate-900">📜 Calculation History</h2>
+                        <div class="flex gap-2">
+                            <button onclick="exportHistory()" class="text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
+                                📥 Export CSV
+                            </button>
+                            <button onclick="clearHistory()" class="text-sm bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded">
+                                🗑️ Clear
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="historyContainer" class="space-y-2 max-h-64 overflow-y-auto">
+                        <p class="text-sm text-slate-500 italic">No calculations yet. Calculate a position to start.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- Results Card -->
+                <div id="resultsCard" class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-green-900 mb-4">✅ Recommended Position</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white bg-opacity-60 p-4 rounded-lg">
+                            <div class="text-sm text-green-700 mb-1">Lot Size</div>
+                            <div id="resultLotSize" class="text-4xl font-bold text-green-600">--</div>
+                            <div class="text-xs text-slate-600 mt-1">Standard Lots</div>
+                        </div>
+                        
+                        <div class="bg-white bg-opacity-60 p-3 rounded-lg">
+                            <div class="text-sm text-green-700 mb-1">Risk Amount</div>
+                            <div id="resultRiskAmount" class="text-2xl font-bold text-green-600">$--</div>
+                        </div>
+                        
+                        <div class="bg-white bg-opacity-60 p-3 rounded-lg">
+                            <div class="text-sm text-green-700 mb-1">Position Value</div>
+                            <div id="resultPositionValue" class="text-2xl font-bold text-green-600">$--</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-white bg-opacity-60 p-3 rounded-lg">
+                                <div class="text-xs text-green-700 mb-1">Pip Value</div>
+                                <div id="resultPipValue" class="text-lg font-bold text-slate-900">$--</div>
+                            </div>
+                            <div class="bg-white bg-opacity-60 p-3 rounded-lg">
+                                <div class="text-xs text-green-700 mb-1">Max Loss</div>
+                                <div id="resultMaxLoss" class="text-lg font-bold text-red-600">$--</div>
+                            </div>
+                        </div>
+                        
+                        <div id="rrRatioCard" style="display:none;" class="bg-white bg-opacity-60 p-3 rounded-lg">
+                            <div class="text-sm text-green-700 mb-1">Risk:Reward Ratio</div>
+                            <div id="resultRR" class="text-2xl font-bold text-blue-600">1:--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Assessment -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-slate-900 mb-4">⚠️ Risk Assessment</h2>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600">Risk Level:</span>
+                            <span id="riskLevel" class="font-bold text-green-600">Conservative</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600">% of Account:</span>
+                            <span id="riskPercentDisplay" class="font-bold">1.5%</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600">Drawdown Impact:</span>
+                            <span id="drawdownImpact" class="font-bold text-slate-900">None</span>
+                        </div>
+                        
+                        <div class="w-full bg-slate-200 rounded-full h-3 mt-4">
+                            <div id="riskIndicator" class="risk-indicator bg-green-500 h-3 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <p id="riskMessage" class="text-xs text-slate-600 text-center">--</p>
+                    </div>
+                </div>
+
+                <!-- Quick Reference -->
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                    <h3 class="text-sm font-bold text-blue-900 mb-2">💡 VNMR Classic Risk Rules</h3>
+                    <ul class="text-xs text-blue-800 space-y-1">
+                        <li>• Standard Risk: 1.5% per trade</li>
+                        <li>• Maximum Risk: 3% per trade</li>
+                        <li>• Drawdown > 10%: Reduce risk</li>
+                        <li>• Max Drawdown: Stop at 40%</li>
+                        <li>• Never exceed 5% total exposure</li>
+                    </ul>
+                </div>
+
+                <!-- Kelly Criterion -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">📊 Kelly Criterion (Optional)</h3>
+                    <p class="text-xs text-slate-600 mb-3">Calculate optimal position size based on win rate and R:R</p>
+                    
+                    <div class="space-y-2">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-700">Win Rate (%)</label>
+                            <input type="number" id="kellyWinRate" value="52" min="0" max="100" step="1"
+                                   class="w-full p-2 border rounded text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-700">Avg Win/Avg Loss</label>
+                            <input type="number" id="kellyRR" value="1.0" min="0.1" max="5" step="0.1"
+                                   class="w-full p-2 border rounded text-sm">
+                        </div>
+                        <button onclick="calculateKelly()" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2 rounded">
+                            Calculate Kelly
+                        </button>
+                        <div id="kellyResult" class="text-sm font-semibold text-center text-purple-600 mt-2" style="display:none;">
+                            Suggested: <span id="kellyPercent">--</span>%
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store calculation history
+        let calculationHistory = JSON.parse(localStorage.getItem('positionHistory') || '[]');
+        
+        // Currency pair configurations
+        const PAIR_CONFIG = {
+            'EUR_USD': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'GBP_USD': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'USD_JPY': { pipSize: 0.01, pipValue: 9.09, digits: 3 },
+            'USD_CAD': { pipSize: 0.0001, pipValue: 7.69, digits: 5 },
+            'AUD_USD': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'NZD_USD': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'USD_CHF': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'EUR_GBP': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'EUR_CHF': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'EUR_AUD': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'GBP_AUD': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'AUD_NZD': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'AUD_CAD': { pipSize: 0.0001, pipValue: 10, digits: 5 },
+            'XAU_USD': { pipSize: 0.01, pipValue: 1, digits: 2 }
+        };
+
+        // Initialize on load
+        window.onload = function() {
+            loadHistory();
+            
+            // Check for URL parameters
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('pair')) {
+                document.getElementById('currencyPair').value = params.get('pair');
+            }
+            if (params.get('entry')) {
+                document.getElementById('entryPrice').value = params.get('entry');
+            }
+            if (params.get('sl')) {
+                document.getElementById('stopLoss').value = params.get('sl');
+            }
+            if (params.get('tp')) {
+                document.getElementById('takeProfit').value = params.get('tp');
+            }
+            
+            // Auto-calculate if parameters provided
+            if (params.get('pair')) {
+                calculatePosition();
+            }
+        };
+
+        // Main calculation function
+        function calculatePosition() {
+            // Get inputs
+            const accountBalance = parseFloat(document.getElementById('accountBalance').value);
+            const riskPercent = parseFloat(document.getElementById('riskPercent').value);
+            const currentDrawdown = parseFloat(document.getElementById('currentDrawdown').value);
+            const conservativeMode = document.getElementById('conservativeMode').checked;
+            const pair = document.getElementById('currencyPair').value;
+            const direction = document.getElementById('tradeDirection').value;
+            const entryPrice = parseFloat(document.getElementById('entryPrice').value);
+            const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+            const takeProfit = parseFloat(document.getElementById('takeProfit').value) || null;
+            
+            // Validate inputs
+            if (!accountBalance || !riskPercent || !entryPrice || !stopLoss) {
+                return;
+            }
+            
+            if (accountBalance <= 0 || riskPercent <= 0 || riskPercent > 10) {
+                alert('Invalid inputs. Please check your values.');
+                return;
+            }
+            
+            // Get pair config
+            const config = PAIR_CONFIG[pair];
+            
+            // Calculate pip distance
+            const pipDistance = Math.abs(entryPrice - stopLoss) / config.pipSize;
+            document.getElementById('pipDistance').textContent = `Distance: ${pipDistance.toFixed(1)} pips`;
+            
+            // Calculate TP distance if provided
+            if (takeProfit) {
+                const tpDistance = Math.abs(takeProfit - entryPrice) / config.pipSize;
+                document.getElementById('tpDistance').textContent = `TP Distance: ${tpDistance.toFixed(1)} pips | R:R = 1:${(tpDistance / pipDistance).toFixed(2)}`;
+            } else {
+                document.getElementById('tpDistance').textContent = 'For R:R ratio calculation';
+            }
+            
+            // Calculate base risk amount
+            let riskAmount = accountBalance * (riskPercent / 100);
+            let adjustedRisk = riskPercent;
+            let adjustmentNote = 'None';
+            
+            // Apply conservative mode adjustment
+            if (conservativeMode && currentDrawdown > 10) {
+                const reductionFactor = Math.min((currentDrawdown - 10) / 40, 1);
+                const adjustment = reductionFactor * 0.5;
+                riskAmount *= (1 - adjustment);
+                adjustedRisk = riskPercent * (1 - adjustment);
+                adjustmentNote = `Reduced by ${(adjustment * 100).toFixed(0)}% (DD: ${currentDrawdown}%)`;
+            }
+            
+            // Calculate pip value for this lot size
+            const pipValue = config.pipValue;
+            
+            // Calculate lot size
+            const lotSize = riskAmount / (pipDistance * pipValue);
+            const roundedLotSize = Math.floor(lotSize * 100) / 100;
+            
+            // Calculate actual values
+            const actualRiskAmount = roundedLotSize * pipDistance * pipValue;
+            const positionValue = roundedLotSize * 100000 * entryPrice;
+            
+            // Calculate R:R if TP provided
+            let rrRatio = null;
+            if (takeProfit) {
+                const tpDistance = Math.abs(takeProfit - entryPrice) / config.pipSize;
+                rrRatio = tpDistance / pipDistance;
+            }
+            
+            // Update results display
+            document.getElementById('resultLotSize').textContent = roundedLotSize.toFixed(2);
+            document.getElementById('resultRiskAmount').textContent = '$' + actualRiskAmount.toFixed(2);
+            document.getElementById('resultPositionValue').textContent = '$' + positionValue.toLocaleString(undefined, {maximumFractionDigits: 0});
+            document.getElementById('resultPipValue').textContent = '$' + (roundedLotSize * pipValue).toFixed(2);
+            document.getElementById('resultMaxLoss').textContent = '$' + actualRiskAmount.toFixed(2);
+            
+            // Update R:R display
+            if (rrRatio) {
+                document.getElementById('rrRatioCard').style.display = 'block';
+                document.getElementById('resultRR').textContent = `1:${rrRatio.toFixed(2)}`;
+            } else {
+                document.getElementById('rrRatioCard').style.display = 'none';
+            }
+            
+            // Update risk assessment
+            updateRiskAssessment(adjustedRisk, adjustmentNote);
+            
+            // Save to history
+            saveToHistory({
+                timestamp: new Date().toISOString(),
+                pair: pair,
+                direction: direction,
+                entryPrice: entryPrice,
+                stopLoss: stopLoss,
+                takeProfit: takeProfit,
+                lotSize: roundedLotSize,
+                riskAmount: actualRiskAmount,
+                riskPercent: adjustedRisk,
+                pipDistance: pipDistance,
+                rrRatio: rrRatio
+            });
+        }
+
+        // Update risk assessment
+        function updateRiskAssessment(riskPercent, adjustmentNote) {
+            const riskLevel = document.getElementById('riskLevel');
+            const riskIndicator = document.getElementById('riskIndicator');
+            const riskMessage = document.getElementById('riskMessage');
+            
+            document.getElementById('riskPercentDisplay').textContent = riskPercent.toFixed(2) + '%';
+            document.getElementById('drawdownImpact').textContent = adjustmentNote;
+            
+            // Determine risk level
+            let level, color, width, message;
+            
+            if (riskPercent <= 1.0) {
+                level = '✅ Very Conservative';
+                color = 'bg-green-500';
+                width = (riskPercent / 3) * 100;
+                message = 'Excellent risk management';
+            } else if (riskPercent <= 1.5) {
+                level = '✅ Conservative';
+                color = 'bg-green-500';
+                width = (riskPercent / 3) * 100;
+                message = 'VNMR Classic standard risk';
+            } else if (riskPercent <= 2.0) {
+                level = '⚠️ Moderate';
+                color = 'bg-yellow-500';
+                width = (riskPercent / 3) * 100;
+                message = 'Acceptable risk level';
+            } else if (riskPercent <= 3.0) {
+                level = '⚠️ Aggressive';
+                color = 'bg-orange-500';
+                width = (riskPercent / 3) * 100;
+                message = 'High risk - use with caution';
+            } else {
+                level = '❌ Excessive';
+                color = 'bg-red-500';
+                width = 100;
+                message = 'Risk too high - reduce!';
+            }
+            
+            riskLevel.textContent = level;
+            riskLevel.className = `font-bold ${color.replace('bg-', 'text-')}`;
+            riskIndicator.className = `risk-indicator ${color} h-3 rounded-full transition-all duration-500`;
+            riskIndicator.style.width = width + '%';
+            riskMessage.textContent = message;
+        }
+
+        // Save to history
+        function saveToHistory(calculation) {
+            calculationHistory.unshift(calculation);
+            if (calculationHistory.length > 50) {
+                calculationHistory = calculationHistory.slice(0, 50);
+            }
+            localStorage.setItem('positionHistory', JSON.stringify(calculationHistory));
+            loadHistory();
+        }
+
+        // Load history
+        function loadHistory() {
+            const container = document.getElementById('historyContainer');
+            
+            if (calculationHistory.length === 0) {
+                container.innerHTML = '<p class="text-sm text-slate-500 italic">No calculations yet. Calculate a position to start.</p>';
+                return;
+            }
+            
+            let html = '';
+            calculationHistory.slice(0, 10).forEach((calc, index) => {
+                const date = new Date(calc.timestamp);
+                const rrText = calc.rrRatio ? ` | R:R 1:${calc.rrRatio.toFixed(2)}` : '';
+                
+                html += `
+                    <div class="bg-slate-50 p-3 rounded border border-slate-200 hover:bg-slate-100 transition">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm">
+                                    ${calc.pair.replace('_', '/')} ${calc.direction}
+                                </div>
+                                <div class="text-xs text-slate-600 mt-1">
+                                    ${calc.lotSize.toFixed(2)} lots | $${calc.riskAmount.toFixed(2)} risk${rrText}
+                                </div>
+                                <div class="text-xs text-slate-500 mt-1">
+                                    ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
+                                </div>
+                            </div>
+                            <button onclick="reuseCalculation(${index})" class="text-blue-600 hover:text-blue-700 text-xs font-semibold">
+                                Reuse
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Reuse calculation
+        function reuseCalculation(index) {
+            const calc = calculationHistory[index];
+            
+            document.getElementById('currencyPair').value = calc.pair;
+            document.getElementById('tradeDirection').value = calc.direction;
+            document.getElementById('entryPrice').value = calc.entryPrice;
+            document.getElementById('stopLoss').value = calc.stopLoss;
+            if (calc.takeProfit) {
+                document.getElementById('takeProfit').value = calc.takeProfit;
+            }
+            
+            calculatePosition();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Export history
+        function exportHistory() {
+            if (calculationHistory.length === 0) {
+                alert('No calculations to export');
+                return;
+            }
+            
+            let csv = 'Timestamp,Pair,Direction,Entry,Stop Loss,Take Profit,Lot Size,Risk Amount,Risk %,Pip Distance,R:R Ratio\n';
+            
+            calculationHistory.forEach(calc => {
+                csv += `${calc.timestamp},${calc.pair},${calc.direction},${calc.entryPrice},${calc.stopLoss},${calc.takeProfit || ''},${calc.lotSize},${calc.riskAmount},${calc.riskPercent},${calc.pipDistance},${calc.rrRatio || ''}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `position_calculations_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Clear history
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all calculation history?')) {
+                calculationHistory = [];
+                localStorage.removeItem('positionHistory');
+                loadHistory();
+            }
+        }
+
+        // Kelly Criterion calculator
+        function calculateKelly() {
+            const winRate = parseFloat(document.getElementById('kellyWinRate').value) / 100;
+            const rr = parseFloat(document.getElementById('kellyRR').value);
+            
+            if (!winRate || !rr || winRate <= 0 || winRate >= 1 || rr <= 0) {
+                alert('Invalid Kelly inputs');
+                return;
+            }
+            
+            // Kelly % = (Win% × R:R - Loss%) / R:R
+            const lossRate = 1 - winRate;
+            const kelly = (winRate * rr - lossRate) / rr;
+            
+            // Use fractional Kelly (25% of full Kelly for safety)
+            const fractionalKelly = Math.max(0, Math.min(kelly * 0.25, 0.05)) * 100;
+            
+            document.getElementById('kellyResult').style.display = 'block';
+            document.getElementById('kellyPercent').textContent = fractionalKelly.toFixed(2);
+            
+            // Update risk percent input
+            if (fractionalKelly > 0) {
+                document.getElementById('riskPercent').value = fractionalKelly.toFixed(2);
+                calculatePosition();
+            }
+        }
+    </script>
+</body>
+</html>
