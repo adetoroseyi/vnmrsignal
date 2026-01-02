@@ -3,93 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liquidity Sweep Scanner</title>
+    <title>Liquidity Sweep Scanner v4</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #e4e4e4;
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
         }
         
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1600px; margin: 0 auto; }
         
         /* Header */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
+            padding: 15px 20px;
             background: rgba(255,255,255,0.05);
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.1);
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 10px;
         }
         
         .header h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             background: linear-gradient(90deg, #00d9ff, #00ff88);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         
-        .header-stats {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
+        .header-stats { display: flex; gap: 10px; flex-wrap: wrap; }
         
         .stat-box {
             text-align: center;
-            padding: 10px 20px;
+            padding: 8px 15px;
             background: rgba(0,217,255,0.1);
             border-radius: 8px;
             border: 1px solid rgba(0,217,255,0.3);
-            min-width: 90px;
+            min-width: 80px;
         }
         
-        .stat-box .value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #00d9ff;
-        }
+        .stat-box .value { font-size: 1.3rem; font-weight: bold; color: #00d9ff; }
+        .stat-box .label { font-size: 0.65rem; color: #888; text-transform: uppercase; }
         
-        .stat-box .label {
-            font-size: 0.7rem;
-            color: #888;
-            text-transform: uppercase;
-        }
-        
-        /* Session indicator */
         .session-indicator {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
+            gap: 8px;
+            padding: 8px 15px;
             background: rgba(0,255,136,0.1);
             border-radius: 8px;
             border: 1px solid rgba(0,255,136,0.3);
+            font-size: 0.9rem;
         }
         
         .session-dot {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: #00ff88;
             animation: pulse 2s infinite;
@@ -100,606 +77,468 @@
             border-color: rgba(255,193,7,0.3);
         }
         
-        .session-indicator.off-hours .session-dot {
-            background: #ffc107;
+        .session-indicator.off-hours .session-dot { background: #ffc107; }
+        
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* Warning Banner */
+        .warning-banner {
+            background: rgba(255,71,87,0.2);
+            border: 1px solid rgba(255,71,87,0.5);
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: warningPulse 2s infinite;
         }
         
-        @keyframes pulse {
+        .warning-banner.hidden { display: none; }
+        
+        @keyframes warningPulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.8; }
         }
+        
+        .warning-banner .icon { font-size: 1.5rem; }
+        .warning-banner .text { color: #ff6b7a; font-weight: 600; }
+        
+        /* News Banner */
+        .news-banner {
+            background: rgba(255,193,7,0.15);
+            border: 1px solid rgba(255,193,7,0.4);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+        }
+        
+        .news-banner.hidden { display: none; }
+        .news-banner .title { color: #ffc107; font-weight: 600; margin-bottom: 5px; }
+        .news-banner .events { color: #ccc; }
         
         /* Controls */
         .controls {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
             align-items: center;
         }
         
         .btn {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
+            gap: 6px;
+            font-size: 0.85rem;
         }
         
-        .btn-primary {
-            background: linear-gradient(135deg, #00d9ff, #0099ff);
-            color: #fff;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0,217,255,0.4);
-        }
+        .btn-primary { background: linear-gradient(135deg, #00d9ff, #0099ff); color: #fff; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0,217,255,0.4); }
         
         .btn-secondary {
             background: rgba(255,255,255,0.1);
             color: #e4e4e4;
             border: 1px solid rgba(255,255,255,0.2);
         }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .btn-secondary.active { background: rgba(0,217,255,0.2); border-color: rgba(0,217,255,0.5); color: #00d9ff; }
         
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.2);
-        }
+        .btn-settings { background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
+        .btn-settings.active { background: rgba(255,193,7,0.3); border-color: #ffc107; }
         
-        .btn-secondary.active {
-            background: rgba(0,217,255,0.2);
-            border-color: rgba(0,217,255,0.5);
-            color: #00d9ff;
-        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .btn-settings {
-            background: rgba(255,193,7,0.2);
-            color: #ffc107;
-            border: 1px solid rgba(255,193,7,0.3);
-        }
-        
-        .btn-settings:hover {
-            background: rgba(255,193,7,0.3);
-        }
-        
-        .btn-settings.active {
-            background: rgba(255,193,7,0.3);
-            border-color: #ffc107;
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-        
-        /* Timeframe selector */
-        .timeframe-selector {
+        /* Selectors */
+        .selector-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: rgba(0,0,0,0.3);
-            padding: 8px 15px;
-            border-radius: 8px;
+            padding: 6px 12px;
+            border-radius: 6px;
             border: 1px solid rgba(255,255,255,0.1);
         }
         
-        .timeframe-selector label {
-            color: #888;
-            font-size: 0.85rem;
-        }
+        .selector-group label { color: #888; font-size: 0.8rem; }
         
-        .timeframe-selector select {
+        .selector-group select {
             background: rgba(0,217,255,0.2);
             color: #00d9ff;
             border: 1px solid rgba(0,217,255,0.3);
-            padding: 8px 15px;
-            border-radius: 6px;
+            padding: 6px 12px;
+            border-radius: 4px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
-        .timeframe-selector select:focus {
-            outline: none;
-            border-color: #00d9ff;
+        /* Direction Toggle */
+        .direction-toggle {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
         }
+        
+        .direction-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: #888;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .direction-btn:hover { background: rgba(255,255,255,0.1); }
+        
+        .direction-btn.active.long { background: rgba(0,255,136,0.3); color: #00ff88; }
+        .direction-btn.active.short { background: rgba(255,71,87,0.3); color: #ff4757; }
+        .direction-btn.active.both { background: rgba(0,217,255,0.3); color: #00d9ff; }
         
         /* Settings Panel */
         .settings-panel {
             background: rgba(255,193,7,0.05);
             border: 1px solid rgba(255,193,7,0.3);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
             display: none;
         }
         
-        .settings-panel.visible {
-            display: block;
-        }
-        
-        .settings-panel h3 {
-            color: #ffc107;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .settings-panel.visible { display: block; }
+        .settings-panel h3 { color: #ffc107; margin-bottom: 12px; font-size: 1rem; }
         
         .settings-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
         }
         
         .setting-item {
             background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 6px;
         }
         
-        .setting-item label {
-            display: block;
-            color: #888;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
+        .setting-item label { display: block; color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 6px; }
         
-        .setting-item input[type="number"],
-        .setting-item input[type="text"] {
+        .setting-item input[type="number"] {
             width: 100%;
             background: rgba(0,217,255,0.1);
             border: 1px solid rgba(0,217,255,0.3);
             color: #00d9ff;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 1rem;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
             font-weight: 600;
         }
         
-        .setting-item input:focus {
-            outline: none;
-            border-color: #00d9ff;
-        }
+        .setting-item .hint { font-size: 0.7rem; color: #666; margin-top: 4px; }
         
-        .setting-item .hint {
-            font-size: 0.75rem;
-            color: #666;
-            margin-top: 5px;
-        }
+        .toggle-container { display: flex; align-items: center; justify-content: space-between; }
         
-        /* Toggle Switch */
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .toggle-switch { position: relative; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
         
         .toggle-slider {
             position: absolute;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(255,255,255,0.1);
-            border-radius: 26px;
+            border-radius: 24px;
             transition: 0.3s;
         }
         
         .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
             background: #888;
             border-radius: 50%;
             transition: 0.3s;
         }
         
-        .toggle-switch input:checked + .toggle-slider {
-            background: rgba(0,255,136,0.3);
-        }
+        .toggle-switch input:checked + .toggle-slider { background: rgba(0,255,136,0.3); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); background: #00ff88; }
         
-        .toggle-switch input:checked + .toggle-slider:before {
-            transform: translateX(24px);
-            background: #00ff88;
-        }
+        .settings-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-apply { background: linear-gradient(135deg, #00ff88, #00cc6a); color: #000; }
+        .btn-reset { background: rgba(255,71,87,0.2); color: #ff4757; border: 1px solid rgba(255,71,87,0.3); }
         
-        .settings-actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .btn-apply {
-            background: linear-gradient(135deg, #00ff88, #00cc6a);
-            color: #000;
-        }
-        
-        .btn-reset {
-            background: rgba(255,71,87,0.2);
-            color: #ff4757;
-            border: 1px solid rgba(255,71,87,0.3);
-        }
-        
-        /* Active settings indicator */
+        /* Active Settings Tags */
         .active-settings {
             background: rgba(0,0,0,0.3);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 0.8rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
             color: #888;
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
+            align-items: center;
         }
         
-        .active-settings .setting-tag {
+        .setting-tag {
             background: rgba(0,217,255,0.1);
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: 4px;
             color: #00d9ff;
         }
         
-        /* Signals Grid */
+        .setting-tag.htf { background: rgba(156,39,176,0.2); color: #ce93d8; }
+        .setting-tag.direction-long { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .setting-tag.direction-short { background: rgba(255,71,87,0.2); color: #ff4757; }
+        
+        /* Signals Section */
         .signals-section {
             background: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.1);
         }
         
-        .signals-section h2 {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #00ff88;
-        }
+        .signals-section h2 { margin-bottom: 12px; color: #00ff88; font-size: 1.1rem; }
         
         .signals-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 12px;
         }
         
+        /* Signal Card */
         .signal-card {
             background: rgba(0,0,0,0.3);
             border-radius: 10px;
-            padding: 20px;
+            padding: 15px;
             border-left: 4px solid;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
         }
         
-        .signal-card:hover {
-            transform: translateX(5px);
-            background: rgba(0,0,0,0.4);
-        }
+        .signal-card:hover { transform: translateX(3px); background: rgba(0,0,0,0.4); }
+        .signal-card.long { border-left-color: #00ff88; }
+        .signal-card.short { border-left-color: #ff4757; }
         
-        .signal-card.long {
-            border-left-color: #00ff88;
-        }
-        
-        .signal-card.short {
-            border-left-color: #ff4757;
-        }
-        
-        .signal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .signal-pair {
-            font-size: 1.3rem;
-            font-weight: bold;
-        }
+        .signal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .signal-pair { font-size: 1.2rem; font-weight: bold; }
         
         .signal-direction {
-            padding: 5px 12px;
-            border-radius: 20px;
+            padding: 4px 10px;
+            border-radius: 15px;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
         
-        .signal-direction.long {
-            background: rgba(0,255,136,0.2);
-            color: #00ff88;
-        }
-        
-        .signal-direction.short {
-            background: rgba(255,71,87,0.2);
-            color: #ff4757;
-        }
+        .signal-direction.long { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .signal-direction.short { background: rgba(255,71,87,0.2); color: #ff4757; }
         
         .signal-setup {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #00d9ff;
-            margin-bottom: 10px;
-            padding: 5px 10px;
+            padding: 4px 8px;
             background: rgba(0,217,255,0.1);
-            border-radius: 5px;
+            border-radius: 4px;
             display: inline-block;
+            margin-bottom: 8px;
         }
         
+        /* HTF Confluence Badge */
+        .htf-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .htf-badge.aligned { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .htf-badge.against { background: rgba(255,71,87,0.2); color: #ff4757; }
+        .htf-badge.neutral { background: rgba(255,255,255,0.1); color: #888; }
+        
+        /* Signal Details */
         .signal-details {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 15px;
+            gap: 8px;
+            margin-top: 12px;
         }
         
         .detail-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px;
+            padding: 6px 8px;
             background: rgba(255,255,255,0.05);
-            border-radius: 5px;
+            border-radius: 4px;
         }
         
-        .detail-label {
+        .detail-label { color: #888; font-size: 0.8rem; }
+        .detail-value { font-weight: 600; font-family: monospace; font-size: 0.85rem; }
+        .detail-value.positive { color: #00ff88; }
+        .detail-value.negative { color: #ff4757; }
+        
+        /* TP Levels Section */
+        .tp-section {
+            grid-column: span 2;
+            background: rgba(0,255,136,0.05);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 5px;
+        }
+        
+        .tp-section .title {
+            font-size: 0.75rem;
             color: #888;
-            font-size: 0.85rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
         }
         
-        .detail-value {
-            font-weight: 600;
-            font-family: 'Courier New', monospace;
+        .tp-levels {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
         }
         
-        .detail-value.positive {
-            color: #00ff88;
+        .tp-level {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
         }
         
-        .detail-value.negative {
-            color: #ff4757;
-        }
+        .tp-level .label { font-size: 0.7rem; color: #888; margin-bottom: 3px; }
+        .tp-level .value { font-weight: bold; font-family: monospace; }
+        .tp-level.tp1 .value { color: #ffc107; }
+        .tp-level.tp2 .value { color: #00d9ff; }
+        .tp-level.runner .value { color: #00ff88; }
         
         .rr-badge {
             grid-column: span 2;
             text-align: center;
-            padding: 10px;
-            background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,217,255,0.2));
-            border-radius: 8px;
-            font-size: 1.1rem;
+            padding: 8px;
+            background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,217,255,0.15));
+            border-radius: 6px;
         }
         
-        .rr-badge .value {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #00ff88;
-        }
+        .rr-badge .value { font-size: 1.3rem; font-weight: bold; color: #00ff88; }
         
-        .signal-badges {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
+        /* Signal Badges */
+        .signal-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
         
         .badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .badge-displacement {
-            background: rgba(255,193,7,0.2);
-            color: #ffc107;
-        }
-        
-        .badge-fvg {
-            background: rgba(156,39,176,0.2);
-            color: #ce93d8;
-        }
-        
-        .badge-timeframe {
-            background: rgba(255,255,255,0.1);
-            color: #888;
-        }
-        
-        .badge-priority {
-            background: rgba(0,217,255,0.2);
-            color: #00d9ff;
-        }
-        
-        /* Instruments Table */
-        .instruments-section {
-            background: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
-        }
-        
-        .instruments-section h2 {
-            margin-bottom: 15px;
-            color: #00d9ff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .table-scroll {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .instruments-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-        
-        .instruments-table th {
-            text-align: left;
-            padding: 10px 8px;
-            background: rgba(0,0,0,0.3);
-            color: #888;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        
-        .instruments-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        
-        .instruments-table tr:hover {
-            background: rgba(255,255,255,0.05);
-        }
-        
-        .instruments-table .pair-name {
-            font-weight: 600;
-            color: #00d9ff;
-        }
-        
-        .level-tag {
-            display: inline-block;
-            padding: 2px 6px;
-            margin: 1px;
-            border-radius: 4px;
+            padding: 3px 8px;
+            border-radius: 10px;
             font-size: 0.7rem;
+            font-weight: 600;
         }
         
-        .level-tag.pdh { background: rgba(0,255,136,0.2); color: #00ff88; }
-        .level-tag.pdl { background: rgba(255,71,87,0.2); color: #ff4757; }
-        .level-tag.equal { background: rgba(0,217,255,0.2); color: #00d9ff; }
+        .badge-displacement { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .badge-fvg { background: rgba(156,39,176,0.2); color: #ce93d8; }
+        .badge-news { background: rgba(255,71,87,0.2); color: #ff4757; }
+        .badge-htf { background: rgba(0,217,255,0.2); color: #00d9ff; }
         
-        /* No signals message */
-        .no-signals {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
+        /* No Signals */
+        .no-signals { text-align: center; padding: 50px 20px; color: #666; }
+        .no-signals-icon { font-size: 3.5rem; margin-bottom: 15px; }
+        .no-signals h3 { color: #888; margin-bottom: 8px; }
         
-        .no-signals-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-        }
-        
-        .no-signals h3 {
-            color: #888;
-            margin-bottom: 10px;
-        }
-        
-        /* Loading state */
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-        }
+        /* Loading */
+        .loading { text-align: center; padding: 50px 20px; }
         
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(0,217,255,0.2);
+            width: 40px; height: 40px;
+            border: 3px solid rgba(0,217,255,0.2);
             border-top-color: #00d9ff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 15px;
         }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Status bar */
+        /* Status Bar */
         .status-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
+            padding: 8px 15px;
             background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
             flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .status-item {
-            display: flex;
-            align-items: center;
             gap: 8px;
         }
         
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-        
+        .status-item { display: flex; align-items: center; gap: 6px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
         .status-dot.connected { background: #00ff88; }
         .status-dot.disconnected { background: #ff4757; }
-        .status-dot.stale { background: #ffc107; }
+        
+        /* Instruments Table */
+        .instruments-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .instruments-section.visible { display: block; }
+        .instruments-section h2 { margin-bottom: 12px; color: #00d9ff; font-size: 1rem; }
+        
+        .table-scroll { max-height: 350px; overflow-y: auto; }
+        
+        .instruments-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        
+        .instruments-table th {
+            text-align: left;
+            padding: 8px 6px;
+            background: rgba(0,0,0,0.3);
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            position: sticky;
+            top: 0;
+        }
+        
+        .instruments-table td { padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .instruments-table tr:hover { background: rgba(255,255,255,0.05); }
+        .instruments-table .pair-name { font-weight: 600; color: #00d9ff; }
+        
+        .bias-tag { padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; font-weight: 600; }
+        .bias-tag.bullish { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .bias-tag.bearish { background: rgba(255,71,87,0.2); color: #ff4757; }
+        .bias-tag.neutral { background: rgba(255,255,255,0.1); color: #888; }
         
         /* Responsive */
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .header-stats {
-                justify-content: center;
-            }
-            
-            .signals-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .signal-details {
-                grid-template-columns: 1fr;
-            }
-            
-            .rr-badge {
-                grid-column: span 1;
-            }
-            
-            .controls {
-                justify-content: center;
-            }
-            
-            .settings-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .refresh-timer {
-            font-size: 0.8rem;
-            color: #666;
+            .header { flex-direction: column; text-align: center; }
+            .signals-grid { grid-template-columns: 1fr; }
+            .signal-details { grid-template-columns: 1fr; }
+            .tp-section, .rr-badge { grid-column: span 1; }
+            .tp-levels { flex-direction: column; }
+            .controls { justify-content: center; }
+            .settings-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -707,18 +546,11 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>
-                <span>🔍</span>
-                Liquidity Sweep Scanner
-            </h1>
+            <h1>🔍 Liquidity Sweep Scanner</h1>
             <div class="header-stats">
                 <div class="stat-box">
                     <div class="value" id="signalCount">-</div>
                     <div class="label">Signals</div>
-                </div>
-                <div class="stat-box">
-                    <div class="value" id="instrumentCount">28</div>
-                    <div class="label">Instruments</div>
                 </div>
                 <div class="stat-box">
                     <div class="value" id="currentTimeframe">H1</div>
@@ -731,6 +563,18 @@
             </div>
         </div>
         
+        <!-- Warning Banner (Session) -->
+        <div class="warning-banner hidden" id="warningBanner">
+            <span class="icon">⚠️</span>
+            <span class="text" id="warningText">Warning</span>
+        </div>
+        
+        <!-- News Banner -->
+        <div class="news-banner hidden" id="newsBanner">
+            <div class="title">📰 Upcoming High-Impact News</div>
+            <div class="events" id="newsEvents"></div>
+        </div>
+        
         <!-- Status Bar -->
         <div class="status-bar">
             <div class="status-item">
@@ -738,17 +582,17 @@
                 <span id="connectionStatus">Connecting...</span>
             </div>
             <div class="status-item">
-                <span>Last Update: <strong id="lastUpdate">-</strong></span>
+                Last: <strong id="lastUpdate">-</strong>
             </div>
-            <div class="refresh-timer">
-                Auto-refresh: <span id="refreshTimer">60</span>s
+            <div class="status-item">
+                Auto: <span id="refreshTimer">60</span>s
             </div>
         </div>
         
         <!-- Controls -->
         <div class="controls">
-            <div class="timeframe-selector">
-                <label for="timeframeSelect">TF:</label>
+            <div class="selector-group">
+                <label>TF:</label>
                 <select id="timeframeSelect" onchange="changeTimeframe(this.value)">
                     <option value="M30">M30</option>
                     <option value="H1" selected>H1</option>
@@ -756,53 +600,53 @@
                     <option value="D">Daily</option>
                 </select>
             </div>
-            <button class="btn btn-primary" id="scanBtn" onclick="runScan(true)">
-                <span>🔄</span> Scan
-            </button>
-            <button class="btn btn-settings" id="settingsBtn" onclick="toggleSettings()">
-                <span>⚙️</span> Settings
-            </button>
-            <button class="btn btn-secondary" id="toggleBtn" onclick="toggleInstruments()">
-                <span>📊</span> Instruments
-            </button>
-            <button class="btn btn-secondary" onclick="exportSignals()">
-                <span>📥</span> Export
-            </button>
+            
+            <div class="direction-toggle">
+                <button class="direction-btn both active" onclick="setDirection('BOTH')">ALL</button>
+                <button class="direction-btn long" onclick="setDirection('LONG')">LONG</button>
+                <button class="direction-btn short" onclick="setDirection('SHORT')">SHORT</button>
+            </div>
+            
+            <button class="btn btn-primary" id="scanBtn" onclick="runScan(true)">🔄 Scan</button>
+            <button class="btn btn-settings" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
+            <button class="btn btn-secondary" id="toggleBtn" onclick="toggleInstruments()">📊</button>
+            <button class="btn btn-secondary" onclick="exportSignals()">📥</button>
         </div>
         
         <!-- Settings Panel -->
         <div class="settings-panel" id="settingsPanel">
-            <h3><span>⚙️</span> Scanner Settings</h3>
+            <h3>⚙️ Scanner Settings</h3>
             <div class="settings-grid">
                 <div class="setting-item">
-                    <label>Minimum R:R Ratio</label>
+                    <label>Min R:R Ratio</label>
                     <input type="number" id="settingMinRR" value="2.5" step="0.1" min="1" max="10">
-                    <div class="hint">Only show signals with this R:R or higher</div>
                 </div>
                 <div class="setting-item">
-                    <label>Max Signals Per Instrument</label>
+                    <label>Max Signals/Pair</label>
                     <input type="number" id="settingMaxSignals" value="2" step="1" min="1" max="10">
-                    <div class="hint">Limit signals shown for each pair</div>
                 </div>
                 <div class="setting-item">
-                    <label>Equal Level Tolerance (%)</label>
+                    <label>Equal Tolerance (%)</label>
                     <input type="number" id="settingEqualTolerance" value="0.03" step="0.01" min="0.01" max="0.5">
-                    <div class="hint">How close prices must be to count as "equal"</div>
                 </div>
                 <div class="setting-item">
-                    <label>Displacement ATR Multiple</label>
+                    <label>Displacement ATR×</label>
                     <input type="number" id="settingDisplacementMultiple" value="1.5" step="0.1" min="1" max="5">
-                    <div class="hint">Candle body must be X times ATR for displacement</div>
                 </div>
                 <div class="setting-item">
-                    <label>Max Equal Levels (per side)</label>
-                    <input type="number" id="settingMaxEqualLevels" value="3" step="1" min="1" max="10">
-                    <div class="hint">Max equal highs/lows to track</div>
+                    <label>Require HTF Confluence</label>
+                    <div class="toggle-container">
+                        <span class="hint">Signal aligns with HTF bias</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settingRequireHTF" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
                 </div>
                 <div class="setting-item">
                     <label>Require Displacement</label>
                     <div class="toggle-container">
-                        <span class="hint">Only signals with strong candles</span>
+                        <span class="hint">Strong candle only</span>
                         <label class="toggle-switch">
                             <input type="checkbox" id="settingRequireDisplacement">
                             <span class="toggle-slider"></span>
@@ -810,9 +654,9 @@
                     </div>
                 </div>
                 <div class="setting-item">
-                    <label>Require Fair Value Gap</label>
+                    <label>Require FVG</label>
                     <div class="toggle-container">
-                        <span class="hint">Only signals with FVG present</span>
+                        <span class="hint">Fair Value Gap present</span>
                         <label class="toggle-switch">
                             <input type="checkbox" id="settingRequireFVG">
                             <span class="toggle-slider"></span>
@@ -821,57 +665,44 @@
                 </div>
             </div>
             <div class="settings-actions">
-                <button class="btn btn-apply" onclick="applySettings()">
-                    <span>✓</span> Apply & Scan
-                </button>
-                <button class="btn btn-reset" onclick="resetSettings()">
-                    <span>↺</span> Reset Defaults
-                </button>
-                <button class="btn btn-secondary" onclick="toggleSettings()">
-                    Cancel
-                </button>
+                <button class="btn btn-apply" onclick="applySettings()">✓ Apply</button>
+                <button class="btn btn-reset" onclick="resetSettings()">↺ Reset</button>
+                <button class="btn btn-secondary" onclick="toggleSettings()">Cancel</button>
             </div>
         </div>
         
-        <!-- Active Settings Display -->
+        <!-- Active Settings -->
         <div class="active-settings" id="activeSettings">
             <span>Active:</span>
             <span class="setting-tag" id="tagMinRR">R:R ≥ 2.5</span>
             <span class="setting-tag" id="tagTimeframe">H1</span>
-            <span class="setting-tag" id="tagMaxSignals">Max 2/pair</span>
+            <span class="setting-tag htf" id="tagHTF">HTF Confluence</span>
+            <span class="setting-tag" id="tagDirection">All Directions</span>
         </div>
         
-        <!-- Instruments Overview (hidden by default) -->
-        <div class="instruments-section" id="instrumentsSection" style="display: none;">
-            <h2>
-                <span>📈</span>
-                All Instruments & Key Levels
-            </h2>
+        <!-- Instruments Table -->
+        <div class="instruments-section" id="instrumentsSection">
+            <h2>📈 Instruments & HTF Bias</h2>
             <div class="table-scroll">
                 <table class="instruments-table">
                     <thead>
                         <tr>
                             <th>Pair</th>
                             <th>Price</th>
+                            <th>HTF Bias</th>
                             <th>PDH</th>
                             <th>PDL</th>
-                            <th>EQ-H</th>
-                            <th>EQ-L</th>
-                            <th>Status</th>
+                            <th>Signals</th>
                         </tr>
                     </thead>
-                    <tbody id="instrumentsTable">
-                    </tbody>
+                    <tbody id="instrumentsTable"></tbody>
                 </table>
             </div>
         </div>
         
-        <!-- Active Signals -->
+        <!-- Signals -->
         <div class="signals-section">
-            <h2>
-                <span>⚡</span>
-                Active Trade Signals
-            </h2>
+            <h2>⚡ Active Trade Signals</h2>
             <div id="signalsContainer" class="signals-grid">
                 <div class="loading">
                     <div class="spinner"></div>
@@ -883,51 +714,40 @@
     
     <script>
         // ================================================
-        // CONFIGURATION
+        // CONFIG
         // ================================================
-        
         const PROXY_URL = 'https://oanda-proxy.onrender.com';
-        const STORAGE_KEY = 'liquidityScannerSettings';
+        const STORAGE_KEY = 'liquidityScannerSettingsV4';
         
         const DEFAULT_SETTINGS = {
             minRR: 2.5,
             maxSignals: 2,
             equalTolerance: 0.03,
             displacementMultiple: 1.5,
-            maxEqualLevels: 3,
             requireDisplacement: false,
             requireFVG: false,
-            timeframe: 'H1'
+            requireHTFConfluence: true,
+            timeframe: 'H1',
+            directionFilter: 'BOTH'
         };
         
         let settings = { ...DEFAULT_SETTINGS };
         let refreshCountdown = 60;
-        let instrumentsVisible = false;
-        let settingsVisible = false;
         let lastData = null;
         
         // ================================================
-        // SETTINGS MANAGEMENT
+        // SETTINGS
         // ================================================
-        
         function loadSettings() {
             try {
                 const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    settings = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
-                }
-            } catch (e) {
-                console.error('Error loading settings:', e);
-            }
+                if (saved) settings = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+            } catch (e) { console.error(e); }
             applySettingsToUI();
         }
         
         function saveSettings() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-            } catch (e) {
-                console.error('Error saving settings:', e);
-            }
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch (e) { console.error(e); }
         }
         
         function applySettingsToUI() {
@@ -935,12 +755,20 @@
             document.getElementById('settingMaxSignals').value = settings.maxSignals;
             document.getElementById('settingEqualTolerance').value = settings.equalTolerance * 100;
             document.getElementById('settingDisplacementMultiple').value = settings.displacementMultiple;
-            document.getElementById('settingMaxEqualLevels').value = settings.maxEqualLevels;
             document.getElementById('settingRequireDisplacement').checked = settings.requireDisplacement;
             document.getElementById('settingRequireFVG').checked = settings.requireFVG;
+            document.getElementById('settingRequireHTF').checked = settings.requireHTFConfluence;
             document.getElementById('timeframeSelect').value = settings.timeframe;
             
-            updateActiveSettingsTags();
+            // Update direction buttons
+            document.querySelectorAll('.direction-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.classList.contains(settings.directionFilter.toLowerCase())) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            updateActiveTags();
         }
         
         function readSettingsFromUI() {
@@ -948,55 +776,43 @@
             settings.maxSignals = parseInt(document.getElementById('settingMaxSignals').value) || 2;
             settings.equalTolerance = (parseFloat(document.getElementById('settingEqualTolerance').value) || 3) / 100;
             settings.displacementMultiple = parseFloat(document.getElementById('settingDisplacementMultiple').value) || 1.5;
-            settings.maxEqualLevels = parseInt(document.getElementById('settingMaxEqualLevels').value) || 3;
             settings.requireDisplacement = document.getElementById('settingRequireDisplacement').checked;
             settings.requireFVG = document.getElementById('settingRequireFVG').checked;
-            settings.timeframe = document.getElementById('timeframeSelect').value;
+            settings.requireHTFConfluence = document.getElementById('settingRequireHTF').checked;
         }
         
-        function updateActiveSettingsTags() {
+        function updateActiveTags() {
             document.getElementById('tagMinRR').textContent = `R:R ≥ ${settings.minRR}`;
             document.getElementById('tagTimeframe').textContent = settings.timeframe;
-            document.getElementById('tagMaxSignals').textContent = `Max ${settings.maxSignals}/pair`;
             document.getElementById('currentTimeframe').textContent = settings.timeframe;
             
-            // Show extra tags if non-default
-            let extraTags = [];
-            if (settings.requireDisplacement) extraTags.push('Displacement Required');
-            if (settings.requireFVG) extraTags.push('FVG Required');
+            const htfTag = document.getElementById('tagHTF');
+            htfTag.style.display = settings.requireHTFConfluence ? 'inline-block' : 'none';
             
-            const container = document.getElementById('activeSettings');
-            // Remove old extra tags
-            container.querySelectorAll('.extra-tag').forEach(el => el.remove());
-            
-            extraTags.forEach(tag => {
-                const span = document.createElement('span');
-                span.className = 'setting-tag extra-tag';
-                span.style.background = 'rgba(255,193,7,0.2)';
-                span.style.color = '#ffc107';
-                span.textContent = tag;
-                container.appendChild(span);
-            });
+            const dirTag = document.getElementById('tagDirection');
+            if (settings.directionFilter === 'LONG') {
+                dirTag.textContent = 'LONG Only';
+                dirTag.className = 'setting-tag direction-long';
+            } else if (settings.directionFilter === 'SHORT') {
+                dirTag.textContent = 'SHORT Only';
+                dirTag.className = 'setting-tag direction-short';
+            } else {
+                dirTag.textContent = 'All Directions';
+                dirTag.className = 'setting-tag';
+            }
         }
         
         function toggleSettings() {
-            settingsVisible = !settingsVisible;
             const panel = document.getElementById('settingsPanel');
             const btn = document.getElementById('settingsBtn');
-            
-            if (settingsVisible) {
-                panel.classList.add('visible');
-                btn.classList.add('active');
-            } else {
-                panel.classList.remove('visible');
-                btn.classList.remove('active');
-            }
+            const isVisible = panel.classList.toggle('visible');
+            btn.classList.toggle('active', isVisible);
         }
         
         function applySettings() {
             readSettingsFromUI();
             saveSettings();
-            updateActiveSettingsTags();
+            updateActiveTags();
             toggleSettings();
             runScan(true);
         }
@@ -1007,41 +823,58 @@
             applySettingsToUI();
         }
         
-        // ================================================
-        // API CALLS
-        // ================================================
+        function setDirection(dir) {
+            settings.directionFilter = dir;
+            saveSettings();
+            
+            document.querySelectorAll('.direction-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.classList.contains(dir.toLowerCase())) btn.classList.add('active');
+            });
+            
+            updateActiveTags();
+            runScan(true);
+        }
         
-        function buildQueryString() {
-            const params = new URLSearchParams({
+        function changeTimeframe(tf) {
+            settings.timeframe = tf;
+            saveSettings();
+            updateActiveTags();
+            runScan(true);
+        }
+        
+        // ================================================
+        // API
+        // ================================================
+        function buildQuery() {
+            return new URLSearchParams({
                 timeframe: settings.timeframe,
                 minRR: settings.minRR,
                 maxSignals: settings.maxSignals,
                 equalTolerance: settings.equalTolerance,
                 displacementMultiple: settings.displacementMultiple,
-                maxEqualLevels: settings.maxEqualLevels,
                 requireDisplacement: settings.requireDisplacement,
-                requireFVG: settings.requireFVG
-            });
-            return params.toString();
+                requireFVG: settings.requireFVG,
+                requireHTFConfluence: settings.requireHTFConfluence,
+                directionFilter: settings.directionFilter
+            }).toString();
         }
         
-        async function fetchFullScan(forceRefresh = false) {
+        async function fetchScan(refresh = false) {
             try {
-                const refreshParam = forceRefresh ? '&refresh=true' : '';
-                const url = `${PROXY_URL}/liquidity/scan?${buildQueryString()}${refreshParam}`;
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Failed to fetch scan');
-                return await response.json();
-            } catch (error) {
-                console.error('Fetch scan error:', error);
+                const url = `${PROXY_URL}/liquidity/scan?${buildQuery()}${refresh ? '&refresh=true' : ''}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Fetch failed');
+                return await res.json();
+            } catch (e) {
+                console.error(e);
                 return null;
             }
         }
         
         // ================================================
-        // RENDERING
+        // RENDER
         // ================================================
-        
         function renderSignals(signals) {
             const container = document.getElementById('signalsContainer');
             
@@ -1049,261 +882,204 @@
                 container.innerHTML = `
                     <div class="no-signals">
                         <div class="no-signals-icon">🔭</div>
-                        <h3>No Active Signals on ${settings.timeframe}</h3>
-                        <p>Monitoring ${lastData?.instrumentsScanned || 28} instruments with R:R ≥ ${settings.minRR}</p>
-                        <p style="margin-top: 15px; color: #ffc107;">Try adjusting settings or a different timeframe</p>
-                    </div>
-                `;
+                        <h3>No Signals Found</h3>
+                        <p>Monitoring ${lastData?.instrumentsScanned || 28} pairs on ${settings.timeframe}</p>
+                        <p style="margin-top:10px;color:#ffc107;">Adjust settings or try different timeframe</p>
+                    </div>`;
                 return;
             }
             
-            container.innerHTML = signals.map(signal => {
-                const priorityLabel = signal.priority === 1 ? 'High Priority' : 
-                                      signal.priority === 2 ? 'Medium' : 'Standard';
+            container.innerHTML = signals.map(s => {
+                const htfBadgeClass = s.htfConfluence === 'ALIGNED' ? 'aligned' : 
+                                      s.htfConfluence === 'AGAINST' ? 'against' : 'neutral';
+                const htfLabel = s.htfConfluence === 'ALIGNED' ? '✓ HTF Aligned' :
+                                 s.htfConfluence === 'AGAINST' ? '✗ Against HTF' : '○ HTF Neutral';
                 
                 return `
-                <div class="signal-card ${signal.direction.toLowerCase()}">
+                <div class="signal-card ${s.direction.toLowerCase()}">
                     <div class="signal-header">
-                        <span class="signal-pair">${formatPair(signal.instrument)}</span>
-                        <span class="signal-direction ${signal.direction.toLowerCase()}">${signal.direction}</span>
+                        <span class="signal-pair">${s.instrument.replace('_','/')}</span>
+                        <span class="signal-direction ${s.direction.toLowerCase()}">${s.direction}</span>
                     </div>
-                    <div class="signal-setup">${signal.setupType}</div>
+                    <div>
+                        <span class="signal-setup">${s.setupType}</span>
+                        <span class="htf-badge ${htfBadgeClass}">${htfLabel}</span>
+                    </div>
                     <div class="signal-details">
                         <div class="detail-item">
                             <span class="detail-label">Entry</span>
-                            <span class="detail-value">${formatPrice(signal.entryPrice, signal.instrument)}</span>
+                            <span class="detail-value">${formatPrice(s.entryPrice, s.instrument)}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Stop Loss</span>
-                            <span class="detail-value negative">${formatPrice(signal.stopLoss, signal.instrument)}</span>
+                            <span class="detail-value negative">${formatPrice(s.stopLoss, s.instrument)}</span>
                         </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Take Profit</span>
-                            <span class="detail-value positive">${formatPrice(signal.takeProfit, signal.instrument)}</span>
+                        
+                        <div class="tp-section">
+                            <div class="title">Take Profit Levels</div>
+                            <div class="tp-levels">
+                                <div class="tp-level tp1">
+                                    <div class="label">TP1 (50%)</div>
+                                    <div class="value">${formatPrice(s.tp1, s.instrument)}</div>
+                                </div>
+                                <div class="tp-level tp2">
+                                    <div class="label">TP2 (75%)</div>
+                                    <div class="value">${formatPrice(s.tp2, s.instrument)}</div>
+                                </div>
+                                <div class="tp-level runner">
+                                    <div class="label">Runner</div>
+                                    <div class="value">${formatPrice(s.runner, s.instrument)}</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Level Swept</span>
-                            <span class="detail-value">${formatPrice(signal.levelSwept, signal.instrument)}</span>
-                        </div>
+                        
                         <div class="rr-badge">
-                            Risk:Reward → <span class="value">${signal.rewardRisk}:1</span>
+                            R:R → <span class="value">${s.rewardRisk}:1</span>
                         </div>
                     </div>
                     <div class="signal-badges">
-                        ${signal.hasDisplacement ? '<span class="badge badge-displacement">⚡ Displacement</span>' : ''}
-                        ${signal.hasFVG ? '<span class="badge badge-fvg">📊 FVG</span>' : ''}
-                        <span class="badge badge-timeframe">${signal.timeframe}</span>
-                        <span class="badge badge-priority">${priorityLabel}</span>
+                        ${s.hasDisplacement ? '<span class="badge badge-displacement">⚡ Displacement</span>' : ''}
+                        ${s.hasFVG ? '<span class="badge badge-fvg">📊 FVG</span>' : ''}
+                        ${s.newsWarning ? '<span class="badge badge-news">📰 News</span>' : ''}
+                        <span class="badge badge-htf">${s.htfTimeframe} ${s.htfBias}</span>
                     </div>
-                </div>
-            `}).join('');
-        }
-        
-        function renderInstruments(instruments) {
-            const table = document.getElementById('instrumentsTable');
-            
-            if (!instruments || instruments.length === 0) {
-                table.innerHTML = '<tr><td colspan="7">No data available</td></tr>';
-                return;
-            }
-            
-            table.innerHTML = instruments.map(inst => {
-                if (inst.error) {
-                    return `
-                        <tr>
-                            <td class="pair-name">${formatPair(inst.instrument)}</td>
-                            <td colspan="6" style="color: #ff4757;">Error</td>
-                        </tr>
-                    `;
-                }
-                
-                const hasSignal = inst.signals && inst.signals.length > 0;
-                const status = hasSignal 
-                    ? `<span style="color: #00ff88;">⚡ ${inst.signals.length}</span>`
-                    : '<span style="color: #666;">-</span>';
-                
-                return `
-                    <tr>
-                        <td class="pair-name">${formatPair(inst.instrument)}</td>
-                        <td>${formatPrice(inst.currentPrice, inst.instrument)}</td>
-                        <td>${inst.pdh ? `<span class="level-tag pdh">${formatPrice(inst.pdh, inst.instrument)}</span>` : '-'}</td>
-                        <td>${inst.pdl ? `<span class="level-tag pdl">${formatPrice(inst.pdl, inst.instrument)}</span>` : '-'}</td>
-                        <td>${inst.equalHighs > 0 ? `<span class="level-tag equal">${inst.equalHighs}</span>` : '-'}</td>
-                        <td>${inst.equalLows > 0 ? `<span class="level-tag equal">${inst.equalLows}</span>` : '-'}</td>
-                        <td>${status}</td>
-                    </tr>
-                `;
+                </div>`;
             }).join('');
         }
         
-        function updateStats(data) {
-            document.getElementById('signalCount').textContent = data.signalCount || data.signals?.length || 0;
-            document.getElementById('instrumentCount').textContent = data.instrumentsScanned || 28;
-            document.getElementById('currentTimeframe').textContent = data.timeframe || settings.timeframe;
+        function renderInstruments(instruments) {
+            if (!instruments) return;
             
-            const session = data.currentSession || 'Unknown';
-            document.getElementById('currentSession').textContent = session;
+            document.getElementById('instrumentsTable').innerHTML = instruments.map(i => {
+                if (i.error) return `<tr><td class="pair-name">${i.instrument.replace('_','/')}</td><td colspan="5" style="color:#ff4757">Error</td></tr>`;
+                
+                const biasClass = i.htfBias === 'BULLISH' ? 'bullish' : i.htfBias === 'BEARISH' ? 'bearish' : 'neutral';
+                const sigCount = i.signals?.length || 0;
+                
+                return `<tr>
+                    <td class="pair-name">${i.instrument.replace('_','/')}</td>
+                    <td>${formatPrice(i.currentPrice, i.instrument)}</td>
+                    <td><span class="bias-tag ${biasClass}">${i.htfBias || 'N/A'}</span></td>
+                    <td>${i.pdh ? formatPrice(i.pdh, i.instrument) : '-'}</td>
+                    <td>${i.pdl ? formatPrice(i.pdl, i.instrument) : '-'}</td>
+                    <td>${sigCount > 0 ? `<span style="color:#00ff88">⚡ ${sigCount}</span>` : '-'}</td>
+                </tr>`;
+            }).join('');
+        }
+        
+        function updateUI(data) {
+            // Stats
+            document.getElementById('signalCount').textContent = data.signals?.length || 0;
+            document.getElementById('currentSession').textContent = data.currentSession || 'Unknown';
             
-            const sessionIndicator = document.getElementById('sessionIndicator');
-            if (session === 'OFF_HOURS') {
-                sessionIndicator.classList.add('off-hours');
-            } else {
-                sessionIndicator.classList.remove('off-hours');
-            }
+            // Session indicator
+            const si = document.getElementById('sessionIndicator');
+            si.classList.toggle('off-hours', data.currentSession === 'OFF_HOURS');
             
+            // Timestamp
             if (data.timestamp) {
-                const time = new Date(data.timestamp);
-                document.getElementById('lastUpdate').textContent = time.toLocaleTimeString();
+                document.getElementById('lastUpdate').textContent = new Date(data.timestamp).toLocaleTimeString();
             }
-        }
-        
-        function updateConnectionStatus(connected, stale = false) {
-            const dot = document.getElementById('connectionDot');
-            const status = document.getElementById('connectionStatus');
             
-            if (connected) {
-                if (stale) {
-                    dot.className = 'status-dot stale';
-                    status.textContent = 'Data may be stale';
-                } else {
-                    dot.className = 'status-dot connected';
-                    status.textContent = 'Connected';
-                }
+            // Session Warning Banner
+            const wb = document.getElementById('warningBanner');
+            if (data.sessionWarning?.active) {
+                wb.classList.remove('hidden');
+                document.getElementById('warningText').textContent = data.sessionWarning.message;
             } else {
-                dot.className = 'status-dot disconnected';
-                status.textContent = 'Disconnected';
+                wb.classList.add('hidden');
             }
-        }
-        
-        // ================================================
-        // HELPERS
-        // ================================================
-        
-        function formatPair(instrument) {
-            return instrument.replace('_', '/');
+            
+            // News Banner
+            const nb = document.getElementById('newsBanner');
+            if (data.upcomingNews && data.upcomingNews.length > 0) {
+                nb.classList.remove('hidden');
+                const eventsHtml = data.upcomingNews.slice(0, 3).map(e => 
+                    `• ${e.event} (${e.country}) - ${new Date(e.date).toLocaleTimeString()}`
+                ).join('<br>');
+                document.getElementById('newsEvents').innerHTML = eventsHtml;
+            } else {
+                nb.classList.add('hidden');
+            }
+            
+            // Connection
+            document.getElementById('connectionDot').className = 'status-dot connected';
+            document.getElementById('connectionStatus').textContent = 'Connected';
         }
         
         function formatPrice(price, instrument) {
             if (!price) return '-';
-            
-            let decimals = 5;
-            if (instrument && instrument.includes('JPY')) decimals = 3;
-            if (instrument === 'XAU_USD') decimals = 2;
-            if (instrument === 'NAS100_USD') decimals = 1;
-            
-            return parseFloat(price).toFixed(decimals);
+            let d = 5;
+            if (instrument?.includes('JPY')) d = 3;
+            if (instrument === 'XAU_USD') d = 2;
+            if (instrument === 'NAS100_USD') d = 1;
+            return parseFloat(price).toFixed(d);
         }
         
         function toggleInstruments() {
             const section = document.getElementById('instrumentsSection');
             const btn = document.getElementById('toggleBtn');
-            
-            instrumentsVisible = !instrumentsVisible;
-            
-            if (instrumentsVisible) {
-                section.style.display = 'block';
-                btn.classList.add('active');
-                if (lastData && lastData.instruments) {
-                    renderInstruments(lastData.instruments);
-                }
-            } else {
-                section.style.display = 'none';
-                btn.classList.remove('active');
-            }
-        }
-        
-        function changeTimeframe(timeframe) {
-            settings.timeframe = timeframe;
-            saveSettings();
-            updateActiveSettingsTags();
-            runScan(true);
+            const isVisible = section.classList.toggle('visible');
+            btn.classList.toggle('active', isVisible);
+            if (isVisible && lastData?.instruments) renderInstruments(lastData.instruments);
         }
         
         function exportSignals() {
-            if (!lastData?.signals || lastData.signals.length === 0) {
-                alert('No signals to export');
-                return;
-            }
+            if (!lastData?.signals?.length) return alert('No signals');
             
             const csv = [
-                'Instrument,Direction,Setup,Entry,StopLoss,TakeProfit,RR,Displacement,FVG,Timeframe,Timestamp',
+                'Instrument,Direction,Setup,Entry,SL,TP1,TP2,Runner,RR,HTF_Bias,HTF_Confluence,Displacement,FVG,News',
                 ...lastData.signals.map(s => 
-                    `${s.instrument},${s.direction},${s.setupType},${s.entryPrice},${s.stopLoss},${s.takeProfit},${s.rewardRisk},${s.hasDisplacement},${s.hasFVG},${s.timeframe},${s.timestamp}`
+                    `${s.instrument},${s.direction},${s.setupType},${s.entryPrice},${s.stopLoss},${s.tp1},${s.tp2},${s.runner},${s.rewardRisk},${s.htfBias},${s.htfConfluence},${s.hasDisplacement},${s.hasFVG},${s.newsWarning}`
                 )
             ].join('\n');
             
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
+            a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
             a.download = `liquidity_signals_${settings.timeframe}_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
-            URL.revokeObjectURL(url);
         }
         
         // ================================================
-        // MAIN FUNCTIONS
+        // MAIN
         // ================================================
-        
-        async function runScan(forceRefresh = false) {
+        async function runScan(refresh = false) {
             const btn = document.getElementById('scanBtn');
             btn.disabled = true;
-            btn.innerHTML = '<span>⏳</span> Scanning...';
+            btn.textContent = '⏳...';
             
             document.getElementById('signalsContainer').innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Scanning ${settings.timeframe} with R:R ≥ ${settings.minRR}...</p>
-                </div>
-            `;
+                <div class="loading"><div class="spinner"></div><p>Scanning ${settings.timeframe}...</p></div>`;
             
             try {
-                const data = await fetchFullScan(forceRefresh);
-                
+                const data = await fetchScan(refresh);
                 if (data) {
                     lastData = data;
-                    updateStats(data);
+                    updateUI(data);
                     renderSignals(data.signals);
-                    updateConnectionStatus(true, data.isStale);
-                    
-                    if (instrumentsVisible && data.instruments) {
+                    if (document.getElementById('instrumentsSection').classList.contains('visible')) {
                         renderInstruments(data.instruments);
                     }
                 } else {
-                    updateConnectionStatus(false);
-                    document.getElementById('signalsContainer').innerHTML = `
-                        <div class="no-signals">
-                            <div class="no-signals-icon">⚠️</div>
-                            <h3>Connection Error</h3>
-                            <p>Unable to fetch data. Please try again.</p>
-                        </div>
-                    `;
+                    document.getElementById('connectionDot').className = 'status-dot disconnected';
+                    document.getElementById('connectionStatus').textContent = 'Error';
                 }
-            } catch (error) {
-                console.error('Scan error:', error);
-                updateConnectionStatus(false);
+            } catch (e) {
+                console.error(e);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<span>🔄</span> Scan';
+                btn.textContent = '🔄 Scan';
                 refreshCountdown = 60;
             }
         }
         
-        // ================================================
-        // INITIALIZATION
-        // ================================================
-        
-        // Load saved settings
+        // Init
         loadSettings();
-        
-        // Initial scan
         runScan();
         
-        // Auto-refresh countdown
         setInterval(() => {
             refreshCountdown--;
             document.getElementById('refreshTimer').textContent = refreshCountdown;
-            
             if (refreshCountdown <= 0) {
                 runScan(false);
                 refreshCountdown = 60;
