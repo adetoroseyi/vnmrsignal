@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SweepSignal - Automated Liquidity Sweep Scanner for Forex Traders</title>
+    <meta name="description" content="Stop scanning charts. Start taking A+ trades. SweepSignal monitors 28 forex pairs, detects liquidity sweeps, and alerts you only when the best setups appear.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #ff8c00;
+            --green: #00ff88;
+            --red: #ff4757;
+            --blue: #00d9ff;
+            --bg-dark: #0a0a12;
+            --bg-card: #12121c;
+            --bg-card-hover: #1a1a28;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border: rgba(255,255,255,0.1);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 15px 30px;
+            background: rgba(10,10,18,0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255,215,0,0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        .btn-large {
+            padding: 16px 32px;
+            font-size: 1rem;
+        }
+        
+        /* Sections */
+        section {
+            padding: 100px 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 80px;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(255,215,0,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--gold);
+            margin-bottom: 30px;
+        }
+        
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            max-width: 800px;
+        }
+        
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 40px;
+            line-height: 1.7;
+        }
+        
+        .hero-ctas {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .hero-trust {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .hero-image {
+            margin-top: 60px;
+            max-width: 900px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        
+        .hero-image img {
+            width: 100%;
+            display: block;
+        }
+        
+        /* Problem Section */
+        .problem {
+            text-align: center;
+        }
+        
+        .section-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gold);
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 20px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 50px;
+        }
+        
+        .pain-points {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto 50px;
+        }
+        
+        .pain-point {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: left;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .pain-point-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .pain-point-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        .problem-conclusion {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .problem-conclusion strong {
+            color: var(--text-primary);
+        }
+        
+        /* Solution Section */
+        .solution {
+            background: linear-gradient(180deg, rgba(255,215,0,0.03) 0%, transparent 100%);
+            border-radius: 20px;
+            margin: 0 30px;
+            max-width: 1140px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .solution-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        
+        .solution-text h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .solution-text p {
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+        }
+        
+        .solution-checks {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+        
+        .solution-checks li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .solution-checks li::before {
+            content: '✓';
+            color: var(--green);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .solution-visual {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .grade-preview {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .grade-item {
+            text-align: center;
+            padding: 15px 20px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+        }
+        
+        .grade-item.active {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        
+        .grade-letter {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        
+        .grade-item.a-plus .grade-letter { color: var(--gold); }
+        .grade-item.a .grade-letter { color: var(--green); }
+        .grade-item.b .grade-letter { color: var(--blue); }
+        .grade-item.c .grade-letter { color: var(--text-muted); }
+        .grade-item.d .grade-letter { color: #444; }
+        
+        .grade-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+        
+        /* Benefits Section */
+        .benefits {
+            text-align: center;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            margin-top: 50px;
+        }
+        
+        .benefit-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 35px 30px;
+            text-align: left;
+            transition: all 0.3s;
+        }
+        
+        .benefit-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(255,215,0,0.2);
+            transform: translateY(-5px);
+        }
+        
+        .benefit-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .benefit-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+        
+        .benefit-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        /* How It Works */
+        .how-it-works {
+            text-align: center;
+        }
+        
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            max-width: 600px;
+            margin: 50px auto;
+        }
+        
+        .step {
+            display: flex;
+            gap: 25px;
+            text-align: left;
+            position: relative;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #000;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step-content {
+            padding-bottom: 50px;
+        }
+        
+        .step:not(:last-child) .step-content {
+            border-left: 2px dashed var(--border);
+            margin-left: -26px;
+            padding-left: 51px;
+        }
+        
+        .step:last-child .step-content {
+            padding-bottom: 0;
+        }
+        
+        .step h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .step p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        /* Signal Preview */
+        .signal-preview {
+            background: linear-gradient(180deg, transparent 0%, rgba(255,215,0,0.03) 100%);
+        }
+        
+        .signal-preview-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        
+        .signal-card-preview {
+            background: var(--bg-card);
+            border: 2px solid var(--gold);
+            border-radius: 16px;
+            padding: 25px;
+            font-family: monospace;
+            box-shadow: 0 20px 60px rgba(255,215,0,0.1);
+        }
+        
+        .signal-header-preview {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .signal-pair {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .signal-direction {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .signal-direction.short {
+            background: rgba(255,71,87,0.2);
+            color: var(--red);
+        }
+        
+        .signal-grade {
+            color: var(--gold);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .signal-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 15px 0;
+        }
+        
+        .signal-levels {
+            font-size: 0.85rem;
+            line-height: 1.8;
+        }
+        
+        .signal-levels .label {
+            color: var(--text-muted);
+        }
+        
+        .signal-levels .value {
+            color: var(--text-primary);
+        }
+        
+        .signal-levels .stop { color: var(--red); }
+        .signal-levels .tp { color: var(--green); }
+        
+        .signal-badges {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .signal-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            background: rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+        }
+        
+        .signal-badge.gold { background: rgba(255,215,0,0.2); color: var(--gold); }
+        .signal-badge.purple { background: rgba(156,39,176,0.2); color: #ce93d8; }
+        .signal-badge.blue { background: rgba(0,217,255,0.2); color: var(--blue); }
+        
+        /* Pricing */
+        .pricing {
+            text-align: center;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 50px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .pricing-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px 30px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card:hover {
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        .pricing-card.popular {
+            border-color: var(--gold);
+            transform: scale(1.02);
+        }
+        
+        .pricing-card.popular:hover {
+            transform: scale(1.04);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #000;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .pricing-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+        
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .pricing-price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+        
+        .pricing-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        
+        .pricing-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--green);
+            font-weight: 700;
+        }
+        
+        .pricing-features li.disabled {
+            color: var(--text-muted);
+        }
+        
+        .pricing-features li.disabled::before {
+            content: '—';
+            color: var(--text-muted);
+        }
+        
+        .pricing-card .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .pricing-guarantee {
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        /* FAQ */
+        .faq {
+            max-width: 800px;
+        }
+        
+        .faq-list {
+            margin-top: 50px;
+        }
+        
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+            padding: 25px 0;
+        }
+        
+        .faq-question {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .faq-answer {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        
+        /* Final CTA */
+        .final-cta {
+            text-align: center;
+            background: linear-gradient(180deg, transparent 0%, rgba(255,215,0,0.05) 100%);
+            border-radius: 30px;
+            margin: 0 30px;
+            max-width: 1140px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .final-cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .final-cta p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto 40px;
+        }
+        
+        .final-trust {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        /* Footer */
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 60px 30px 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-brand h3 {
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+        
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .footer-links h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+        
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+        
+        .footer-bottom {
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        
+        .footer-disclaimer {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .nav {
+                padding: 15px 20px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            section {
+                padding: 60px 20px;
+            }
+            
+            .hero {
+                padding-top: 100px;
+            }
+            
+            .hero-ctas {
+                flex-direction: column;
+                width: 100%;
+                padding: 0 20px;
+            }
+            
+            .hero-ctas .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .solution-content,
+            .signal-preview-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-card.popular {
+                transform: none;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .final-cta h2 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-logo">
+            ⭐ SweepSignal
+        </div>
+        <div class="nav-links">
+            <a href="#how-it-works">How It Works</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faq">FAQ</a>
+            <a href="dashboard" class="btn btn-primary">Open Dashboard</a>
+        </div>
+    </nav>
+    
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-badge">
+            ⚡ Automated Liquidity Sweep Scanner
+        </div>
+        <h1>
+            Stop Scanning Charts.<br>
+            Start Taking <span>A+ Trades</span>.
+        </h1>
+        <p class="hero-subtitle">
+            SweepSignal monitors 28 forex pairs around the clock, detects liquidity sweep setups, and grades every signal from A+ to D. You only see what's worth trading.
+        </p>
+        <div class="hero-ctas">
+            <a href="#pricing" class="btn btn-primary btn-large">Start 7-Day Free Trial</a>
+            <a href="#how-it-works" class="btn btn-secondary btn-large">See How It Works ↓</a>
+        </div>
+        <p class="hero-trust">No credit card required · Cancel anytime</p>
+    </section>
+    
+    <!-- Problem -->
+    <section class="problem">
+        <p class="section-label">The Problem</p>
+        <h2 class="section-title">You Know Liquidity Sweeps Work.<br>Finding Them Is the Problem.</h2>
+        <p class="section-subtitle">
+            You've studied the concepts. You understand how smart money takes out liquidity before reversing. The strategy works. But here's what actually happens:
+        </p>
+        
+        <div class="pain-points">
+            <div class="pain-point">
+                <span class="pain-point-icon">😩</span>
+                <p class="pain-point-text">You spend hours scanning charts and find nothing tradeable</p>
+            </div>
+            <div class="pain-point">
+                <span class="pain-point-icon">😤</span>
+                <p class="pain-point-text">You finally step away — and miss the perfect setup</p>
+            </div>
+            <div class="pain-point">
+                <span class="pain-point-icon">😔</span>
+                <p class="pain-point-text">You take mediocre trades out of impatience or FOMO</p>
+            </div>
+            <div class="pain-point">
+                <span class="pain-point-icon">🤔</span>
+                <p class="pain-point-text">You second-guess entries because you're not sure if the setup is actually good enough</p>
+            </div>
+        </div>
+        
+        <p class="problem-conclusion">
+            <strong>The problem isn't your strategy.</strong><br>
+            The problem is you can't watch 28 pairs 24 hours a day.
+        </p>
+    </section>
+    
+    <!-- Solution -->
+    <section class="solution">
+        <div class="solution-content">
+            <div class="solution-text">
+                <p class="section-label">The Solution</p>
+                <h2>What If You Only Saw the Trades Worth Taking?</h2>
+                <p>
+                    SweepSignal is an automated scanner built specifically for liquidity sweep setups. It watches 28 forex pairs continuously, detects sweeps of key levels, then scores every signal based on:
+                </p>
+                <ul class="solution-checks">
+                    <li>Level quality (PDH/PDL scores highest)</li>
+                    <li>Displacement strength (how aggressively price reversed)</li>
+                    <li>Fair Value Gap presence</li>
+                    <li>Higher timeframe alignment</li>
+                    <li>Risk-to-reward ratio</li>
+                </ul>
+                <p>
+                    Each signal gets a score from 0-100 and a grade. You decide your minimum standard. The scanner handles the rest.
+                </p>
+                <a href="#pricing" class="btn btn-primary">Start Free Trial</a>
+            </div>
+            <div class="solution-visual">
+                <p style="text-align:center; color: var(--text-muted); margin-bottom: 20px; font-size: 0.85rem;">SIGNAL GRADING SYSTEM</p>
+                <div class="grade-preview">
+                    <div class="grade-item active a-plus">
+                        <div class="grade-letter">A+</div>
+                        <div class="grade-label">90-100</div>
+                    </div>
+                    <div class="grade-item a">
+                        <div class="grade-letter">A</div>
+                        <div class="grade-label">80-89</div>
+                    </div>
+                    <div class="grade-item b">
+                        <div class="grade-letter">B</div>
+                        <div class="grade-label">70-79</div>
+                    </div>
+                    <div class="grade-item c">
+                        <div class="grade-letter">C</div>
+                        <div class="grade-label">60-69</div>
+                    </div>
+                    <div class="grade-item d">
+                        <div class="grade-letter">D</div>
+                        <div class="grade-label">&lt;60</div>
+                    </div>
+                </div>
+                <p style="text-align:center; color: var(--text-muted); margin-top: 25px; font-size: 0.85rem;">
+                    Filter by grade. Only see A+ setups.<br>Or show everything and decide yourself.
+                </p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Benefits -->
+    <section class="benefits">
+        <p class="section-label">Benefits</p>
+        <h2 class="section-title">Why Traders Switch to SweepSignal</h2>
+        
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <div class="benefit-icon">🕐</div>
+                <h3>Save 2+ Hours Daily</h3>
+                <p>The scanner runs 24/7 across 28 pairs. No more flipping through charts hoping something lines up.</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">⭐</div>
+                <h3>Only See A+ Setups</h3>
+                <p>Every signal is scored 0-100. Set your minimum grade and ignore the rest. No more "maybe this is good enough."</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">📱</div>
+                <h3>Instant Telegram Alerts</h3>
+                <p>Get notified the moment a quality setup appears. Trade from anywhere. Never miss a sweep again.</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🎯</div>
+                <h3>Complete Trade Levels</h3>
+                <p>Entry, stop loss, TP1 (50%), TP2 (75%), and runner target. Know exactly where to enter and exit.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <p class="section-label">How It Works</p>
+        <h2 class="section-title">From Scan to Signal in 4 Steps</h2>
+        
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Scanner Monitors 24/7</h3>
+                    <p>SweepSignal continuously analyzes 28 forex pairs across multiple timeframes, looking for sweeps of previous day highs/lows, session levels, and equal highs/lows.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Signals Are Scored & Graded</h3>
+                    <p>Every potential setup is scored based on level quality, displacement, FVG presence, HTF alignment, and R:R ratio. Only B+ and above trigger alerts.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>You Get Alerted</h3>
+                    <p>When a quality signal appears, you receive a Telegram message with the pair, direction, grade, entry, stop loss, and take profit levels.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>You Decide</h3>
+                    <p>Review the setup, check the chart if you want, and take the trade — or skip it. You're always in control.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="#pricing" class="btn btn-primary btn-large">Start Free Trial</a>
+        </div>
+    </section>
+    
+    <!-- Signal Preview -->
+    <section class="signal-preview">
+        <div class="signal-preview-content">
+            <div class="signal-card-preview">
+                <div class="signal-header-preview">⭐ SWEEPSIGNAL ALERT ⭐</div>
+                <div class="signal-pair">
+                    EUR/USD
+                    <span class="signal-direction short">🔴 SHORT</span>
+                </div>
+                <div class="signal-grade">Grade: A+ (Score: 95/100)</div>
+                <div class="signal-levels">
+                    <div><span class="label">📍 Setup:</span> <span class="value">Previous Day High</span></div>
+                    <div><span class="label">📊 HTF Bias:</span> <span class="value">BEARISH (H4)</span></div>
+                </div>
+                <hr class="signal-divider">
+                <div class="signal-levels">
+                    <div><span class="label">▫️ Entry:</span> <span class="value">1.10500</span></div>
+                    <div><span class="label">🛑 Stop Loss:</span> <span class="value stop">1.10750</span></div>
+                    <div><span class="label">🎯 TP1 (50%):</span> <span class="value tp">1.10250</span></div>
+                    <div><span class="label">🎯 TP2 (75%):</span> <span class="value tp">1.10125</span></div>
+                    <div><span class="label">🏆 Runner:</span> <span class="value tp">1.10000</span></div>
+                    <div style="margin-top: 10px;"><span class="label">📈 R:R Ratio:</span> <span class="value" style="color: var(--green); font-weight: 700;">3.2:1</span></div>
+                </div>
+                <div class="signal-badges">
+                    <span class="signal-badge gold">⚡ STRONG</span>
+                    <span class="signal-badge purple">📊 FVG</span>
+                    <span class="signal-badge blue">H4 BEARISH</span>
+                </div>
+            </div>
+            <div>
+                <p class="section-label">What You'll Receive</p>
+                <h2 style="font-size: 2rem; margin-bottom: 20px;">Everything You Need.<br>Nothing You Don't.</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 20px; line-height: 1.8;">
+                    Every alert includes the exact entry price, stop loss, three take-profit levels, risk-to-reward ratio, and the criteria that made it a quality setup.
+                </p>
+                <p style="color: var(--text-secondary); line-height: 1.8;">
+                    No vague "this looks good" — you get specific levels and the reasoning behind the grade so you can make an informed decision in seconds.
+                </p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+        <p class="section-label">Pricing</p>
+        <h2 class="section-title">Simple Pricing. Cancel Anytime.</h2>
+        
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <p class="pricing-name">Basic</p>
+                <p class="pricing-price">$37<span>/mo</span></p>
+                <p class="pricing-description">For traders who want to explore</p>
+                <ul class="pricing-features">
+                    <li>Dashboard access</li>
+                    <li>Manual scan refresh</li>
+                    <li>H1 timeframe</li>
+                    <li>Signal grading system</li>
+                    <li class="disabled">Telegram alerts</li>
+                    <li class="disabled">All timeframes</li>
+                    <li class="disabled">Priority support</li>
+                </ul>
+                <a href="dashboard" class="btn btn-secondary">Start Free Trial</a>
+            </div>
+            
+            <div class="pricing-card popular">
+                <span class="popular-badge">Most Popular</span>
+                <p class="pricing-name">Pro</p>
+                <p class="pricing-price">$67<span>/mo</span></p>
+                <p class="pricing-description">For serious traders</p>
+                <ul class="pricing-features">
+                    <li>Everything in Basic</li>
+                    <li>Telegram alerts</li>
+                    <li>Auto-scan every 5 minutes</li>
+                    <li>All timeframes (M30 - Daily)</li>
+                    <li>News bias toggle</li>
+                    <li class="disabled">Priority support</li>
+                    <li class="disabled">Private Discord</li>
+                </ul>
+                <a href="dashboard" class="btn btn-primary">Start Free Trial</a>
+            </div>
+            
+            <div class="pricing-card">
+                <p class="pricing-name">Premium</p>
+                <p class="pricing-price">$97<span>/mo</span></p>
+                <p class="pricing-description">For professional traders</p>
+                <ul class="pricing-features">
+                    <li>Everything in Pro</li>
+                    <li>Priority support</li>
+                    <li>Private Discord community</li>
+                    <li>Early access to new features</li>
+                    <li>Request custom pairs</li>
+                    <li>1-on-1 onboarding call</li>
+                    <li>Strategy guidance</li>
+                </ul>
+                <a href="dashboard" class="btn btn-secondary">Start Free Trial</a>
+            </div>
+        </div>
+        
+        <p class="pricing-guarantee">
+            All plans include a 7-day free trial. No credit card required to start.
+        </p>
+    </section>
+    
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+        <p class="section-label">FAQ</p>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        
+        <div class="faq-list">
+            <div class="faq-item">
+                <h3 class="faq-question">What pairs does SweepSignal cover?</h3>
+                <p class="faq-answer">28 instruments including all major pairs (EUR/USD, GBP/USD, USD/JPY, etc.), popular crosses (EUR/GBP, GBP/JPY, AUD/NZD, etc.), plus XAU/USD (Gold) and NAS100.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3 class="faq-question">How is the signal grade calculated?</h3>
+                <p class="faq-answer">Each signal is scored 0-100 based on five factors: level quality (PDH/PDL scores highest), displacement strength, FVG presence, higher timeframe alignment, and risk-to-reward ratio. Scores of 90+ = A+, 80-89 = A, 70-79 = B.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3 class="faq-question">How many alerts will I receive?</h3>
+                <p class="faq-answer">It depends on market conditions. The system only alerts on B grade and above, and each signal has a 60-minute cooldown to prevent spam. Expect anywhere from 0-10 alerts on a typical trading day.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3 class="faq-question">Does this work with my broker?</h3>
+                <p class="faq-answer">Yes. SweepSignal provides signals — you execute trades with your own broker. It works alongside any forex broker that offers the pairs we cover.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3 class="faq-question">Is this financial advice?</h3>
+                <p class="faq-answer">No. SweepSignal is an analytical tool that identifies potential setups based on technical criteria. All trading decisions are yours. Trading forex involves significant risk and you can lose money.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3 class="faq-question">Can I cancel anytime?</h3>
+                <p class="faq-answer">Yes. Cancel with one click from your dashboard. No questions asked, no hoops to jump through. Your access continues until the end of your billing period.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <h2>Ready to Trade Smarter?</h2>
+        <p>
+            Stop spending hours scanning charts for setups that may or may not be there. Let SweepSignal do the watching. You do the trading.
+        </p>
+        <a href="#pricing" class="btn btn-primary btn-large">Start Your 7-Day Free Trial</a>
+        <p class="final-trust">No credit card required · Cancel anytime · Setup in 2 minutes</p>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>⭐ SweepSignal</h3>
+                <p>Automated liquidity sweep scanner for forex traders. Find A+ setups without spending hours on charts.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="dashboard">Dashboard</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Risk Disclaimer</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Connect</h4>
+                <ul>
+                    <li><a href="#">Twitter</a></li>
+                    <li><a href="#">Discord</a></li>
+                    <li><a href="#">Email Support</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p class="footer-disclaimer">
+                © 2026 SweepSignal. All rights reserved.<br><br>
+                Trading foreign exchange on margin carries a high level of risk and may not be suitable for all investors. The high degree of leverage can work against you as well as for you. Before deciding to trade foreign exchange, you should carefully consider your investment objectives, level of experience, and risk appetite. The possibility exists that you could sustain a loss of some or all of your initial investment and therefore you should not invest money that you cannot afford to lose. You should be aware of all the risks associated with foreign exchange trading. SweepSignal is not a financial advisor and does not provide financial advice. All trading decisions are made by you.
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
