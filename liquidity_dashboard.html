@@ -61,17 +61,17 @@
             background: rgba(0,217,255,0.1);
             border-radius: 8px;
             border: 1px solid rgba(0,217,255,0.3);
-            min-width: 100px;
+            min-width: 90px;
         }
         
         .stat-box .value {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: bold;
             color: #00d9ff;
         }
         
         .stat-box .label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #888;
             text-transform: uppercase;
         }
@@ -112,14 +112,14 @@
         /* Controls */
         .controls {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
             align-items: center;
         }
         
         .btn {
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -128,7 +128,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
         
         .btn-primary {
@@ -155,6 +155,21 @@
             background: rgba(0,217,255,0.2);
             border-color: rgba(0,217,255,0.5);
             color: #00d9ff;
+        }
+        
+        .btn-settings {
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255,193,7,0.3);
+        }
+        
+        .btn-settings:hover {
+            background: rgba(255,193,7,0.3);
+        }
+        
+        .btn-settings.active {
+            background: rgba(255,193,7,0.3);
+            border-color: #ffc107;
         }
         
         .btn:disabled {
@@ -187,12 +202,168 @@
             border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
         
         .timeframe-selector select:focus {
             outline: none;
             border-color: #00d9ff;
+        }
+        
+        /* Settings Panel */
+        .settings-panel {
+            background: rgba(255,193,7,0.05);
+            border: 1px solid rgba(255,193,7,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .settings-panel.visible {
+            display: block;
+        }
+        
+        .settings-panel h3 {
+            color: #ffc107;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .setting-item {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .setting-item label {
+            display: block;
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .setting-item input[type="number"],
+        .setting-item input[type="text"] {
+            width: 100%;
+            background: rgba(0,217,255,0.1);
+            border: 1px solid rgba(0,217,255,0.3);
+            color: #00d9ff;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .setting-item input:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+        
+        .setting-item .hint {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Toggle Switch */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: #888;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background: rgba(0,255,136,0.3);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+            background: #00ff88;
+        }
+        
+        .settings-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-apply {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+        }
+        
+        .btn-reset {
+            background: rgba(255,71,87,0.2);
+            color: #ff4757;
+            border: 1px solid rgba(255,71,87,0.3);
+        }
+        
+        /* Active settings indicator */
+        .active-settings {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #888;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .active-settings .setting-tag {
+            background: rgba(0,217,255,0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: #00d9ff;
         }
         
         /* Signals Grid */
@@ -378,31 +549,31 @@
         }
         
         .table-scroll {
-            max-height: 500px;
+            max-height: 400px;
             overflow-y: auto;
         }
         
         .instruments-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
         .instruments-table th {
             text-align: left;
-            padding: 12px 10px;
+            padding: 10px 8px;
             background: rgba(0,0,0,0.3);
             color: #888;
             font-weight: 600;
             text-transform: uppercase;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             position: sticky;
             top: 0;
             z-index: 10;
         }
         
         .instruments-table td {
-            padding: 12px 10px;
+            padding: 10px 8px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         
@@ -417,16 +588,15 @@
         
         .level-tag {
             display: inline-block;
-            padding: 3px 8px;
-            margin: 2px;
+            padding: 2px 6px;
+            margin: 1px;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
         }
         
         .level-tag.pdh { background: rgba(0,255,136,0.2); color: #00ff88; }
         .level-tag.pdl { background: rgba(255,71,87,0.2); color: #ff4757; }
         .level-tag.equal { background: rgba(0,217,255,0.2); color: #00d9ff; }
-        .level-tag.session { background: rgba(255,193,7,0.2); color: #ffc107; }
         
         /* No signals message */
         .no-signals {
@@ -521,9 +691,12 @@
             .controls {
                 justify-content: center;
             }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
-        /* Auto-refresh indicator */
         .refresh-timer {
             font-size: 0.8rem;
             color: #666;
@@ -541,7 +714,7 @@
             <div class="header-stats">
                 <div class="stat-box">
                     <div class="value" id="signalCount">-</div>
-                    <div class="label">Active Signals</div>
+                    <div class="label">Signals</div>
                 </div>
                 <div class="stat-box">
                     <div class="value" id="instrumentCount">28</div>
@@ -575,23 +748,97 @@
         <!-- Controls -->
         <div class="controls">
             <div class="timeframe-selector">
-                <label for="timeframeSelect">Timeframe:</label>
+                <label for="timeframeSelect">TF:</label>
                 <select id="timeframeSelect" onchange="changeTimeframe(this.value)">
-                    <option value="M30">M30 (30 min)</option>
-                    <option value="H1" selected>H1 (1 hour)</option>
-                    <option value="H4">H4 (4 hour)</option>
+                    <option value="M30">M30</option>
+                    <option value="H1" selected>H1</option>
+                    <option value="H4">H4</option>
                     <option value="D">Daily</option>
                 </select>
             </div>
             <button class="btn btn-primary" id="scanBtn" onclick="runScan(true)">
-                <span>🔄</span> Force Scan
+                <span>🔄</span> Scan
+            </button>
+            <button class="btn btn-settings" id="settingsBtn" onclick="toggleSettings()">
+                <span>⚙️</span> Settings
             </button>
             <button class="btn btn-secondary" id="toggleBtn" onclick="toggleInstruments()">
-                <span>📊</span> Show Instruments
+                <span>📊</span> Instruments
             </button>
             <button class="btn btn-secondary" onclick="exportSignals()">
-                <span>📥</span> Export Signals
+                <span>📥</span> Export
             </button>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <h3><span>⚙️</span> Scanner Settings</h3>
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label>Minimum R:R Ratio</label>
+                    <input type="number" id="settingMinRR" value="2.5" step="0.1" min="1" max="10">
+                    <div class="hint">Only show signals with this R:R or higher</div>
+                </div>
+                <div class="setting-item">
+                    <label>Max Signals Per Instrument</label>
+                    <input type="number" id="settingMaxSignals" value="2" step="1" min="1" max="10">
+                    <div class="hint">Limit signals shown for each pair</div>
+                </div>
+                <div class="setting-item">
+                    <label>Equal Level Tolerance (%)</label>
+                    <input type="number" id="settingEqualTolerance" value="0.03" step="0.01" min="0.01" max="0.5">
+                    <div class="hint">How close prices must be to count as "equal"</div>
+                </div>
+                <div class="setting-item">
+                    <label>Displacement ATR Multiple</label>
+                    <input type="number" id="settingDisplacementMultiple" value="1.5" step="0.1" min="1" max="5">
+                    <div class="hint">Candle body must be X times ATR for displacement</div>
+                </div>
+                <div class="setting-item">
+                    <label>Max Equal Levels (per side)</label>
+                    <input type="number" id="settingMaxEqualLevels" value="3" step="1" min="1" max="10">
+                    <div class="hint">Max equal highs/lows to track</div>
+                </div>
+                <div class="setting-item">
+                    <label>Require Displacement</label>
+                    <div class="toggle-container">
+                        <span class="hint">Only signals with strong candles</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settingRequireDisplacement">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Require Fair Value Gap</label>
+                    <div class="toggle-container">
+                        <span class="hint">Only signals with FVG present</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settingRequireFVG">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="settings-actions">
+                <button class="btn btn-apply" onclick="applySettings()">
+                    <span>✓</span> Apply & Scan
+                </button>
+                <button class="btn btn-reset" onclick="resetSettings()">
+                    <span>↺</span> Reset Defaults
+                </button>
+                <button class="btn btn-secondary" onclick="toggleSettings()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+        
+        <!-- Active Settings Display -->
+        <div class="active-settings" id="activeSettings">
+            <span>Active:</span>
+            <span class="setting-tag" id="tagMinRR">R:R ≥ 2.5</span>
+            <span class="setting-tag" id="tagTimeframe">H1</span>
+            <span class="setting-tag" id="tagMaxSignals">Max 2/pair</span>
         </div>
         
         <!-- Instruments Overview (hidden by default) -->
@@ -604,12 +851,12 @@
                 <table class="instruments-table">
                     <thead>
                         <tr>
-                            <th>Instrument</th>
+                            <th>Pair</th>
                             <th>Price</th>
                             <th>PDH</th>
                             <th>PDL</th>
-                            <th>EQ Highs</th>
-                            <th>EQ Lows</th>
+                            <th>EQ-H</th>
+                            <th>EQ-L</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -639,50 +886,154 @@
         // CONFIGURATION
         // ================================================
         
-        // UPDATE THIS to your Render.com URL
         const PROXY_URL = 'https://oanda-proxy.onrender.com';
+        const STORAGE_KEY = 'liquidityScannerSettings';
         
-        const REFRESH_INTERVAL = 60000; // 60 seconds
+        const DEFAULT_SETTINGS = {
+            minRR: 2.5,
+            maxSignals: 2,
+            equalTolerance: 0.03,
+            displacementMultiple: 1.5,
+            maxEqualLevels: 3,
+            requireDisplacement: false,
+            requireFVG: false,
+            timeframe: 'H1'
+        };
+        
+        let settings = { ...DEFAULT_SETTINGS };
         let refreshCountdown = 60;
         let instrumentsVisible = false;
+        let settingsVisible = false;
         let lastData = null;
-        let currentTimeframe = 'H1';
+        
+        // ================================================
+        // SETTINGS MANAGEMENT
+        // ================================================
+        
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    settings = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+                }
+            } catch (e) {
+                console.error('Error loading settings:', e);
+            }
+            applySettingsToUI();
+        }
+        
+        function saveSettings() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+            } catch (e) {
+                console.error('Error saving settings:', e);
+            }
+        }
+        
+        function applySettingsToUI() {
+            document.getElementById('settingMinRR').value = settings.minRR;
+            document.getElementById('settingMaxSignals').value = settings.maxSignals;
+            document.getElementById('settingEqualTolerance').value = settings.equalTolerance * 100;
+            document.getElementById('settingDisplacementMultiple').value = settings.displacementMultiple;
+            document.getElementById('settingMaxEqualLevels').value = settings.maxEqualLevels;
+            document.getElementById('settingRequireDisplacement').checked = settings.requireDisplacement;
+            document.getElementById('settingRequireFVG').checked = settings.requireFVG;
+            document.getElementById('timeframeSelect').value = settings.timeframe;
+            
+            updateActiveSettingsTags();
+        }
+        
+        function readSettingsFromUI() {
+            settings.minRR = parseFloat(document.getElementById('settingMinRR').value) || 2.5;
+            settings.maxSignals = parseInt(document.getElementById('settingMaxSignals').value) || 2;
+            settings.equalTolerance = (parseFloat(document.getElementById('settingEqualTolerance').value) || 3) / 100;
+            settings.displacementMultiple = parseFloat(document.getElementById('settingDisplacementMultiple').value) || 1.5;
+            settings.maxEqualLevels = parseInt(document.getElementById('settingMaxEqualLevels').value) || 3;
+            settings.requireDisplacement = document.getElementById('settingRequireDisplacement').checked;
+            settings.requireFVG = document.getElementById('settingRequireFVG').checked;
+            settings.timeframe = document.getElementById('timeframeSelect').value;
+        }
+        
+        function updateActiveSettingsTags() {
+            document.getElementById('tagMinRR').textContent = `R:R ≥ ${settings.minRR}`;
+            document.getElementById('tagTimeframe').textContent = settings.timeframe;
+            document.getElementById('tagMaxSignals').textContent = `Max ${settings.maxSignals}/pair`;
+            document.getElementById('currentTimeframe').textContent = settings.timeframe;
+            
+            // Show extra tags if non-default
+            let extraTags = [];
+            if (settings.requireDisplacement) extraTags.push('Displacement Required');
+            if (settings.requireFVG) extraTags.push('FVG Required');
+            
+            const container = document.getElementById('activeSettings');
+            // Remove old extra tags
+            container.querySelectorAll('.extra-tag').forEach(el => el.remove());
+            
+            extraTags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'setting-tag extra-tag';
+                span.style.background = 'rgba(255,193,7,0.2)';
+                span.style.color = '#ffc107';
+                span.textContent = tag;
+                container.appendChild(span);
+            });
+        }
+        
+        function toggleSettings() {
+            settingsVisible = !settingsVisible;
+            const panel = document.getElementById('settingsPanel');
+            const btn = document.getElementById('settingsBtn');
+            
+            if (settingsVisible) {
+                panel.classList.add('visible');
+                btn.classList.add('active');
+            } else {
+                panel.classList.remove('visible');
+                btn.classList.remove('active');
+            }
+        }
+        
+        function applySettings() {
+            readSettingsFromUI();
+            saveSettings();
+            updateActiveSettingsTags();
+            toggleSettings();
+            runScan(true);
+        }
+        
+        function resetSettings() {
+            settings = { ...DEFAULT_SETTINGS };
+            saveSettings();
+            applySettingsToUI();
+        }
         
         // ================================================
         // API CALLS
         // ================================================
         
-        async function fetchSignals(timeframe) {
-            try {
-                const response = await fetch(`${PROXY_URL}/liquidity/signals?timeframe=${timeframe}`);
-                if (!response.ok) throw new Error('Failed to fetch signals');
-                return await response.json();
-            } catch (error) {
-                console.error('Fetch signals error:', error);
-                return null;
-            }
+        function buildQueryString() {
+            const params = new URLSearchParams({
+                timeframe: settings.timeframe,
+                minRR: settings.minRR,
+                maxSignals: settings.maxSignals,
+                equalTolerance: settings.equalTolerance,
+                displacementMultiple: settings.displacementMultiple,
+                maxEqualLevels: settings.maxEqualLevels,
+                requireDisplacement: settings.requireDisplacement,
+                requireFVG: settings.requireFVG
+            });
+            return params.toString();
         }
         
-        async function fetchFullScan(timeframe, forceRefresh = false) {
+        async function fetchFullScan(forceRefresh = false) {
             try {
                 const refreshParam = forceRefresh ? '&refresh=true' : '';
-                const url = `${PROXY_URL}/liquidity/scan?timeframe=${timeframe}${refreshParam}`;
+                const url = `${PROXY_URL}/liquidity/scan?${buildQueryString()}${refreshParam}`;
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Failed to fetch scan');
                 return await response.json();
             } catch (error) {
                 console.error('Fetch scan error:', error);
-                return null;
-            }
-        }
-        
-        async function fetchConfig() {
-            try {
-                const response = await fetch(`${PROXY_URL}/liquidity/config`);
-                if (!response.ok) throw new Error('Failed to fetch config');
-                return await response.json();
-            } catch (error) {
-                console.error('Fetch config error:', error);
                 return null;
             }
         }
@@ -698,10 +1049,9 @@
                 container.innerHTML = `
                     <div class="no-signals">
                         <div class="no-signals-icon">🔭</div>
-                        <h3>No Active Signals on ${currentTimeframe}</h3>
-                        <p>The scanner is monitoring ${lastData?.instrumentsScanned || 28} instruments.</p>
-                        <p>Signals appear when liquidity sweep conditions are met with R:R ≥ 2.5</p>
-                        <p style="margin-top: 15px; color: #00d9ff;">Try a different timeframe or wait for market conditions to change.</p>
+                        <h3>No Active Signals on ${settings.timeframe}</h3>
+                        <p>Monitoring ${lastData?.instrumentsScanned || 28} instruments with R:R ≥ ${settings.minRR}</p>
+                        <p style="margin-top: 15px; color: #ffc107;">Try adjusting settings or a different timeframe</p>
                     </div>
                 `;
                 return;
@@ -762,15 +1112,15 @@
                     return `
                         <tr>
                             <td class="pair-name">${formatPair(inst.instrument)}</td>
-                            <td colspan="6" style="color: #ff4757;">Error: ${inst.error}</td>
+                            <td colspan="6" style="color: #ff4757;">Error</td>
                         </tr>
                     `;
                 }
                 
                 const hasSignal = inst.signals && inst.signals.length > 0;
                 const status = hasSignal 
-                    ? `<span style="color: #00ff88;">⚡ ${inst.signals.length} Signal(s)</span>`
-                    : '<span style="color: #666;">Monitoring</span>';
+                    ? `<span style="color: #00ff88;">⚡ ${inst.signals.length}</span>`
+                    : '<span style="color: #666;">-</span>';
                 
                 return `
                     <tr>
@@ -788,13 +1138,12 @@
         
         function updateStats(data) {
             document.getElementById('signalCount').textContent = data.signalCount || data.signals?.length || 0;
-            document.getElementById('instrumentCount').textContent = data.instrumentsScanned || data.instruments?.length || 28;
-            document.getElementById('currentTimeframe').textContent = data.timeframe || currentTimeframe;
+            document.getElementById('instrumentCount').textContent = data.instrumentsScanned || 28;
+            document.getElementById('currentTimeframe').textContent = data.timeframe || settings.timeframe;
             
             const session = data.currentSession || 'Unknown';
             document.getElementById('currentSession').textContent = session;
             
-            // Update session indicator style
             const sessionIndicator = document.getElementById('sessionIndicator');
             if (session === 'OFF_HOURS') {
                 sessionIndicator.classList.add('off-hours');
@@ -853,23 +1202,20 @@
             
             if (instrumentsVisible) {
                 section.style.display = 'block';
-                btn.innerHTML = '<span>📊</span> Hide Instruments';
                 btn.classList.add('active');
-                
-                // Render instruments if we have data
                 if (lastData && lastData.instruments) {
                     renderInstruments(lastData.instruments);
                 }
             } else {
                 section.style.display = 'none';
-                btn.innerHTML = '<span>📊</span> Show Instruments';
                 btn.classList.remove('active');
             }
         }
         
         function changeTimeframe(timeframe) {
-            currentTimeframe = timeframe;
-            document.getElementById('currentTimeframe').textContent = timeframe;
+            settings.timeframe = timeframe;
+            saveSettings();
+            updateActiveSettingsTags();
             runScan(true);
         }
         
@@ -890,7 +1236,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `liquidity_signals_${currentTimeframe}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `liquidity_signals_${settings.timeframe}_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             URL.revokeObjectURL(url);
         }
@@ -904,16 +1250,15 @@
             btn.disabled = true;
             btn.innerHTML = '<span>⏳</span> Scanning...';
             
-            // Show loading in signals container
             document.getElementById('signalsContainer').innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>Scanning ${currentTimeframe} timeframe...</p>
+                    <p>Scanning ${settings.timeframe} with R:R ≥ ${settings.minRR}...</p>
                 </div>
             `;
             
             try {
-                const data = await fetchFullScan(currentTimeframe, forceRefresh);
+                const data = await fetchFullScan(forceRefresh);
                 
                 if (data) {
                     lastData = data;
@@ -939,26 +1284,8 @@
                 updateConnectionStatus(false);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<span>🔄</span> Force Scan';
+                btn.innerHTML = '<span>🔄</span> Scan';
                 refreshCountdown = 60;
-            }
-        }
-        
-        async function refreshSignals() {
-            try {
-                const data = await fetchSignals(currentTimeframe);
-                
-                if (data) {
-                    lastData = { ...lastData, ...data };
-                    updateStats(data);
-                    renderSignals(data.signals);
-                    updateConnectionStatus(true, data.isStale);
-                } else {
-                    updateConnectionStatus(false);
-                }
-            } catch (error) {
-                console.error('Refresh error:', error);
-                updateConnectionStatus(false);
             }
         }
         
@@ -966,7 +1293,10 @@
         // INITIALIZATION
         // ================================================
         
-        // Initial load
+        // Load saved settings
+        loadSettings();
+        
+        // Initial scan
         runScan();
         
         // Auto-refresh countdown
@@ -975,15 +1305,10 @@
             document.getElementById('refreshTimer').textContent = refreshCountdown;
             
             if (refreshCountdown <= 0) {
-                refreshSignals();
+                runScan(false);
                 refreshCountdown = 60;
             }
         }, 1000);
-        
-        // Full scan every 5 minutes
-        setInterval(() => {
-            runScan(false);
-        }, 300000);
     </script>
 </body>
 </html>
