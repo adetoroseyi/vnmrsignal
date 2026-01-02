@@ -3,156 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liquidity Sweep Scanner v4</title>
+    <title>Liquidity Sweep Scanner v5 - A+ Signals</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 100%);
             color: #e4e4e4;
             min-height: 100vh;
-            padding: 15px;
+            padding: 12px;
         }
         
-        .container { max-width: 1600px; margin: 0 auto; }
+        .container { max-width: 1700px; margin: 0 auto; }
         
         /* Header */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 18px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
             flex-wrap: wrap;
             gap: 10px;
         }
         
         .header h1 {
-            font-size: 1.5rem;
-            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            font-size: 1.4rem;
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         
-        .header-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+        .header-stats { display: flex; gap: 8px; flex-wrap: wrap; }
         
         .stat-box {
             text-align: center;
-            padding: 8px 15px;
-            background: rgba(0,217,255,0.1);
-            border-radius: 8px;
-            border: 1px solid rgba(0,217,255,0.3);
-            min-width: 80px;
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+            min-width: 70px;
         }
         
-        .stat-box .value { font-size: 1.3rem; font-weight: bold; color: #00d9ff; }
-        .stat-box .label { font-size: 0.65rem; color: #888; text-transform: uppercase; }
+        .stat-box .value { font-size: 1.2rem; font-weight: bold; color: #00d9ff; }
+        .stat-box .label { font-size: 0.6rem; color: #666; text-transform: uppercase; }
+        .stat-box.gold .value { color: #ffd700; }
+        .stat-box.green .value { color: #00ff88; }
         
+        /* Grade Counts */
+        .grade-counts {
+            display: flex;
+            gap: 6px;
+            background: rgba(0,0,0,0.3);
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .grade-count {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .grade-count.a-plus { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; }
+        .grade-count.a { background: rgba(0,255,136,0.3); color: #00ff88; }
+        .grade-count.b { background: rgba(0,217,255,0.3); color: #00d9ff; }
+        .grade-count.c { background: rgba(255,255,255,0.1); color: #888; }
+        
+        /* Session Indicator */
         .session-indicator {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 15px;
+            gap: 6px;
+            padding: 6px 12px;
             background: rgba(0,255,136,0.1);
-            border-radius: 8px;
+            border-radius: 6px;
             border: 1px solid rgba(0,255,136,0.3);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
         .session-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px; height: 8px;
             border-radius: 50%;
             background: #00ff88;
             animation: pulse 2s infinite;
         }
         
-        .session-indicator.off-hours {
-            background: rgba(255,193,7,0.1);
-            border-color: rgba(255,193,7,0.3);
-        }
-        
+        .session-indicator.off-hours { background: rgba(255,193,7,0.1); border-color: rgba(255,193,7,0.3); }
         .session-indicator.off-hours .session-dot { background: #ffc107; }
         
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
         /* Warning Banner */
         .warning-banner {
-            background: rgba(255,71,87,0.2);
-            border: 1px solid rgba(255,71,87,0.5);
-            border-radius: 8px;
-            padding: 12px 20px;
-            margin-bottom: 15px;
+            background: linear-gradient(90deg, rgba(255,71,87,0.2), rgba(255,71,87,0.1));
+            border: 1px solid rgba(255,71,87,0.4);
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 10px;
-            animation: warningPulse 2s infinite;
+            font-size: 0.9rem;
         }
         
         .warning-banner.hidden { display: none; }
-        
-        @keyframes warningPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-        
-        .warning-banner .icon { font-size: 1.5rem; }
         .warning-banner .text { color: #ff6b7a; font-weight: 600; }
-        
-        /* News Banner */
-        .news-banner {
-            background: rgba(255,193,7,0.15);
-            border: 1px solid rgba(255,193,7,0.4);
-            border-radius: 8px;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            font-size: 0.85rem;
-        }
-        
-        .news-banner.hidden { display: none; }
-        .news-banner .title { color: #ffc107; font-weight: 600; margin-bottom: 5px; }
-        .news-banner .events { color: #ccc; }
         
         /* Controls */
         .controls {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
             align-items: center;
         }
         
         .btn {
-            padding: 8px 16px;
+            padding: 7px 14px;
             border: none;
-            border-radius: 6px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.85rem;
+            gap: 5px;
+            font-size: 0.8rem;
         }
         
-        .btn-primary { background: linear-gradient(135deg, #00d9ff, #0099ff); color: #fff; }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0,217,255,0.4); }
+        .btn-primary { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(255,215,0,0.4); }
         
         .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: #e4e4e4;
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+            color: #ccc;
+            border: 1px solid rgba(255,255,255,0.15);
         }
-        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
-        .btn-secondary.active { background: rgba(0,217,255,0.2); border-color: rgba(0,217,255,0.5); color: #00d9ff; }
-        
-        .btn-settings { background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
-        .btn-settings.active { background: rgba(255,193,7,0.3); border-color: #ffc107; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+        .btn-secondary.active { background: rgba(0,217,255,0.2); border-color: rgba(0,217,255,0.4); color: #00d9ff; }
         
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
@@ -160,271 +156,315 @@
         .selector-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: rgba(0,0,0,0.3);
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 5px 10px;
+            border-radius: 5px;
             border: 1px solid rgba(255,255,255,0.1);
         }
         
-        .selector-group label { color: #888; font-size: 0.8rem; }
+        .selector-group label { color: #666; font-size: 0.75rem; }
         
         .selector-group select {
-            background: rgba(0,217,255,0.2);
+            background: rgba(0,0,0,0.5);
             color: #00d9ff;
             border: 1px solid rgba(0,217,255,0.3);
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 4px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
+        
+        /* Grade Filter */
+        .grade-filter {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        
+        .grade-btn {
+            padding: 7px 12px;
+            border: none;
+            background: transparent;
+            color: #888;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        
+        .grade-btn:hover { background: rgba(255,255,255,0.1); }
+        .grade-btn.active { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; }
         
         /* Direction Toggle */
         .direction-toggle {
             display: flex;
             background: rgba(0,0,0,0.3);
-            border-radius: 6px;
+            border-radius: 5px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1);
         }
         
         .direction-btn {
-            padding: 8px 16px;
+            padding: 7px 12px;
             border: none;
             background: transparent;
-            color: #888;
+            color: #666;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             transition: all 0.2s;
         }
         
         .direction-btn:hover { background: rgba(255,255,255,0.1); }
-        
+        .direction-btn.active.both { background: rgba(0,217,255,0.3); color: #00d9ff; }
         .direction-btn.active.long { background: rgba(0,255,136,0.3); color: #00ff88; }
         .direction-btn.active.short { background: rgba(255,71,87,0.3); color: #ff4757; }
-        .direction-btn.active.both { background: rgba(0,217,255,0.3); color: #00d9ff; }
         
-        /* Settings Panel */
-        .settings-panel {
-            background: rgba(255,193,7,0.05);
-            border: 1px solid rgba(255,193,7,0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: none;
-        }
-        
-        .settings-panel.visible { display: block; }
-        .settings-panel h3 { color: #ffc107; margin-bottom: 12px; font-size: 1rem; }
-        
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
-        }
-        
-        .setting-item {
-            background: rgba(0,0,0,0.3);
-            padding: 12px;
-            border-radius: 6px;
-        }
-        
-        .setting-item label { display: block; color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 6px; }
-        
-        .setting-item input[type="number"] {
-            width: 100%;
-            background: rgba(0,217,255,0.1);
-            border: 1px solid rgba(0,217,255,0.3);
-            color: #00d9ff;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        
-        .setting-item .hint { font-size: 0.7rem; color: #666; margin-top: 4px; }
-        
-        .toggle-container { display: flex; align-items: center; justify-content: space-between; }
-        
-        .toggle-switch { position: relative; width: 44px; height: 24px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.1);
-            border-radius: 24px;
-            transition: 0.3s;
-        }
-        
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px; width: 18px;
-            left: 3px; bottom: 3px;
-            background: #888;
-            border-radius: 50%;
-            transition: 0.3s;
-        }
-        
-        .toggle-switch input:checked + .toggle-slider { background: rgba(0,255,136,0.3); }
-        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); background: #00ff88; }
-        
-        .settings-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn-apply { background: linear-gradient(135deg, #00ff88, #00cc6a); color: #000; }
-        .btn-reset { background: rgba(255,71,87,0.2); color: #ff4757; border: 1px solid rgba(255,71,87,0.3); }
-        
-        /* Active Settings Tags */
-        .active-settings {
-            background: rgba(0,0,0,0.3);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            color: #888;
+        /* News Bias Selector */
+        .news-bias-selector {
             display: flex;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid rgba(255,193,7,0.3);
+        }
+        
+        .news-btn {
+            padding: 7px 10px;
+            border: none;
+            background: transparent;
+            color: #666;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .news-btn:hover { background: rgba(255,255,255,0.1); }
+        .news-btn.active.none { background: rgba(255,255,255,0.1); color: #888; }
+        .news-btn.active.bullish { background: rgba(0,255,136,0.3); color: #00ff88; }
+        .news-btn.active.bearish { background: rgba(255,71,87,0.3); color: #ff4757; }
+        
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            margin-bottom: 12px;
+            font-size: 0.75rem;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 15px;
-            align-items: center;
         }
         
-        .setting-tag {
-            background: rgba(0,217,255,0.1);
-            padding: 3px 8px;
-            border-radius: 4px;
-            color: #00d9ff;
-        }
-        
-        .setting-tag.htf { background: rgba(156,39,176,0.2); color: #ce93d8; }
-        .setting-tag.direction-long { background: rgba(0,255,136,0.2); color: #00ff88; }
-        .setting-tag.direction-short { background: rgba(255,71,87,0.2); color: #ff4757; }
+        .status-item { display: flex; align-items: center; gap: 5px; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .status-dot.connected { background: #00ff88; }
+        .status-dot.disconnected { background: #ff4757; }
         
         /* Signals Section */
         .signals-section {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.02);
             border-radius: 10px;
             padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
         }
         
-        .signals-section h2 { margin-bottom: 12px; color: #00ff88; font-size: 1.1rem; }
+        .signals-section h2 {
+            margin-bottom: 12px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .signals-section h2 .gold { color: #ffd700; }
         
         .signals-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 12px;
         }
         
         /* Signal Card */
         .signal-card {
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.4);
             border-radius: 10px;
             padding: 15px;
-            border-left: 4px solid;
+            border: 2px solid;
             transition: all 0.2s;
+            position: relative;
         }
         
-        .signal-card:hover { transform: translateX(3px); background: rgba(0,0,0,0.4); }
-        .signal-card.long { border-left-color: #00ff88; }
-        .signal-card.short { border-left-color: #ff4757; }
+        .signal-card:hover { transform: translateY(-2px); }
         
-        .signal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .signal-pair { font-size: 1.2rem; font-weight: bold; }
+        .signal-card.grade-a-plus { border-color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+        .signal-card.grade-a { border-color: #00ff88; }
+        .signal-card.grade-b { border-color: #00d9ff; }
+        .signal-card.grade-c { border-color: #666; }
+        .signal-card.grade-d { border-color: #444; }
+        
+        /* Grade Badge */
+        .grade-badge {
+            position: absolute;
+            top: -8px;
+            right: 15px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.85rem;
+        }
+        
+        .grade-badge.a-plus { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; }
+        .grade-badge.a { background: rgba(0,255,136,0.3); color: #00ff88; border: 1px solid #00ff88; }
+        .grade-badge.b { background: rgba(0,217,255,0.3); color: #00d9ff; border: 1px solid #00d9ff; }
+        .grade-badge.c { background: rgba(255,255,255,0.1); color: #888; border: 1px solid #666; }
+        
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            margin-top: 5px;
+        }
+        
+        .signal-pair { font-size: 1.15rem; font-weight: bold; }
         
         .signal-direction {
             padding: 4px 10px;
-            border-radius: 15px;
+            border-radius: 12px;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
         
         .signal-direction.long { background: rgba(0,255,136,0.2); color: #00ff88; }
         .signal-direction.short { background: rgba(255,71,87,0.2); color: #ff4757; }
         
         .signal-setup {
-            font-size: 0.85rem;
+            display: inline-block;
+            font-size: 0.8rem;
             color: #00d9ff;
-            padding: 4px 8px;
+            padding: 3px 8px;
             background: rgba(0,217,255,0.1);
             border-radius: 4px;
-            display: inline-block;
             margin-bottom: 8px;
         }
         
-        /* HTF Confluence Badge */
-        .htf-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-left: 8px;
+        /* Score Display */
+        .score-display {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
         }
         
-        .htf-badge.aligned { background: rgba(0,255,136,0.2); color: #00ff88; }
-        .htf-badge.against { background: rgba(255,71,87,0.2); color: #ff4757; }
-        .htf-badge.neutral { background: rgba(255,255,255,0.1); color: #888; }
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .score-total {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #ffd700;
+        }
+        
+        .score-bar-container {
+            background: rgba(0,0,0,0.4);
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .score-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .score-bar.a-plus { background: linear-gradient(90deg, #ffd700, #ff8c00); }
+        .score-bar.a { background: #00ff88; }
+        .score-bar.b { background: #00d9ff; }
+        .score-bar.c { background: #888; }
+        
+        .score-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            font-size: 0.7rem;
+        }
+        
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 6px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 3px;
+        }
+        
+        .score-item .label { color: #888; }
+        .score-item .points { font-weight: 600; }
+        .score-item .points.max { color: #ffd700; }
+        .score-item .points.good { color: #00ff88; }
+        .score-item .points.ok { color: #00d9ff; }
+        .score-item .points.low { color: #888; }
+        .score-item .points.negative { color: #ff4757; }
         
         /* Signal Details */
         .signal-details {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-top: 12px;
+            gap: 6px;
+            margin-top: 10px;
         }
         
         .detail-item {
             display: flex;
             justify-content: space-between;
-            padding: 6px 8px;
-            background: rgba(255,255,255,0.05);
+            padding: 5px 8px;
+            background: rgba(255,255,255,0.03);
             border-radius: 4px;
         }
         
-        .detail-label { color: #888; font-size: 0.8rem; }
-        .detail-value { font-weight: 600; font-family: monospace; font-size: 0.85rem; }
+        .detail-label { color: #666; font-size: 0.75rem; }
+        .detail-value { font-weight: 600; font-family: monospace; font-size: 0.8rem; }
         .detail-value.positive { color: #00ff88; }
         .detail-value.negative { color: #ff4757; }
         
-        /* TP Levels Section */
+        /* TP Section */
         .tp-section {
             grid-column: span 2;
             background: rgba(0,255,136,0.05);
-            border: 1px solid rgba(0,255,136,0.2);
+            border: 1px solid rgba(0,255,136,0.15);
             border-radius: 6px;
-            padding: 10px;
-            margin-top: 5px;
+            padding: 8px;
         }
         
-        .tp-section .title {
-            font-size: 0.75rem;
-            color: #888;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
+        .tp-section .title { font-size: 0.7rem; color: #666; margin-bottom: 6px; }
         
-        .tp-levels {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
+        .tp-levels { display: flex; gap: 8px; }
         
         .tp-level {
             flex: 1;
             text-align: center;
-            padding: 8px;
-            background: rgba(0,0,0,0.2);
+            padding: 6px;
+            background: rgba(0,0,0,0.3);
             border-radius: 4px;
         }
         
-        .tp-level .label { font-size: 0.7rem; color: #888; margin-bottom: 3px; }
-        .tp-level .value { font-weight: bold; font-family: monospace; }
+        .tp-level .label { font-size: 0.65rem; color: #666; }
+        .tp-level .value { font-weight: bold; font-family: monospace; font-size: 0.8rem; }
         .tp-level.tp1 .value { color: #ffc107; }
         .tp-level.tp2 .value { color: #00d9ff; }
         .tp-level.runner .value { color: #00ff88; }
@@ -432,103 +472,95 @@
         .rr-badge {
             grid-column: span 2;
             text-align: center;
-            padding: 8px;
-            background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,217,255,0.15));
+            padding: 6px;
+            background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,217,255,0.1));
             border-radius: 6px;
         }
         
-        .rr-badge .value { font-size: 1.3rem; font-weight: bold; color: #00ff88; }
+        .rr-badge .value { font-size: 1.1rem; font-weight: bold; color: #00ff88; }
         
         /* Signal Badges */
-        .signal-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .signal-badges {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
         
         .badge {
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 8px;
+            font-size: 0.65rem;
             font-weight: 600;
         }
         
         .badge-displacement { background: rgba(255,193,7,0.2); color: #ffc107; }
         .badge-fvg { background: rgba(156,39,176,0.2); color: #ce93d8; }
-        .badge-news { background: rgba(255,71,87,0.2); color: #ff4757; }
         .badge-htf { background: rgba(0,217,255,0.2); color: #00d9ff; }
+        .badge-news { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .badge-news-against { background: rgba(255,71,87,0.2); color: #ff4757; }
         
         /* No Signals */
         .no-signals { text-align: center; padding: 50px 20px; color: #666; }
-        .no-signals-icon { font-size: 3.5rem; margin-bottom: 15px; }
-        .no-signals h3 { color: #888; margin-bottom: 8px; }
+        .no-signals-icon { font-size: 3rem; margin-bottom: 12px; }
+        .no-signals h3 { color: #888; margin-bottom: 8px; font-size: 1.1rem; }
         
         /* Loading */
         .loading { text-align: center; padding: 50px 20px; }
         
         .spinner {
-            width: 40px; height: 40px;
-            border: 3px solid rgba(0,217,255,0.2);
-            border-top-color: #00d9ff;
+            width: 35px; height: 35px;
+            border: 3px solid rgba(255,215,0,0.2);
+            border-top-color: #ffd700;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 12px;
         }
         
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Status Bar */
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 15px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-size: 0.8rem;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .status-item { display: flex; align-items: center; gap: 6px; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .status-dot.connected { background: #00ff88; }
-        .status-dot.disconnected { background: #ff4757; }
-        
         /* Instruments Table */
         .instruments-section {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.02);
             border-radius: 10px;
             padding: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 12px;
             display: none;
         }
         
         .instruments-section.visible { display: block; }
-        .instruments-section h2 { margin-bottom: 12px; color: #00d9ff; font-size: 1rem; }
+        .instruments-section h2 { margin-bottom: 10px; font-size: 0.95rem; color: #00d9ff; }
         
-        .table-scroll { max-height: 350px; overflow-y: auto; }
+        .table-scroll { max-height: 300px; overflow-y: auto; }
         
-        .instruments-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .instruments-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
         
         .instruments-table th {
             text-align: left;
-            padding: 8px 6px;
-            background: rgba(0,0,0,0.3);
-            color: #888;
-            font-weight: 600;
+            padding: 6px;
+            background: rgba(0,0,0,0.4);
+            color: #666;
+            font-size: 0.65rem;
             text-transform: uppercase;
-            font-size: 0.7rem;
             position: sticky;
             top: 0;
         }
         
-        .instruments-table td { padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .instruments-table tr:hover { background: rgba(255,255,255,0.05); }
+        .instruments-table td { padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .instruments-table tr:hover { background: rgba(255,255,255,0.03); }
         .instruments-table .pair-name { font-weight: 600; color: #00d9ff; }
         
-        .bias-tag { padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; font-weight: 600; }
+        .bias-tag {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        
         .bias-tag.bullish { background: rgba(0,255,136,0.2); color: #00ff88; }
         .bias-tag.bearish { background: rgba(255,71,87,0.2); color: #ff4757; }
-        .bias-tag.neutral { background: rgba(255,255,255,0.1); color: #888; }
+        .bias-tag.neutral { background: rgba(255,255,255,0.1); color: #666; }
         
         /* Responsive */
         @media (max-width: 768px) {
@@ -538,7 +570,7 @@
             .tp-section, .rr-badge { grid-column: span 1; }
             .tp-levels { flex-direction: column; }
             .controls { justify-content: center; }
-            .settings-grid { grid-template-columns: 1fr; }
+            .score-breakdown { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -546,15 +578,20 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🔍 Liquidity Sweep Scanner</h1>
+            <h1>⭐ A+ Signal Scanner</h1>
             <div class="header-stats">
-                <div class="stat-box">
+                <div class="stat-box gold">
                     <div class="value" id="signalCount">-</div>
                     <div class="label">Signals</div>
                 </div>
                 <div class="stat-box">
                     <div class="value" id="currentTimeframe">H1</div>
                     <div class="label">Timeframe</div>
+                </div>
+                <div class="grade-counts" id="gradeCounts">
+                    <span class="grade-count a-plus">A+: <span id="countAPlus">0</span></span>
+                    <span class="grade-count a">A: <span id="countA">0</span></span>
+                    <span class="grade-count b">B: <span id="countB">0</span></span>
                 </div>
                 <div class="session-indicator" id="sessionIndicator">
                     <div class="session-dot"></div>
@@ -563,16 +600,10 @@
             </div>
         </div>
         
-        <!-- Warning Banner (Session) -->
+        <!-- Warning Banner -->
         <div class="warning-banner hidden" id="warningBanner">
-            <span class="icon">⚠️</span>
+            <span>⚠️</span>
             <span class="text" id="warningText">Warning</span>
-        </div>
-        
-        <!-- News Banner -->
-        <div class="news-banner hidden" id="newsBanner">
-            <div class="title">📰 Upcoming High-Impact News</div>
-            <div class="events" id="newsEvents"></div>
         </div>
         
         <!-- Status Bar -->
@@ -581,12 +612,8 @@
                 <div class="status-dot" id="connectionDot"></div>
                 <span id="connectionStatus">Connecting...</span>
             </div>
-            <div class="status-item">
-                Last: <strong id="lastUpdate">-</strong>
-            </div>
-            <div class="status-item">
-                Auto: <span id="refreshTimer">60</span>s
-            </div>
+            <div class="status-item">Last: <strong id="lastUpdate">-</strong></div>
+            <div class="status-item">Auto: <span id="refreshTimer">60</span>s</div>
         </div>
         
         <!-- Controls -->
@@ -601,83 +628,28 @@
                 </select>
             </div>
             
+            <div class="grade-filter">
+                <button class="grade-btn active" onclick="setMinGrade('A+')">A+ Only</button>
+                <button class="grade-btn" onclick="setMinGrade('A')">A+/A</button>
+                <button class="grade-btn" onclick="setMinGrade('B')">B+</button>
+                <button class="grade-btn" onclick="setMinGrade('D')">All</button>
+            </div>
+            
             <div class="direction-toggle">
                 <button class="direction-btn both active" onclick="setDirection('BOTH')">ALL</button>
                 <button class="direction-btn long" onclick="setDirection('LONG')">LONG</button>
                 <button class="direction-btn short" onclick="setDirection('SHORT')">SHORT</button>
             </div>
             
+            <div class="news-bias-selector">
+                <button class="news-btn none active" onclick="setNewsBias('NONE')">No News</button>
+                <button class="news-btn bullish" onclick="setNewsBias('BULLISH')">📈 Bull</button>
+                <button class="news-btn bearish" onclick="setNewsBias('BEARISH')">📉 Bear</button>
+            </div>
+            
             <button class="btn btn-primary" id="scanBtn" onclick="runScan(true)">🔄 Scan</button>
-            <button class="btn btn-settings" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
             <button class="btn btn-secondary" id="toggleBtn" onclick="toggleInstruments()">📊</button>
             <button class="btn btn-secondary" onclick="exportSignals()">📥</button>
-        </div>
-        
-        <!-- Settings Panel -->
-        <div class="settings-panel" id="settingsPanel">
-            <h3>⚙️ Scanner Settings</h3>
-            <div class="settings-grid">
-                <div class="setting-item">
-                    <label>Min R:R Ratio</label>
-                    <input type="number" id="settingMinRR" value="2.5" step="0.1" min="1" max="10">
-                </div>
-                <div class="setting-item">
-                    <label>Max Signals/Pair</label>
-                    <input type="number" id="settingMaxSignals" value="2" step="1" min="1" max="10">
-                </div>
-                <div class="setting-item">
-                    <label>Equal Tolerance (%)</label>
-                    <input type="number" id="settingEqualTolerance" value="0.03" step="0.01" min="0.01" max="0.5">
-                </div>
-                <div class="setting-item">
-                    <label>Displacement ATR×</label>
-                    <input type="number" id="settingDisplacementMultiple" value="1.5" step="0.1" min="1" max="5">
-                </div>
-                <div class="setting-item">
-                    <label>Require HTF Confluence</label>
-                    <div class="toggle-container">
-                        <span class="hint">Signal aligns with HTF bias</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="settingRequireHTF" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <label>Require Displacement</label>
-                    <div class="toggle-container">
-                        <span class="hint">Strong candle only</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="settingRequireDisplacement">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <label>Require FVG</label>
-                    <div class="toggle-container">
-                        <span class="hint">Fair Value Gap present</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="settingRequireFVG">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="settings-actions">
-                <button class="btn btn-apply" onclick="applySettings()">✓ Apply</button>
-                <button class="btn btn-reset" onclick="resetSettings()">↺ Reset</button>
-                <button class="btn btn-secondary" onclick="toggleSettings()">Cancel</button>
-            </div>
-        </div>
-        
-        <!-- Active Settings -->
-        <div class="active-settings" id="activeSettings">
-            <span>Active:</span>
-            <span class="setting-tag" id="tagMinRR">R:R ≥ 2.5</span>
-            <span class="setting-tag" id="tagTimeframe">H1</span>
-            <span class="setting-tag htf" id="tagHTF">HTF Confluence</span>
-            <span class="setting-tag" id="tagDirection">All Directions</span>
         </div>
         
         <!-- Instruments Table -->
@@ -702,11 +674,11 @@
         
         <!-- Signals -->
         <div class="signals-section">
-            <h2>⚡ Active Trade Signals</h2>
+            <h2><span class="gold">⭐</span> Trade Signals <span style="font-size:0.8rem;color:#666;">(sorted by score)</span></h2>
             <div id="signalsContainer" class="signals-grid">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>Scanning markets...</p>
+                    <p>Scanning for A+ setups...</p>
                 </div>
             </div>
         </div>
@@ -717,18 +689,13 @@
         // CONFIG
         // ================================================
         const PROXY_URL = 'https://oanda-proxy.onrender.com';
-        const STORAGE_KEY = 'liquidityScannerSettingsV4';
+        const STORAGE_KEY = 'liquidityScannerSettingsV5';
         
         const DEFAULT_SETTINGS = {
-            minRR: 2.5,
-            maxSignals: 2,
-            equalTolerance: 0.03,
-            displacementMultiple: 1.5,
-            requireDisplacement: false,
-            requireFVG: false,
-            requireHTFConfluence: true,
             timeframe: 'H1',
-            directionFilter: 'BOTH'
+            minGrade: 'A+',
+            directionFilter: 'BOTH',
+            newsBias: 'NONE'
         };
         
         let settings = { ...DEFAULT_SETTINGS };
@@ -747,20 +714,21 @@
         }
         
         function saveSettings() {
-            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch (e) { console.error(e); }
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch (e) {}
         }
         
         function applySettingsToUI() {
-            document.getElementById('settingMinRR').value = settings.minRR;
-            document.getElementById('settingMaxSignals').value = settings.maxSignals;
-            document.getElementById('settingEqualTolerance').value = settings.equalTolerance * 100;
-            document.getElementById('settingDisplacementMultiple').value = settings.displacementMultiple;
-            document.getElementById('settingRequireDisplacement').checked = settings.requireDisplacement;
-            document.getElementById('settingRequireFVG').checked = settings.requireFVG;
-            document.getElementById('settingRequireHTF').checked = settings.requireHTFConfluence;
             document.getElementById('timeframeSelect').value = settings.timeframe;
             
-            // Update direction buttons
+            // Grade buttons
+            document.querySelectorAll('.grade-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(settings.minGrade === 'D' ? 'All' : settings.minGrade)) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Direction buttons
             document.querySelectorAll('.direction-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.classList.contains(settings.directionFilter.toLowerCase())) {
@@ -768,78 +736,52 @@
                 }
             });
             
-            updateActiveTags();
+            // News bias buttons
+            document.querySelectorAll('.news-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.classList.contains(settings.newsBias.toLowerCase())) {
+                    btn.classList.add('active');
+                }
+            });
         }
         
-        function readSettingsFromUI() {
-            settings.minRR = parseFloat(document.getElementById('settingMinRR').value) || 2.5;
-            settings.maxSignals = parseInt(document.getElementById('settingMaxSignals').value) || 2;
-            settings.equalTolerance = (parseFloat(document.getElementById('settingEqualTolerance').value) || 3) / 100;
-            settings.displacementMultiple = parseFloat(document.getElementById('settingDisplacementMultiple').value) || 1.5;
-            settings.requireDisplacement = document.getElementById('settingRequireDisplacement').checked;
-            settings.requireFVG = document.getElementById('settingRequireFVG').checked;
-            settings.requireHTFConfluence = document.getElementById('settingRequireHTF').checked;
-        }
-        
-        function updateActiveTags() {
-            document.getElementById('tagMinRR').textContent = `R:R ≥ ${settings.minRR}`;
-            document.getElementById('tagTimeframe').textContent = settings.timeframe;
-            document.getElementById('currentTimeframe').textContent = settings.timeframe;
-            
-            const htfTag = document.getElementById('tagHTF');
-            htfTag.style.display = settings.requireHTFConfluence ? 'inline-block' : 'none';
-            
-            const dirTag = document.getElementById('tagDirection');
-            if (settings.directionFilter === 'LONG') {
-                dirTag.textContent = 'LONG Only';
-                dirTag.className = 'setting-tag direction-long';
-            } else if (settings.directionFilter === 'SHORT') {
-                dirTag.textContent = 'SHORT Only';
-                dirTag.className = 'setting-tag direction-short';
-            } else {
-                dirTag.textContent = 'All Directions';
-                dirTag.className = 'setting-tag';
-            }
-        }
-        
-        function toggleSettings() {
-            const panel = document.getElementById('settingsPanel');
-            const btn = document.getElementById('settingsBtn');
-            const isVisible = panel.classList.toggle('visible');
-            btn.classList.toggle('active', isVisible);
-        }
-        
-        function applySettings() {
-            readSettingsFromUI();
+        function setMinGrade(grade) {
+            settings.minGrade = grade;
             saveSettings();
-            updateActiveTags();
-            toggleSettings();
+            document.querySelectorAll('.grade-btn').forEach(btn => {
+                btn.classList.remove('active');
+                const btnGrade = btn.textContent.includes('All') ? 'D' : 
+                                 btn.textContent.includes('B+') ? 'B' :
+                                 btn.textContent.includes('A+/A') ? 'A' : 'A+';
+                if (btnGrade === grade) btn.classList.add('active');
+            });
             runScan(true);
-        }
-        
-        function resetSettings() {
-            settings = { ...DEFAULT_SETTINGS };
-            saveSettings();
-            applySettingsToUI();
         }
         
         function setDirection(dir) {
             settings.directionFilter = dir;
             saveSettings();
-            
             document.querySelectorAll('.direction-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.classList.contains(dir.toLowerCase())) btn.classList.add('active');
             });
-            
-            updateActiveTags();
+            runScan(true);
+        }
+        
+        function setNewsBias(bias) {
+            settings.newsBias = bias;
+            saveSettings();
+            document.querySelectorAll('.news-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.classList.contains(bias.toLowerCase())) btn.classList.add('active');
+            });
             runScan(true);
         }
         
         function changeTimeframe(tf) {
             settings.timeframe = tf;
             saveSettings();
-            updateActiveTags();
+            document.getElementById('currentTimeframe').textContent = tf;
             runScan(true);
         }
         
@@ -849,14 +791,11 @@
         function buildQuery() {
             return new URLSearchParams({
                 timeframe: settings.timeframe,
-                minRR: settings.minRR,
-                maxSignals: settings.maxSignals,
-                equalTolerance: settings.equalTolerance,
-                displacementMultiple: settings.displacementMultiple,
-                requireDisplacement: settings.requireDisplacement,
-                requireFVG: settings.requireFVG,
-                requireHTFConfluence: settings.requireHTFConfluence,
-                directionFilter: settings.directionFilter
+                minGrade: settings.minGrade,
+                directionFilter: settings.directionFilter,
+                newsBias: settings.newsBias,
+                minRR: 2.0,
+                requireHTFConfluence: true
             }).toString();
         }
         
@@ -875,36 +814,87 @@
         // ================================================
         // RENDER
         // ================================================
+        function getScoreClass(points, max) {
+            const pct = points / max;
+            if (pct >= 0.9) return 'max';
+            if (pct >= 0.7) return 'good';
+            if (pct >= 0.4) return 'ok';
+            if (points < 0) return 'negative';
+            return 'low';
+        }
+        
         function renderSignals(signals) {
             const container = document.getElementById('signalsContainer');
             
             if (!signals || signals.length === 0) {
+                const gradeText = settings.minGrade === 'D' ? '' : `${settings.minGrade} `;
                 container.innerHTML = `
                     <div class="no-signals">
                         <div class="no-signals-icon">🔭</div>
-                        <h3>No Signals Found</h3>
-                        <p>Monitoring ${lastData?.instrumentsScanned || 28} pairs on ${settings.timeframe}</p>
-                        <p style="margin-top:10px;color:#ffc107;">Adjust settings or try different timeframe</p>
+                        <h3>No ${gradeText}Signals Found</h3>
+                        <p>Scanning ${lastData?.instrumentsScanned || 28} pairs on ${settings.timeframe}</p>
+                        <p style="margin-top:8px;color:#ffc107;font-size:0.85rem;">Try lowering grade filter or different timeframe</p>
                     </div>`;
                 return;
             }
             
             container.innerHTML = signals.map(s => {
-                const htfBadgeClass = s.htfConfluence === 'ALIGNED' ? 'aligned' : 
-                                      s.htfConfluence === 'AGAINST' ? 'against' : 'neutral';
-                const htfLabel = s.htfConfluence === 'ALIGNED' ? '✓ HTF Aligned' :
-                                 s.htfConfluence === 'AGAINST' ? '✗ Against HTF' : '○ HTF Neutral';
+                const gradeClass = s.grade === 'A+' ? 'a-plus' : s.grade.toLowerCase();
+                const cardGradeClass = s.grade === 'A+' ? 'grade-a-plus' : `grade-${s.grade.toLowerCase()}`;
+                const scoreBarClass = s.grade === 'A+' ? 'a-plus' : s.grade.toLowerCase();
+                const scorePct = Math.min(100, (s.score / 100) * 100);
+                
+                // Score breakdown
+                const bd = s.scoreBreakdown || {};
                 
                 return `
-                <div class="signal-card ${s.direction.toLowerCase()}">
+                <div class="signal-card ${cardGradeClass}">
+                    <div class="grade-badge ${gradeClass}">${s.grade}</div>
+                    
                     <div class="signal-header">
                         <span class="signal-pair">${s.instrument.replace('_','/')}</span>
                         <span class="signal-direction ${s.direction.toLowerCase()}">${s.direction}</span>
                     </div>
-                    <div>
-                        <span class="signal-setup">${s.setupType}</span>
-                        <span class="htf-badge ${htfBadgeClass}">${htfLabel}</span>
+                    
+                    <span class="signal-setup">${s.setupType}</span>
+                    
+                    <!-- Score Display -->
+                    <div class="score-display">
+                        <div class="score-header">
+                            <span style="color:#888;font-size:0.75rem;">SIGNAL SCORE</span>
+                            <span class="score-total">${s.score}/100</span>
+                        </div>
+                        <div class="score-bar-container">
+                            <div class="score-bar ${scoreBarClass}" style="width: ${scorePct}%"></div>
+                        </div>
+                        <div class="score-breakdown">
+                            <div class="score-item">
+                                <span class="label">Level</span>
+                                <span class="points ${getScoreClass(bd.levelQuality?.points || 0, 25)}">${bd.levelQuality?.points || 0}/25</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="label">Displacement</span>
+                                <span class="points ${getScoreClass(bd.displacement?.points || 0, 25)}">${bd.displacement?.points || 0}/25</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="label">FVG</span>
+                                <span class="points ${getScoreClass(bd.fvg?.points || 0, 20)}">${bd.fvg?.points || 0}/20</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="label">HTF</span>
+                                <span class="points ${getScoreClass(bd.htfConfluence?.points || 0, 15)}">${bd.htfConfluence?.points || 0}/15</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="label">R:R</span>
+                                <span class="points ${getScoreClass(bd.rewardRisk?.points || 0, 15)}">${bd.rewardRisk?.points || 0}/15</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="label">News</span>
+                                <span class="points ${bd.newsBias?.points > 0 ? 'good' : bd.newsBias?.points < 0 ? 'negative' : 'ok'}">${bd.newsBias?.points > 0 ? '+' : ''}${bd.newsBias?.points || 0}</span>
+                            </div>
+                        </div>
                     </div>
+                    
                     <div class="signal-details">
                         <div class="detail-item">
                             <span class="detail-label">Entry</span>
@@ -916,7 +906,7 @@
                         </div>
                         
                         <div class="tp-section">
-                            <div class="title">Take Profit Levels</div>
+                            <div class="title">TAKE PROFIT LEVELS</div>
                             <div class="tp-levels">
                                 <div class="tp-level tp1">
                                     <div class="label">TP1 (50%)</div>
@@ -937,11 +927,13 @@
                             R:R → <span class="value">${s.rewardRisk}:1</span>
                         </div>
                     </div>
+                    
                     <div class="signal-badges">
-                        ${s.hasDisplacement ? '<span class="badge badge-displacement">⚡ Displacement</span>' : ''}
+                        ${s.displacementStrength && s.displacementStrength !== 'NONE' ? `<span class="badge badge-displacement">⚡ ${s.displacementStrength}</span>` : ''}
                         ${s.hasFVG ? '<span class="badge badge-fvg">📊 FVG</span>' : ''}
-                        ${s.newsWarning ? '<span class="badge badge-news">📰 News</span>' : ''}
                         <span class="badge badge-htf">${s.htfTimeframe} ${s.htfBias}</span>
+                        ${s.scoreBreakdown?.newsBias?.points > 0 ? '<span class="badge badge-news">📰 News ↑</span>' : ''}
+                        ${s.scoreBreakdown?.newsBias?.points < 0 ? '<span class="badge badge-news-against">📰 News ↓</span>' : ''}
                     </div>
                 </div>`;
             }).join('');
@@ -962,44 +954,37 @@
                     <td><span class="bias-tag ${biasClass}">${i.htfBias || 'N/A'}</span></td>
                     <td>${i.pdh ? formatPrice(i.pdh, i.instrument) : '-'}</td>
                     <td>${i.pdl ? formatPrice(i.pdl, i.instrument) : '-'}</td>
-                    <td>${sigCount > 0 ? `<span style="color:#00ff88">⚡ ${sigCount}</span>` : '-'}</td>
+                    <td>${sigCount > 0 ? `<span style="color:#ffd700">⭐ ${sigCount}</span>` : '-'}</td>
                 </tr>`;
             }).join('');
         }
         
         function updateUI(data) {
-            // Stats
             document.getElementById('signalCount').textContent = data.signals?.length || 0;
             document.getElementById('currentSession').textContent = data.currentSession || 'Unknown';
+            document.getElementById('currentTimeframe').textContent = data.timeframe || settings.timeframe;
+            
+            // Grade counts
+            const gc = data.gradeCounts || {};
+            document.getElementById('countAPlus').textContent = gc['A+'] || 0;
+            document.getElementById('countA').textContent = gc['A'] || 0;
+            document.getElementById('countB').textContent = gc['B'] || 0;
             
             // Session indicator
             const si = document.getElementById('sessionIndicator');
             si.classList.toggle('off-hours', data.currentSession === 'OFF_HOURS');
             
-            // Timestamp
             if (data.timestamp) {
                 document.getElementById('lastUpdate').textContent = new Date(data.timestamp).toLocaleTimeString();
             }
             
-            // Session Warning Banner
+            // Warning banner
             const wb = document.getElementById('warningBanner');
             if (data.sessionWarning?.active) {
                 wb.classList.remove('hidden');
                 document.getElementById('warningText').textContent = data.sessionWarning.message;
             } else {
                 wb.classList.add('hidden');
-            }
-            
-            // News Banner
-            const nb = document.getElementById('newsBanner');
-            if (data.upcomingNews && data.upcomingNews.length > 0) {
-                nb.classList.remove('hidden');
-                const eventsHtml = data.upcomingNews.slice(0, 3).map(e => 
-                    `• ${e.event} (${e.country}) - ${new Date(e.date).toLocaleTimeString()}`
-                ).join('<br>');
-                document.getElementById('newsEvents').innerHTML = eventsHtml;
-            } else {
-                nb.classList.add('hidden');
             }
             
             // Connection
@@ -1028,15 +1013,15 @@
             if (!lastData?.signals?.length) return alert('No signals');
             
             const csv = [
-                'Instrument,Direction,Setup,Entry,SL,TP1,TP2,Runner,RR,HTF_Bias,HTF_Confluence,Displacement,FVG,News',
+                'Instrument,Direction,Setup,Grade,Score,Entry,SL,TP1,TP2,Runner,RR,HTF_Bias,Displacement,FVG',
                 ...lastData.signals.map(s => 
-                    `${s.instrument},${s.direction},${s.setupType},${s.entryPrice},${s.stopLoss},${s.tp1},${s.tp2},${s.runner},${s.rewardRisk},${s.htfBias},${s.htfConfluence},${s.hasDisplacement},${s.hasFVG},${s.newsWarning}`
+                    `${s.instrument},${s.direction},${s.setupType},${s.grade},${s.score},${s.entryPrice},${s.stopLoss},${s.tp1},${s.tp2},${s.runner},${s.rewardRisk},${s.htfBias},${s.displacementStrength},${s.hasFVG}`
                 )
             ].join('\n');
             
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
-            a.download = `liquidity_signals_${settings.timeframe}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `liquidity_signals_${settings.minGrade}_${settings.timeframe}_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
         }
         
@@ -1049,7 +1034,7 @@
             btn.textContent = '⏳...';
             
             document.getElementById('signalsContainer').innerHTML = `
-                <div class="loading"><div class="spinner"></div><p>Scanning ${settings.timeframe}...</p></div>`;
+                <div class="loading"><div class="spinner"></div><p>Scanning for ${settings.minGrade === 'D' ? 'all' : settings.minGrade} setups...</p></div>`;
             
             try {
                 const data = await fetchScan(refresh);
