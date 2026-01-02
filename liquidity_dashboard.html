@@ -34,6 +34,8 @@
             border-radius: 12px;
             margin-bottom: 20px;
             border: 1px solid rgba(255,255,255,0.1);
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
         .header h1 {
@@ -41,6 +43,7 @@
             background: linear-gradient(90deg, #00d9ff, #00ff88);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -48,7 +51,8 @@
         
         .header-stats {
             display: flex;
-            gap: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
         
         .stat-box {
@@ -57,16 +61,17 @@
             background: rgba(0,217,255,0.1);
             border-radius: 8px;
             border: 1px solid rgba(0,217,255,0.3);
+            min-width: 100px;
         }
         
         .stat-box .value {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: bold;
             color: #00d9ff;
         }
         
         .stat-box .label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #888;
             text-transform: uppercase;
         }
@@ -90,6 +95,15 @@
             animation: pulse 2s infinite;
         }
         
+        .session-indicator.off-hours {
+            background: rgba(255,193,7,0.1);
+            border-color: rgba(255,193,7,0.3);
+        }
+        
+        .session-indicator.off-hours .session-dot {
+            background: #ffc107;
+        }
+        
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
@@ -101,6 +115,7 @@
             gap: 15px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            align-items: center;
         }
         
         .btn {
@@ -113,6 +128,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 0.95rem;
         }
         
         .btn-primary {
@@ -135,9 +151,48 @@
             background: rgba(255,255,255,0.2);
         }
         
+        .btn-secondary.active {
+            background: rgba(0,217,255,0.2);
+            border-color: rgba(0,217,255,0.5);
+            color: #00d9ff;
+        }
+        
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        /* Timeframe selector */
+        .timeframe-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .timeframe-selector label {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
+        .timeframe-selector select {
+            background: rgba(0,217,255,0.2);
+            color: #00d9ff;
+            border: 1px solid rgba(0,217,255,0.3);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        
+        .timeframe-selector select:focus {
+            outline: none;
+            border-color: #00d9ff;
         }
         
         /* Signals Grid */
@@ -159,7 +214,7 @@
         
         .signals-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 15px;
         }
         
@@ -275,6 +330,7 @@
             display: flex;
             gap: 8px;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
         
         .badge {
@@ -294,17 +350,36 @@
             color: #ce93d8;
         }
         
+        .badge-timeframe {
+            background: rgba(255,255,255,0.1);
+            color: #888;
+        }
+        
+        .badge-priority {
+            background: rgba(0,217,255,0.2);
+            color: #00d9ff;
+        }
+        
         /* Instruments Table */
         .instruments-section {
             background: rgba(255,255,255,0.03);
             border-radius: 12px;
             padding: 20px;
             border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
         }
         
         .instruments-section h2 {
             margin-bottom: 15px;
             color: #00d9ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .table-scroll {
+            max-height: 500px;
+            overflow-y: auto;
         }
         
         .instruments-table {
@@ -323,6 +398,7 @@
             font-size: 0.8rem;
             position: sticky;
             top: 0;
+            z-index: 10;
         }
         
         .instruments-table td {
@@ -345,7 +421,6 @@
             margin: 2px;
             border-radius: 4px;
             font-size: 0.75rem;
-            background: rgba(255,255,255,0.1);
         }
         
         .level-tag.pdh { background: rgba(0,255,136,0.2); color: #00ff88; }
@@ -400,6 +475,8 @@
             border-radius: 8px;
             margin-bottom: 20px;
             font-size: 0.85rem;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .status-item {
@@ -422,11 +499,10 @@
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
-                gap: 15px;
+                text-align: center;
             }
             
             .header-stats {
-                flex-wrap: wrap;
                 justify-content: center;
             }
             
@@ -441,17 +517,16 @@
             .rr-badge {
                 grid-column: span 1;
             }
+            
+            .controls {
+                justify-content: center;
+            }
         }
         
         /* Auto-refresh indicator */
         .refresh-timer {
             font-size: 0.8rem;
             color: #666;
-        }
-        
-        .table-scroll {
-            max-height: 400px;
-            overflow-y: auto;
         }
     </style>
 </head>
@@ -469,10 +544,14 @@
                     <div class="label">Active Signals</div>
                 </div>
                 <div class="stat-box">
-                    <div class="value" id="instrumentCount">-</div>
+                    <div class="value" id="instrumentCount">28</div>
                     <div class="label">Instruments</div>
                 </div>
-                <div class="session-indicator">
+                <div class="stat-box">
+                    <div class="value" id="currentTimeframe">H1</div>
+                    <div class="label">Timeframe</div>
+                </div>
+                <div class="session-indicator" id="sessionIndicator">
                     <div class="session-dot"></div>
                     <span id="currentSession">Loading...</span>
                 </div>
@@ -495,15 +574,49 @@
         
         <!-- Controls -->
         <div class="controls">
+            <div class="timeframe-selector">
+                <label for="timeframeSelect">Timeframe:</label>
+                <select id="timeframeSelect" onchange="changeTimeframe(this.value)">
+                    <option value="M30">M30 (30 min)</option>
+                    <option value="H1" selected>H1 (1 hour)</option>
+                    <option value="H4">H4 (4 hour)</option>
+                    <option value="D">Daily</option>
+                </select>
+            </div>
             <button class="btn btn-primary" id="scanBtn" onclick="runScan(true)">
                 <span>🔄</span> Force Scan
             </button>
-            <button class="btn btn-secondary" onclick="toggleInstruments()">
-                <span>📊</span> Toggle Instruments
+            <button class="btn btn-secondary" id="toggleBtn" onclick="toggleInstruments()">
+                <span>📊</span> Show Instruments
             </button>
             <button class="btn btn-secondary" onclick="exportSignals()">
                 <span>📥</span> Export Signals
             </button>
+        </div>
+        
+        <!-- Instruments Overview (hidden by default) -->
+        <div class="instruments-section" id="instrumentsSection" style="display: none;">
+            <h2>
+                <span>📈</span>
+                All Instruments & Key Levels
+            </h2>
+            <div class="table-scroll">
+                <table class="instruments-table">
+                    <thead>
+                        <tr>
+                            <th>Instrument</th>
+                            <th>Price</th>
+                            <th>PDH</th>
+                            <th>PDL</th>
+                            <th>EQ Highs</th>
+                            <th>EQ Lows</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="instrumentsTable">
+                    </tbody>
+                </table>
+            </div>
         </div>
         
         <!-- Active Signals -->
@@ -517,30 +630,6 @@
                     <div class="spinner"></div>
                     <p>Scanning markets...</p>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Instruments Overview -->
-        <div class="instruments-section" id="instrumentsSection" style="display: none;">
-            <h2>
-                <span>📈</span>
-                All Instruments & Key Levels
-            </h2>
-            <div class="table-scroll">
-                <table class="instruments-table">
-                    <thead>
-                        <tr>
-                            <th>Instrument</th>
-                            <th>Current Price</th>
-                            <th>PDH</th>
-                            <th>PDL</th>
-                            <th>Key Levels</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="instrumentsTable">
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
@@ -557,14 +646,15 @@
         let refreshCountdown = 60;
         let instrumentsVisible = false;
         let lastData = null;
+        let currentTimeframe = 'H1';
         
         // ================================================
         // API CALLS
         // ================================================
         
-        async function fetchSignals() {
+        async function fetchSignals(timeframe) {
             try {
-                const response = await fetch(`${PROXY_URL}/liquidity/signals`);
+                const response = await fetch(`${PROXY_URL}/liquidity/signals?timeframe=${timeframe}`);
                 if (!response.ok) throw new Error('Failed to fetch signals');
                 return await response.json();
             } catch (error) {
@@ -573,11 +663,10 @@
             }
         }
         
-        async function fetchFullScan(forceRefresh = false) {
+        async function fetchFullScan(timeframe, forceRefresh = false) {
             try {
-                const url = forceRefresh 
-                    ? `${PROXY_URL}/liquidity/scan?refresh=true`
-                    : `${PROXY_URL}/liquidity/scan`;
+                const refreshParam = forceRefresh ? '&refresh=true' : '';
+                const url = `${PROXY_URL}/liquidity/scan?timeframe=${timeframe}${refreshParam}`;
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Failed to fetch scan');
                 return await response.json();
@@ -609,15 +698,20 @@
                 container.innerHTML = `
                     <div class="no-signals">
                         <div class="no-signals-icon">🔭</div>
-                        <h3>No Active Signals</h3>
+                        <h3>No Active Signals on ${currentTimeframe}</h3>
                         <p>The scanner is monitoring ${lastData?.instrumentsScanned || 28} instruments.</p>
-                        <p>Signals will appear when liquidity sweep conditions are met.</p>
+                        <p>Signals appear when liquidity sweep conditions are met with R:R ≥ 2.5</p>
+                        <p style="margin-top: 15px; color: #00d9ff;">Try a different timeframe or wait for market conditions to change.</p>
                     </div>
                 `;
                 return;
             }
             
-            container.innerHTML = signals.map(signal => `
+            container.innerHTML = signals.map(signal => {
+                const priorityLabel = signal.priority === 1 ? 'High Priority' : 
+                                      signal.priority === 2 ? 'Medium' : 'Standard';
+                
+                return `
                 <div class="signal-card ${signal.direction.toLowerCase()}">
                     <div class="signal-header">
                         <span class="signal-pair">${formatPair(signal.instrument)}</span>
@@ -648,17 +742,18 @@
                     <div class="signal-badges">
                         ${signal.hasDisplacement ? '<span class="badge badge-displacement">⚡ Displacement</span>' : ''}
                         ${signal.hasFVG ? '<span class="badge badge-fvg">📊 FVG</span>' : ''}
-                        <span class="badge" style="background: rgba(255,255,255,0.1); color: #888;">${signal.timeframe}</span>
+                        <span class="badge badge-timeframe">${signal.timeframe}</span>
+                        <span class="badge badge-priority">${priorityLabel}</span>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
         
         function renderInstruments(instruments) {
             const table = document.getElementById('instrumentsTable');
             
-            if (!instruments) {
-                table.innerHTML = '<tr><td colspan="6">No data available</td></tr>';
+            if (!instruments || instruments.length === 0) {
+                table.innerHTML = '<tr><td colspan="7">No data available</td></tr>';
                 return;
             }
             
@@ -667,18 +762,10 @@
                     return `
                         <tr>
                             <td class="pair-name">${formatPair(inst.instrument)}</td>
-                            <td colspan="5" style="color: #ff4757;">Error: ${inst.error}</td>
+                            <td colspan="6" style="color: #ff4757;">Error: ${inst.error}</td>
                         </tr>
                     `;
                 }
-                
-                const levels = [];
-                if (inst.pdh) levels.push(`<span class="level-tag pdh">PDH: ${formatPrice(inst.pdh, inst.instrument)}</span>`);
-                if (inst.pdl) levels.push(`<span class="level-tag pdl">PDL: ${formatPrice(inst.pdl, inst.instrument)}</span>`);
-                if (inst.equalHighs > 0) levels.push(`<span class="level-tag equal">EQ-H: ${inst.equalHighs}</span>`);
-                if (inst.equalLows > 0) levels.push(`<span class="level-tag equal">EQ-L: ${inst.equalLows}</span>`);
-                if (inst.asianHigh) levels.push(`<span class="level-tag session">AS</span>`);
-                if (inst.londonHigh) levels.push(`<span class="level-tag session">LN</span>`);
                 
                 const hasSignal = inst.signals && inst.signals.length > 0;
                 const status = hasSignal 
@@ -689,9 +776,10 @@
                     <tr>
                         <td class="pair-name">${formatPair(inst.instrument)}</td>
                         <td>${formatPrice(inst.currentPrice, inst.instrument)}</td>
-                        <td>${inst.pdh ? formatPrice(inst.pdh, inst.instrument) : '-'}</td>
-                        <td>${inst.pdl ? formatPrice(inst.pdl, inst.instrument) : '-'}</td>
-                        <td>${levels.join(' ') || '-'}</td>
+                        <td>${inst.pdh ? `<span class="level-tag pdh">${formatPrice(inst.pdh, inst.instrument)}</span>` : '-'}</td>
+                        <td>${inst.pdl ? `<span class="level-tag pdl">${formatPrice(inst.pdl, inst.instrument)}</span>` : '-'}</td>
+                        <td>${inst.equalHighs > 0 ? `<span class="level-tag equal">${inst.equalHighs}</span>` : '-'}</td>
+                        <td>${inst.equalLows > 0 ? `<span class="level-tag equal">${inst.equalLows}</span>` : '-'}</td>
                         <td>${status}</td>
                     </tr>
                 `;
@@ -700,8 +788,19 @@
         
         function updateStats(data) {
             document.getElementById('signalCount').textContent = data.signalCount || data.signals?.length || 0;
-            document.getElementById('instrumentCount').textContent = data.instrumentsScanned || data.instruments?.length || '-';
-            document.getElementById('currentSession').textContent = data.currentSession || 'Unknown';
+            document.getElementById('instrumentCount').textContent = data.instrumentsScanned || data.instruments?.length || 28;
+            document.getElementById('currentTimeframe').textContent = data.timeframe || currentTimeframe;
+            
+            const session = data.currentSession || 'Unknown';
+            document.getElementById('currentSession').textContent = session;
+            
+            // Update session indicator style
+            const sessionIndicator = document.getElementById('sessionIndicator');
+            if (session === 'OFF_HOURS') {
+                sessionIndicator.classList.add('off-hours');
+            } else {
+                sessionIndicator.classList.remove('off-hours');
+            }
             
             if (data.timestamp) {
                 const time = new Date(data.timestamp);
@@ -739,7 +838,7 @@
             if (!price) return '-';
             
             let decimals = 5;
-            if (instrument.includes('JPY')) decimals = 3;
+            if (instrument && instrument.includes('JPY')) decimals = 3;
             if (instrument === 'XAU_USD') decimals = 2;
             if (instrument === 'NAS100_USD') decimals = 1;
             
@@ -748,12 +847,30 @@
         
         function toggleInstruments() {
             const section = document.getElementById('instrumentsSection');
-            instrumentsVisible = !instrumentsVisible;
-            section.style.display = instrumentsVisible ? 'block' : 'none';
+            const btn = document.getElementById('toggleBtn');
             
-            if (instrumentsVisible && lastData?.instruments) {
-                renderInstruments(lastData.instruments);
+            instrumentsVisible = !instrumentsVisible;
+            
+            if (instrumentsVisible) {
+                section.style.display = 'block';
+                btn.innerHTML = '<span>📊</span> Hide Instruments';
+                btn.classList.add('active');
+                
+                // Render instruments if we have data
+                if (lastData && lastData.instruments) {
+                    renderInstruments(lastData.instruments);
+                }
+            } else {
+                section.style.display = 'none';
+                btn.innerHTML = '<span>📊</span> Show Instruments';
+                btn.classList.remove('active');
             }
+        }
+        
+        function changeTimeframe(timeframe) {
+            currentTimeframe = timeframe;
+            document.getElementById('currentTimeframe').textContent = timeframe;
+            runScan(true);
         }
         
         function exportSignals() {
@@ -763,9 +880,9 @@
             }
             
             const csv = [
-                'Instrument,Direction,Setup,Entry,StopLoss,TakeProfit,RR,Displacement,FVG,Timestamp',
+                'Instrument,Direction,Setup,Entry,StopLoss,TakeProfit,RR,Displacement,FVG,Timeframe,Timestamp',
                 ...lastData.signals.map(s => 
-                    `${s.instrument},${s.direction},${s.setupType},${s.entryPrice},${s.stopLoss},${s.takeProfit},${s.rewardRisk},${s.hasDisplacement},${s.hasFVG},${s.timestamp}`
+                    `${s.instrument},${s.direction},${s.setupType},${s.entryPrice},${s.stopLoss},${s.takeProfit},${s.rewardRisk},${s.hasDisplacement},${s.hasFVG},${s.timeframe},${s.timestamp}`
                 )
             ].join('\n');
             
@@ -773,8 +890,9 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `liquidity_signals_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `liquidity_signals_${currentTimeframe}_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
+            URL.revokeObjectURL(url);
         }
         
         // ================================================
@@ -786,8 +904,16 @@
             btn.disabled = true;
             btn.innerHTML = '<span>⏳</span> Scanning...';
             
+            // Show loading in signals container
+            document.getElementById('signalsContainer').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Scanning ${currentTimeframe} timeframe...</p>
+                </div>
+            `;
+            
             try {
-                const data = await fetchFullScan(forceRefresh);
+                const data = await fetchFullScan(currentTimeframe, forceRefresh);
                 
                 if (data) {
                     lastData = data;
@@ -795,11 +921,18 @@
                     renderSignals(data.signals);
                     updateConnectionStatus(true, data.isStale);
                     
-                    if (instrumentsVisible) {
+                    if (instrumentsVisible && data.instruments) {
                         renderInstruments(data.instruments);
                     }
                 } else {
                     updateConnectionStatus(false);
+                    document.getElementById('signalsContainer').innerHTML = `
+                        <div class="no-signals">
+                            <div class="no-signals-icon">⚠️</div>
+                            <h3>Connection Error</h3>
+                            <p>Unable to fetch data. Please try again.</p>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Scan error:', error);
@@ -813,7 +946,7 @@
         
         async function refreshSignals() {
             try {
-                const data = await fetchSignals();
+                const data = await fetchSignals(currentTimeframe);
                 
                 if (data) {
                     lastData = { ...lastData, ...data };
@@ -836,7 +969,7 @@
         // Initial load
         runScan();
         
-        // Auto-refresh
+        // Auto-refresh countdown
         setInterval(() => {
             refreshCountdown--;
             document.getElementById('refreshTimer').textContent = refreshCountdown;
