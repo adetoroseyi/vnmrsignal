@@ -150,6 +150,10 @@
         .btn-secondary:hover { background: rgba(255,255,255,0.15); }
         .btn-secondary.active { background: rgba(0,217,255,0.2); border-color: rgba(0,217,255,0.4); color: #00d9ff; }
         
+        .btn-settings { background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
+        .btn-settings:hover { background: rgba(255,193,7,0.3); }
+        .btn-settings.active { background: rgba(255,193,7,0.4); border-color: #ffc107; }
+        
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
         /* Selectors */
@@ -231,10 +235,18 @@
             border-radius: 5px;
             overflow: hidden;
             border: 1px solid rgba(255,193,7,0.3);
+            align-items: center;
+        }
+        
+        .news-bias-label {
+            padding: 7px 10px;
+            color: #888;
+            font-size: 0.7rem;
+            border-right: 1px solid rgba(255,255,255,0.1);
         }
         
         .news-btn {
-            padding: 7px 10px;
+            padding: 7px 12px;
             border: none;
             background: transparent;
             color: #666;
@@ -245,9 +257,85 @@
         }
         
         .news-btn:hover { background: rgba(255,255,255,0.1); }
-        .news-btn.active.none { background: rgba(255,255,255,0.1); color: #888; }
         .news-btn.active.bullish { background: rgba(0,255,136,0.3); color: #00ff88; }
         .news-btn.active.bearish { background: rgba(255,71,87,0.3); color: #ff4757; }
+        
+        /* Settings Panel */
+        .settings-panel {
+            background: rgba(255,193,7,0.05);
+            border: 1px solid rgba(255,193,7,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: none;
+        }
+        
+        .settings-panel.visible { display: block; }
+        .settings-panel h3 { color: #ffc107; margin-bottom: 12px; font-size: 1rem; }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        
+        .setting-item {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 6px;
+        }
+        
+        .setting-item label {
+            display: block;
+            color: #888;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        
+        .setting-item input[type="number"] {
+            width: 100%;
+            background: rgba(0,217,255,0.1);
+            border: 1px solid rgba(0,217,255,0.3);
+            color: #00d9ff;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .setting-item .hint { font-size: 0.65rem; color: #555; margin-top: 4px; }
+        
+        .toggle-container { display: flex; align-items: center; justify-content: space-between; }
+        
+        .toggle-switch { position: relative; width: 40px; height: 22px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 22px;
+            transition: 0.3s;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px; width: 16px;
+            left: 3px; bottom: 3px;
+            background: #666;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider { background: rgba(0,255,136,0.3); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); background: #00ff88; }
+        
+        .settings-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-apply { background: linear-gradient(135deg, #00ff88, #00cc6a); color: #000; }
+        .btn-reset { background: rgba(255,71,87,0.2); color: #ff4757; border: 1px solid rgba(255,71,87,0.3); }
         
         /* Status Bar */
         .status-bar {
@@ -267,6 +355,36 @@
         .status-dot { width: 6px; height: 6px; border-radius: 50%; }
         .status-dot.connected { background: #00ff88; }
         .status-dot.disconnected { background: #ff4757; }
+        
+        /* Active Filters Display */
+        .active-filters {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 6px 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+            margin-bottom: 12px;
+            font-size: 0.7rem;
+        }
+        
+        .active-filters .label { color: #666; }
+        
+        .filter-tag {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .filter-tag.timeframe { background: rgba(0,217,255,0.2); color: #00d9ff; }
+        .filter-tag.grade { background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,140,0,0.3)); color: #ffd700; }
+        .filter-tag.direction { background: rgba(255,255,255,0.1); color: #888; }
+        .filter-tag.direction.long { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .filter-tag.direction.short { background: rgba(255,71,87,0.2); color: #ff4757; }
+        .filter-tag.news { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .filter-tag.news.bull { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .filter-tag.news.bear { background: rgba(255,71,87,0.2); color: #ff4757; }
         
         /* Signals Section */
         .signals-section {
@@ -571,6 +689,7 @@
             .tp-levels { flex-direction: column; }
             .controls { justify-content: center; }
             .score-breakdown { grid-template-columns: repeat(2, 1fr); }
+            .settings-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -642,14 +761,86 @@
             </div>
             
             <div class="news-bias-selector">
-                <button class="news-btn none active" onclick="setNewsBias('NONE')">No News</button>
-                <button class="news-btn bullish" onclick="setNewsBias('BULLISH')">📈 Bull</button>
-                <button class="news-btn bearish" onclick="setNewsBias('BEARISH')">📉 Bear</button>
+                <span class="news-bias-label">NEWS:</span>
+                <button class="news-btn bullish" onclick="toggleNewsBias('BULLISH')">📈 Bull</button>
+                <button class="news-btn bearish" onclick="toggleNewsBias('BEARISH')">📉 Bear</button>
             </div>
             
             <button class="btn btn-primary" id="scanBtn" onclick="runScan(true)">🔄 Scan</button>
+            <button class="btn btn-settings" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
             <button class="btn btn-secondary" id="toggleBtn" onclick="toggleInstruments()">📊</button>
             <button class="btn btn-secondary" onclick="exportSignals()">📥</button>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <h3>⚙️ Scanner Settings</h3>
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label>Min R:R Ratio</label>
+                    <input type="number" id="settingMinRR" value="2.0" step="0.1" min="1" max="10">
+                    <div class="hint">Minimum reward:risk to show</div>
+                </div>
+                <div class="setting-item">
+                    <label>Max Signals/Pair</label>
+                    <input type="number" id="settingMaxSignals" value="2" step="1" min="1" max="10">
+                    <div class="hint">Limit signals per instrument</div>
+                </div>
+                <div class="setting-item">
+                    <label>Equal Tolerance (%)</label>
+                    <input type="number" id="settingEqualTolerance" value="0.03" step="0.01" min="0.01" max="0.5">
+                    <div class="hint">How close = "equal" levels</div>
+                </div>
+                <div class="setting-item">
+                    <label>Displacement ATR×</label>
+                    <input type="number" id="settingDisplacementMultiple" value="1.5" step="0.1" min="1" max="5">
+                    <div class="hint">Body size vs ATR for displacement</div>
+                </div>
+                <div class="setting-item">
+                    <label>Require HTF Confluence</label>
+                    <div class="toggle-container">
+                        <span class="hint">Filter against HTF bias</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settingRequireHTF" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Require Displacement</label>
+                    <div class="toggle-container">
+                        <span class="hint">Only strong candles</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settingRequireDisplacement">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Require FVG</label>
+                    <div class="toggle-container">
+                        <span class="hint">Fair Value Gap present</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="settingRequireFVG">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="settings-actions">
+                <button class="btn btn-apply" onclick="applySettings()">✓ Apply & Scan</button>
+                <button class="btn btn-reset" onclick="resetSettings()">↺ Reset Defaults</button>
+                <button class="btn btn-secondary" onclick="toggleSettings()">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Active Filters Display -->
+        <div class="active-filters" id="activeFilters">
+            <span class="label">Active:</span>
+            <span class="filter-tag timeframe" id="tagTimeframe">H1</span>
+            <span class="filter-tag grade" id="tagGrade">A+ Only</span>
+            <span class="filter-tag direction" id="tagDirection">All Directions</span>
+            <span class="filter-tag news" id="tagNews" style="display:none;">No News Bias</span>
         </div>
         
         <!-- Instruments Table -->
@@ -695,7 +886,14 @@
             timeframe: 'H1',
             minGrade: 'A+',
             directionFilter: 'BOTH',
-            newsBias: 'NONE'
+            newsBias: 'NONE',
+            minRR: 2.0,
+            maxSignals: 2,
+            equalTolerance: 0.03,
+            displacementMultiple: 1.5,
+            requireHTFConfluence: true,
+            requireDisplacement: false,
+            requireFVG: false
         };
         
         let settings = { ...DEFAULT_SETTINGS };
@@ -719,13 +917,21 @@
         
         function applySettingsToUI() {
             document.getElementById('timeframeSelect').value = settings.timeframe;
+            document.getElementById('settingMinRR').value = settings.minRR;
+            document.getElementById('settingMaxSignals').value = settings.maxSignals;
+            document.getElementById('settingEqualTolerance').value = settings.equalTolerance * 100;
+            document.getElementById('settingDisplacementMultiple').value = settings.displacementMultiple;
+            document.getElementById('settingRequireHTF').checked = settings.requireHTFConfluence;
+            document.getElementById('settingRequireDisplacement').checked = settings.requireDisplacement;
+            document.getElementById('settingRequireFVG').checked = settings.requireFVG;
             
             // Grade buttons
             document.querySelectorAll('.grade-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.textContent.includes(settings.minGrade === 'D' ? 'All' : settings.minGrade)) {
-                    btn.classList.add('active');
-                }
+                const btnGrade = btn.textContent.includes('All') ? 'D' : 
+                                 btn.textContent.includes('B+') ? 'B' :
+                                 btn.textContent.includes('A+/A') ? 'A' : 'A+';
+                if (btnGrade === settings.minGrade) btn.classList.add('active');
             });
             
             // Direction buttons
@@ -736,13 +942,90 @@
                 }
             });
             
-            // News bias buttons
+            // News bias buttons - only show active if set
             document.querySelectorAll('.news-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.classList.contains(settings.newsBias.toLowerCase())) {
+                if (settings.newsBias === 'BULLISH' && btn.classList.contains('bullish')) {
+                    btn.classList.add('active');
+                }
+                if (settings.newsBias === 'BEARISH' && btn.classList.contains('bearish')) {
                     btn.classList.add('active');
                 }
             });
+            
+            updateFilterTags();
+        }
+        
+        function updateFilterTags() {
+            document.getElementById('tagTimeframe').textContent = settings.timeframe;
+            document.getElementById('currentTimeframe').textContent = settings.timeframe;
+            
+            // Grade tag
+            const gradeTag = document.getElementById('tagGrade');
+            if (settings.minGrade === 'A+') gradeTag.textContent = 'A+ Only';
+            else if (settings.minGrade === 'A') gradeTag.textContent = 'A+ & A';
+            else if (settings.minGrade === 'B') gradeTag.textContent = 'B+';
+            else gradeTag.textContent = 'All Grades';
+            
+            // Direction tag
+            const dirTag = document.getElementById('tagDirection');
+            dirTag.className = 'filter-tag direction';
+            if (settings.directionFilter === 'LONG') {
+                dirTag.textContent = 'LONG Only';
+                dirTag.classList.add('long');
+            } else if (settings.directionFilter === 'SHORT') {
+                dirTag.textContent = 'SHORT Only';
+                dirTag.classList.add('short');
+            } else {
+                dirTag.textContent = 'All Directions';
+            }
+            
+            // News tag
+            const newsTag = document.getElementById('tagNews');
+            if (settings.newsBias === 'NONE') {
+                newsTag.style.display = 'none';
+            } else {
+                newsTag.style.display = 'inline-block';
+                newsTag.className = 'filter-tag news';
+                if (settings.newsBias === 'BULLISH') {
+                    newsTag.textContent = '📈 Bullish Bias';
+                    newsTag.classList.add('bull');
+                } else {
+                    newsTag.textContent = '📉 Bearish Bias';
+                    newsTag.classList.add('bear');
+                }
+            }
+        }
+        
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            const btn = document.getElementById('settingsBtn');
+            const isVisible = panel.classList.toggle('visible');
+            btn.classList.toggle('active', isVisible);
+        }
+        
+        function readSettingsFromUI() {
+            settings.minRR = parseFloat(document.getElementById('settingMinRR').value) || 2.0;
+            settings.maxSignals = parseInt(document.getElementById('settingMaxSignals').value) || 2;
+            settings.equalTolerance = (parseFloat(document.getElementById('settingEqualTolerance').value) || 3) / 100;
+            settings.displacementMultiple = parseFloat(document.getElementById('settingDisplacementMultiple').value) || 1.5;
+            settings.requireHTFConfluence = document.getElementById('settingRequireHTF').checked;
+            settings.requireDisplacement = document.getElementById('settingRequireDisplacement').checked;
+            settings.requireFVG = document.getElementById('settingRequireFVG').checked;
+        }
+        
+        function applySettings() {
+            readSettingsFromUI();
+            saveSettings();
+            updateFilterTags();
+            toggleSettings();
+            runScan(true);
+        }
+        
+        function resetSettings() {
+            settings = { ...DEFAULT_SETTINGS };
+            saveSettings();
+            applySettingsToUI();
         }
         
         function setMinGrade(grade) {
@@ -755,6 +1038,7 @@
                                  btn.textContent.includes('A+/A') ? 'A' : 'A+';
                 if (btnGrade === grade) btn.classList.add('active');
             });
+            updateFilterTags();
             runScan(true);
         }
         
@@ -765,23 +1049,40 @@
                 btn.classList.remove('active');
                 if (btn.classList.contains(dir.toLowerCase())) btn.classList.add('active');
             });
+            updateFilterTags();
             runScan(true);
         }
         
-        function setNewsBias(bias) {
-            settings.newsBias = bias;
+        // Toggle news bias - click again to unselect
+        function toggleNewsBias(bias) {
+            if (settings.newsBias === bias) {
+                // Already selected - unselect it
+                settings.newsBias = 'NONE';
+            } else {
+                // Select this bias
+                settings.newsBias = bias;
+            }
             saveSettings();
+            
+            // Update buttons
             document.querySelectorAll('.news-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.classList.contains(bias.toLowerCase())) btn.classList.add('active');
+                if (settings.newsBias === 'BULLISH' && btn.classList.contains('bullish')) {
+                    btn.classList.add('active');
+                }
+                if (settings.newsBias === 'BEARISH' && btn.classList.contains('bearish')) {
+                    btn.classList.add('active');
+                }
             });
+            
+            updateFilterTags();
             runScan(true);
         }
         
         function changeTimeframe(tf) {
             settings.timeframe = tf;
             saveSettings();
-            document.getElementById('currentTimeframe').textContent = tf;
+            updateFilterTags();
             runScan(true);
         }
         
@@ -794,8 +1095,13 @@
                 minGrade: settings.minGrade,
                 directionFilter: settings.directionFilter,
                 newsBias: settings.newsBias,
-                minRR: 2.0,
-                requireHTFConfluence: true
+                minRR: settings.minRR,
+                maxSignals: settings.maxSignals,
+                equalTolerance: settings.equalTolerance,
+                displacementMultiple: settings.displacementMultiple,
+                requireHTFConfluence: settings.requireHTFConfluence,
+                requireDisplacement: settings.requireDisplacement,
+                requireFVG: settings.requireFVG
             }).toString();
         }
         
@@ -844,7 +1150,6 @@
                 const scoreBarClass = s.grade === 'A+' ? 'a-plus' : s.grade.toLowerCase();
                 const scorePct = Math.min(100, (s.score / 100) * 100);
                 
-                // Score breakdown
                 const bd = s.scoreBreakdown || {};
                 
                 return `
