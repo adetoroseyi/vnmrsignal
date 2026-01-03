@@ -171,6 +171,22 @@
             color: #fff;
         }
         
+        .admin-link {
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            border-radius: 4px;
+            color: #fff;
+            font-size: 0.75rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .admin-link:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
         .trial-countdown {
             font-size: 0.75rem;
             color: #ffd700;
@@ -1038,6 +1054,7 @@
                 <div class="user-info">
                     <span class="tier-badge trial" id="tierBadge">TRIAL</span>
                     <span class="trial-countdown" id="trialCountdown"></span>
+                    <a href="/sweepsignal/admin.html" class="admin-link" id="adminLink" style="display:none;">📊 Admin</a>
                     <span class="user-email" id="userEmail"></span>
                     <button class="btn-logout" id="logoutBtn">Logout</button>
                 </div>
@@ -1331,6 +1348,11 @@
                 
                 // Show user email
                 document.getElementById('userEmail').textContent = currentUser.email;
+                
+                // Show admin link for super admin
+                if (currentUser.email === 'toventuresltd@gmail.com') {
+                    document.getElementById('adminLink').style.display = 'inline-block';
+                }
                 
                 // Apply feature gating
                 applyFeatureGating();
