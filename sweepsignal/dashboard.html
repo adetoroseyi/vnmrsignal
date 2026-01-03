@@ -225,6 +225,23 @@
             font-weight: 600;
         }
         
+        .btn-manage {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-manage:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
         /* Telegram Section */
         .telegram-section {
             margin-bottom: 12px;
@@ -1030,7 +1047,8 @@
         <!-- Upgrade Banner -->
         <div class="upgrade-banner" id="upgradeBanner">
             <p>🚀 <span id="upgradeMessage">Upgrade to Pro for Telegram alerts & all timeframes</span></p>
-            <a href="/sweepsignal/subscribe.html">Upgrade Now</a>
+            <a href="/sweepsignal/subscribe.html" id="upgradeLink">Upgrade Now</a>
+            <button class="btn-manage" id="manageSubscriptionBtn" style="display:none;" onclick="openCustomerPortal()">Manage Subscription</button>
         </div>
         
         <!-- Telegram Connection (Pro Only) -->
@@ -1292,9 +1310,17 @@
                     document.getElementById('tierBadge').textContent = userTier.toUpperCase();
                     document.getElementById('tierBadge').className = 'tier-badge ' + userTier;
                     
+                    // Show manage subscription button for paying users
+                    document.getElementById('manageSubscriptionBtn').style.display = 'inline-block';
+                    
                     if (userTier === 'basic') {
                         document.getElementById('upgradeBanner').classList.add('visible');
                         document.getElementById('upgradeMessage').textContent = 'Upgrade to Pro for Telegram alerts & all timeframes';
+                    } else if (userTier === 'pro') {
+                        // Pro users: show banner with just manage subscription
+                        document.getElementById('upgradeBanner').classList.add('visible');
+                        document.getElementById('upgradeMessage').textContent = '⭐ You have full Pro access';
+                        document.getElementById('upgradeLink').style.display = 'none';
                     }
                     
                 } else {
@@ -1370,6 +1396,42 @@
                 document.getElementById('telegramBody').style.display = 'block';
                 document.getElementById('telegramCodeSection').style.display = 'none';
                 document.getElementById('telegramConnected').style.display = 'none';
+            }
+        }
+        
+        // Open Stripe Customer Portal
+        async function openCustomerPortal() {
+            const btn = document.getElementById('manageSubscriptionBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('https://oanda-proxy.onrender.com/create-portal-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        returnUrl: window.location.href
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Redirect to Stripe Customer Portal
+                window.location.href = data.url;
+                
+            } catch (error) {
+                console.error('Portal error:', error);
+                alert('Unable to open subscription management. Please try again.');
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
         
