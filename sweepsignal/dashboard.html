@@ -899,7 +899,7 @@
                 <span id="connectionStatus">Connecting...</span>
             </div>
             <div class="status-item">Last: <strong id="lastUpdate">-</strong></div>
-            <div class="status-item">Auto: <span id="refreshTimer">60</span>s</div>
+            <div class="status-item" id="autoRefreshDisplay">Auto: <span id="refreshTimer">60</span>s</div>
         </div>
         
         <!-- Controls -->
@@ -1144,7 +1144,7 @@
         
         // Feature gating based on tier
         function applyFeatureGating() {
-            // Trial and Basic: Only H1 timeframe
+            // Trial and Basic: Only H1 timeframe, no auto-refresh
             if (userTier === 'trial' || userTier === 'basic') {
                 // Lock other timeframes in select dropdown
                 const tfSelect = document.getElementById('timeframeSelect');
@@ -1159,8 +1159,11 @@
                     tfSelect.value = 'H1';
                 }
                 
-                // Disable auto-refresh (only manual)
-                // Auto-refresh is Pro only - handled in setInterval
+                // Hide auto-refresh timer (Pro only feature)
+                const autoRefreshDisplay = document.getElementById('autoRefreshDisplay');
+                if (autoRefreshDisplay) {
+                    autoRefreshDisplay.innerHTML = '<span style="color:#666;">Auto: 🔒 Pro</span>';
+                }
             }
             
             // Pro: All features enabled (nothing to disable)
