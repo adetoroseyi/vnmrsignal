@@ -547,47 +547,48 @@
             }
         }
         
-        // Load analytics data
+        // Load analytics data from backend
         async function loadAnalytics() {
             try {
-                // Fetch all profiles
-                const { data: profiles, error } = await supabaseClient
-                    .from('profiles')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                // Fetch from backend (uses service key, bypasses RLS)
+                const response = await fetch('https://oanda-proxy.onrender.com/admin/analytics', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        adminEmail: currentUser.email
+                    })
+                });
                 
-                if (error) throw error;
+                const data = await response.json();
                 
-                // Calculate stats
-                const totalUsers = profiles.length;
-                const trialUsers = profiles.filter(p => p.subscription_status === 'trialing').length;
-                const basicUsers = profiles.filter(p => p.subscription_tier === 'basic' && p.subscription_status === 'active').length;
-                const proUsers = profiles.filter(p => p.subscription_tier === 'pro' && p.subscription_status === 'active').length;
-                const telegramUsers = profiles.filter(p => p.telegram_chat_id).length;
+                if (data.error) {
+                    throw new Error(data.error);
+                }
                 
-                // Calculate revenue
-                const monthlyRevenue = (basicUsers * 37) + (proUsers * 67);
+                const { stats, users, recentSignups } = data;
                 
                 // Update stats display
-                document.getElementById('totalUsers').textContent = totalUsers;
-                document.getElementById('trialUsers').textContent = trialUsers;
-                document.getElementById('basicUsers').textContent = basicUsers;
-                document.getElementById('proUsers').textContent = proUsers;
-                document.getElementById('telegramUsers').textContent = telegramUsers;
-                document.getElementById('monthlyRevenue').textContent = `$${monthlyRevenue.toLocaleString()}`;
-                document.getElementById('revenueSubtext').textContent = `${basicUsers} Basic + ${proUsers} Pro`;
+                document.getElementById('totalUsers').textContent = stats.totalUsers;
+                document.getElementById('trialUsers').textContent = stats.trialUsers;
+                document.getElementById('basicUsers').textContent = stats.basicUsers;
+                document.getElementById('proUsers').textContent = stats.proUsers;
+                document.getElementById('telegramUsers').textContent = stats.telegramUsers;
+                document.getElementById('monthlyRevenue').textContent = `$${stats.monthlyRevenue.toLocaleString()}`;
+                document.getElementById('revenueSubtext').textContent = `${stats.basicUsers} Basic + ${stats.proUsers} Pro`;
                 
                 // Populate users table
                 const usersTableBody = document.getElementById('usersTableBody');
-                if (profiles.length === 0) {
+                if (users.length === 0) {
                     usersTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No users found</td></tr>';
                 } else {
-                    usersTableBody.innerHTML = profiles.map(profile => `
+                    usersTableBody.innerHTML = users.map(profile => `
                         <tr>
                             <td>${profile.email || 'N/A'}</td>
                             <td>${profile.full_name || '-'}</td>
-                            <td><span class="badge badge-${profile.subscription_tier}">${profile.subscription_tier || 'trial'}</span></td>
-                            <td><span class="badge badge-${profile.subscription_status}">${profile.subscription_status || 'unknown'}</span></td>
+                            <td><span class="badge badge-${profile.subscription_tier || 'trial'}">${profile.subscription_tier || 'trial'}</span></td>
+                            <td><span class="badge badge-${profile.subscription_status || 'unknown'}">${profile.subscription_status || 'unknown'}</span></td>
                             <td>
                                 <div class="telegram-status">
                                     <span class="telegram-dot ${profile.telegram_chat_id ? 'connected' : ''}"></span>
@@ -600,12 +601,7 @@
                     `).join('');
                 }
                 
-                // Recent signups (last 7 days)
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                
-                const recentSignups = profiles.filter(p => new Date(p.created_at) >= sevenDaysAgo);
-                
+                // Recent signups
                 const recentSignupsBody = document.getElementById('recentSignupsBody');
                 if (recentSignups.length === 0) {
                     recentSignupsBody.innerHTML = '<tr><td colspan="3" class="empty-state">No signups in the last 7 days</td></tr>';
@@ -613,7 +609,7 @@
                     recentSignupsBody.innerHTML = recentSignups.map(profile => `
                         <tr>
                             <td>${profile.email || 'N/A'}</td>
-                            <td><span class="badge badge-${profile.subscription_tier}">${profile.subscription_tier || 'trial'}</span></td>
+                            <td><span class="badge badge-${profile.subscription_tier || 'trial'}">${profile.subscription_tier || 'trial'}</span></td>
                             <td>${formatDate(profile.created_at)}</td>
                         </tr>
                     `).join('');
@@ -624,6 +620,7 @@
                 
             } catch (error) {
                 console.error('Error loading analytics:', error);
+                document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="7" class="empty-state">Error loading data. Please refresh.</td></tr>';
             }
         }
         
