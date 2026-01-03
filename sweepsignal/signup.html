@@ -285,7 +285,7 @@
             </div>
             
             <div class="auth-footer">
-                Already have an account? <a href="login.html">Log in</a>
+                Already have an account? <a href="/sweepsignal/login.html">Log in</a>
             </div>
         </div>
     </div>
@@ -302,7 +302,7 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 // Already logged in, redirect to dashboard
-                window.location.href = 'dashboard.html';
+                window.location.href = '/sweepsignal/dashboard.html';
             }
         }
         checkAuth();
@@ -355,7 +355,7 @@
                         successMessage.style.display = 'block';
                         
                         setTimeout(() => {
-                            window.location.href = 'dashboard.html';
+                            window.location.href = '/sweepsignal/dashboard.html';
                         }, 1500);
                     } else {
                         // Email confirmation required
