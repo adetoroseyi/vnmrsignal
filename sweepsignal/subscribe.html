@@ -348,7 +348,7 @@
         </div>
         
         <p class="guarantee">
-            Questions? <a href="mailto:toventuresltd@gmail.com">Contact us</a>
+            Questions? <a href="/cdn-cgi/l/email-protection#a6d2c9d0c3c8d2d3d4c3d5cad2c2e6c1cbc7cfca88c5c9cb">Contact us</a>
         </p>
     </div>
     
@@ -357,7 +357,7 @@
         <p class="loading-text">Redirecting to checkout...</p>
     </div>
     
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // Supabase Configuration
         const SUPABASE_URL = 'https://kinrktzmbelrswsowwwd.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_p9O4Hlx9qmIc55UOCBnnbQ_5LNxzvu5';
@@ -372,7 +372,7 @@
             
             if (!session) {
                 // Not logged in, redirect to login
-                window.location.href = 'login.html';
+                window.location.href = '/sweepsignal/login.html';
                 return;
             }
             
@@ -388,7 +388,7 @@
             
             if (profile && profile.subscription_status === 'active') {
                 // Already subscribed, go to dashboard
-                window.location.href = 'dashboard.html';
+                window.location.href = '/sweepsignal/dashboard.html';
             }
             
             // Check if still in trial
@@ -408,7 +408,7 @@
         // Handle logout
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await supabaseClient.auth.signOut();
-            window.location.href = 'login.html';
+            window.location.href = '/sweepsignal/login.html';
         });
         
         // Subscribe function (will be connected to Stripe in Phase 5)
@@ -442,11 +442,4 @@
                 window.location.href = url; // Redirect to Stripe Checkout
             } catch (error) {
                 console.error('Checkout error:', error);
-                loadingOverlay.classList.remove('active');
-                alert('Error creating checkout session. Please try again.');
-            }
-            */
-        }
-    </script>
-</body>
-</html>
+                loadingOverlay.classList.remove('ac
