@@ -3,627 +3,727 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mean Reversion Trading Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>VNMR Signal - Professional Forex Trading Tools</title>
+    <meta name="description" content="Professional forex trading tools including mean reversion signals, liquidity sweep scanner, position calculator, and automated trading strategies.">
+    <meta name="keywords" content="forex trading, mean reversion, liquidity sweep, trading signals, position calculator, forex tools">
+    <meta name="author" content="VNMR Signal">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="VNMR Signal - Professional Forex Trading Tools">
+    <meta property="og:description" content="Professional forex trading tools including mean reversion signals, liquidity sweep scanner, and position calculator.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vnmrsignal.app">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(59, 130, 246, 0.3);
-            border-radius: 50%;
-            border-top-color: #3b82f6;
-            animation: spin 1s ease-in-out infinite;
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            line-height: 1.6;
         }
-        .signal-card {
+        
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(10, 10, 26, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: #00d4ff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-logo span {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: #ffffff;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
             transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
         }
-        .signal-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 160px 50px 100px;
+            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 30px;
+            font-size: 13px;
+            color: #00d4ff;
+            margin-bottom: 30px;
+        }
+        
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero h1 span {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            color: #a0a0a0;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            padding: 40px 50px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.02);
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #00d4ff;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Products Section */
+        .products {
+            padding: 100px 50px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .section-label {
+            color: #00d4ff;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .section-subtitle {
+            font-size: 18px;
+            color: #a0a0a0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        
+        .product-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 35px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .product-card.featured {
+            border-color: #f5a623;
+            background: linear-gradient(135deg, rgba(245, 166, 35, 0.05), rgba(255, 140, 0, 0.05));
+        }
+        
+        .product-card.featured::before {
+            content: '🔥 POPULAR';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #f5a623, #f57c00);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        
+        .product-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .product-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .product-tagline {
+            color: #00d4ff;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        
+        .product-description {
+            color: #a0a0a0;
+            font-size: 15px;
+            margin-bottom: 25px;
+            line-height: 1.7;
+        }
+        
+        .product-features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+        
+        .product-features li {
+            padding: 8px 0;
+            font-size: 14px;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .product-features li::before {
+            content: "✓";
+            color: #22c55e;
+            font-weight: 700;
+        }
+        
+        .product-price {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .product-price span {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        .product-card .btn {
+            width: 100%;
+            text-align: center;
+            display: block;
+        }
+        
+        /* How It Works */
+        .how-it-works {
+            padding: 100px 50px;
+            background: rgba(0, 212, 255, 0.02);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .steps-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .step:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #000;
+            flex-shrink: 0;
+        }
+        
+        .step-content h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .step-content p {
+            color: #a0a0a0;
+            font-size: 16px;
+        }
+        
+        /* Footer */
+        .footer {
+            padding: 60px 50px 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-brand {
+            max-width: 300px;
+        }
+        
+        .footer-brand .nav-logo {
+            margin-bottom: 15px;
+        }
+        
+        .footer-brand p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 60px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-column h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .footer-column ul {
+            list-style: none;
+        }
+        
+        .footer-column li {
+            margin-bottom: 12px;
+        }
+        
+        .footer-column a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-column a:hover {
+            color: #00d4ff;
+        }
+        
+        .footer-bottom {
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .footer-disclaimer {
+            font-size: 12px;
+            color: #555;
+            line-height: 1.8;
+            max-width: 900px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav {
+                padding: 15px 20px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hero {
+                padding: 120px 20px 60px;
+            }
+            
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .hero p {
+                font-size: 16px;
+            }
+            
+            .stats-bar {
+                gap: 30px;
+                padding: 30px 20px;
+            }
+            
+            .stat-value {
+                font-size: 28px;
+            }
+            
+            .products {
+                padding: 60px 20px;
+            }
+            
+            .section-title {
+                font-size: 32px;
+            }
+            
+            .step {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .footer-top {
+                flex-direction: column;
+            }
+            
+            .footer-links {
+                gap: 30px;
+            }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-50 to-gray-100">
-    <div class="min-h-screen p-6">
-        <div class="max-w-7xl mx-auto">
-            <!-- Header -->
-            <div class="mb-8">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h1 class="text-4xl font-bold text-gray-900 mb-2">
-                            📊 Mean Reversion Trading Dashboard
-                        </h1>
-                        <p class="text-gray-600">
-                            Live signals • Statistical validation • Professional risk management
-                        </p>
-                        <p id="lastUpdate" class="text-sm text-gray-500 mt-1"></p>
-                    </div>
-                    <button onclick="openSettings()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
-                        ⚙️ Settings
-                    </button>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="/" class="nav-logo">
+            📊 <span>VNMR Signal</span>
+        </a>
+        <div class="nav-links">
+            <a href="#products">Products</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="/sweepsignal/">SweepSignal</a>
+            <a href="/sweepsignal/login.html" class="btn btn-primary">Login</a>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-badge">⚡ Professional Forex Trading Tools</div>
+        <h1>Trade Smarter with <span>Data-Driven</span> Signals</h1>
+        <p>Professional-grade forex tools powered by statistical analysis. From mean reversion signals to liquidity sweep detection, we give you the edge.</p>
+        <div class="hero-buttons">
+            <a href="/sweepsignal/" class="btn btn-primary">Try SweepSignal Free →</a>
+            <a href="#products" class="btn btn-secondary">View All Tools</a>
+        </div>
+    </section>
+    
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value">28</div>
+            <div class="stat-label">Currency Pairs</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Trading Tools</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">24/7</div>
+            <div class="stat-label">Market Monitoring</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">A+</div>
+            <div class="stat-label">Signal Grading</div>
+        </div>
+    </div>
+    
+    <!-- Products Section -->
+    <section class="products" id="products">
+        <div class="section-header">
+            <p class="section-label">Our Tools</p>
+            <h2 class="section-title">Professional Trading Suite</h2>
+            <p class="section-subtitle">Everything you need to analyze markets and find high-probability setups</p>
+        </div>
+        
+        <div class="products-grid">
+            <!-- SweepSignal -->
+            <div class="product-card featured">
+                <div class="product-icon">⭐</div>
+                <h3 class="product-name">SweepSignal</h3>
+                <p class="product-tagline">Liquidity Sweep Scanner</p>
+                <p class="product-description">Automatically detects liquidity sweeps across 28 forex pairs. Get graded signals (A+ to D) with entry, stop-loss, and take-profit levels.</p>
+                <ul class="product-features">
+                    <li>Real-time signal scanning</li>
+                    <li>Signal grading system</li>
+                    <li>Telegram alerts (Pro)</li>
+                    <li>Multiple timeframes</li>
+                </ul>
+                <p class="product-price">Starting at <span>$37</span>/month</p>
+                <a href="/sweepsignal/" class="btn btn-primary">Start Free Trial</a>
+            </div>
+            
+            <!-- VNMR Classic -->
+            <div class="product-card">
+                <div class="product-icon">📈</div>
+                <h3 class="product-name">VNMR Classic</h3>
+                <p class="product-tagline">Mean Reversion Dashboard</p>
+                <p class="product-description">Statistical mean reversion analysis using Ornstein-Uhlenbeck process. Identifies when currency pairs deviate from their statistical mean.</p>
+                <ul class="product-features">
+                    <li>Z-Score analysis</li>
+                    <li>Half-life calculation</li>
+                    <li>Cointegration testing</li>
+                    <li>Real-time signals</li>
+                </ul>
+                <p class="product-price"><span>Free</span> to use</p>
+                <a href="/vnmr-classic.html" class="btn btn-secondary">Open Dashboard</a>
+            </div>
+            
+            <!-- Tracker -->
+            <div class="product-card">
+                <div class="product-icon">🎯</div>
+                <h3 class="product-name">VNMR Tracker</h3>
+                <p class="product-tagline">Daily Timeframe Strategy</p>
+                <p class="product-description">Advanced VNMR Classic optimized for daily timeframe trading. Perfect for swing traders who prefer longer-term positions.</p>
+                <ul class="product-features">
+                    <li>Daily timeframe focus</li>
+                    <li>Swing trade setups</li>
+                    <li>Lower time commitment</li>
+                    <li>Statistical validation</li>
+                </ul>
+                <p class="product-price"><span>Free</span> to use</p>
+                <a href="/tracker.html" class="btn btn-secondary">Open Tracker</a>
+            </div>
+            
+            <!-- Position Calculator -->
+            <div class="product-card">
+                <div class="product-icon">🧮</div>
+                <h3 class="product-name">Position Calculator</h3>
+                <p class="product-tagline">Risk Management Tool</p>
+                <p class="product-description">Calculate optimal position sizes based on your account size, risk percentage, and stop-loss distance. Essential for proper risk management.</p>
+                <ul class="product-features">
+                    <li>Account risk calculation</li>
+                    <li>Lot size optimization</li>
+                    <li>Multiple currency support</li>
+                    <li>Risk/reward analysis</li>
+                </ul>
+                <p class="product-price"><span>Free</span> to use</p>
+                <a href="/position-calculator.html" class="btn btn-secondary">Open Calculator</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="steps-container">
+            <div class="section-header">
+                <p class="section-label">Getting Started</p>
+                <h2 class="section-title">How It Works</h2>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Choose Your Tool</h3>
+                    <p>Select from our suite of trading tools based on your strategy. SweepSignal for liquidity sweeps, VNMR Classic for mean reversion, or both.</p>
                 </div>
             </div>
-
-            <!-- Settings Modal -->
-            <div id="settingsModal" style="display:none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-                <div class="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-bold text-gray-900">Strategy Settings</h2>
-                            <button onclick="closeSettings()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-                        </div>
-                        
-                        <div class="space-y-6">
-                            <!-- Z-Score Threshold -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Z-Score Threshold
-                                    <span class="text-xs text-gray-500 font-normal">(Entry signal trigger)</span>
-                                </label>
-                                <input type="number" id="settingsZScore" step="0.1" min="0.5" max="3.0" 
-                                    class="w-full p-3 border-2 border-blue-500 rounded-lg text-lg font-semibold focus:ring-4 focus:ring-blue-200">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Lower = more signals, Higher = fewer but stronger signals
-                                </p>
-                                <div class="mt-2 text-sm">
-                                    <div class="flex justify-between text-gray-600">
-                                        <span>1.0 = Aggressive</span>
-                                        <span>2.0 = Balanced</span>
-                                        <span>2.5 = Conservative</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 3-Day Move Threshold -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    3-Day Move Threshold (%)
-                                    <span class="text-xs text-gray-500 font-normal">(Momentum confirmation)</span>
-                                </label>
-                                <input type="number" id="settings3DayMove" step="0.1" min="0.5" max="3.0" 
-                                    class="w-full p-3 border-2 border-blue-500 rounded-lg text-lg font-semibold focus:ring-4 focus:ring-blue-200">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Minimum price movement over 3 days to qualify
-                                </p>
-                            </div>
-
-                            <!-- Half-Life Filter -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Maximum Half-Life (days)
-                                    <span class="text-xs text-gray-500 font-normal">(Mean reversion filter)</span>
-                                </label>
-                                <input type="number" id="settingsHalfLife" step="5" min="20" max="100" 
-                                    class="w-full p-3 border-2 border-blue-500 rounded-lg text-lg font-semibold focus:ring-4 focus:ring-blue-200">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Only trade pairs that revert within this timeframe
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="mt-8 flex gap-3">
-                            <button onclick="resetSettings()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg">
-                                Reset to Defaults
-                            </button>
-                            <button onclick="saveSettings()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg">
-                                Save & Apply
-                            </button>
-                        </div>
-                    </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Analyze the Signals</h3>
+                    <p>Our tools scan the market 24/7 and present you with graded signals. A+ signals indicate the highest probability setups.</p>
                 </div>
             </div>
-
-            <!-- Important Notice -->
-            <div id="proxyNotice" class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-8">
-                <h3 class="text-lg font-bold text-yellow-900 mb-2">⚠️ Proxy Server Required</h3>
-                <p class="text-yellow-800 mb-3">
-                    This dashboard requires the proxy server to be running to fetch data from Oanda.
-                </p>
-                <div class="bg-white p-4 rounded border border-yellow-300">
-                    <p class="font-semibold text-gray-900 mb-2">Start the proxy server:</p>
-                    <code class="bg-gray-800 text-green-400 px-3 py-2 rounded block">node oanda_proxy.js</code>
-                    <p class="text-sm text-gray-600 mt-2">The proxy should be running on <strong>http://localhost:3001</strong></p>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Calculate Your Position</h3>
+                    <p>Use our Position Calculator to determine the right lot size based on your risk tolerance before entering any trade.</p>
                 </div>
             </div>
-
-            <!-- Performance Summary -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="text-sm text-gray-500 mb-1">Pairs Analyzed</div>
-                    <div id="totalPairs" class="text-3xl font-bold text-gray-900">-</div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="text-sm text-gray-500 mb-1">Qualified Pairs</div>
-                    <div id="qualifiedPairs" class="text-3xl font-bold text-green-600">-</div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="text-sm text-gray-500 mb-1">Active Signals</div>
-                    <div id="activeSignals" class="text-3xl font-bold text-purple-600">-</div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="text-sm text-gray-500 mb-1">Status</div>
-                            <div id="status" class="text-sm font-semibold text-gray-900">Loading...</div>
-                        </div>
-                        <button onclick="refreshData()" id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
-                            Refresh
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Signals Container -->
-            <div id="signalsContainer" class="space-y-6">
-                <div class="bg-white rounded-lg shadow p-12 text-center">
-                    <div class="spinner mx-auto mb-4"></div>
-                    <p class="text-gray-600">Loading market data...</p>
-                </div>
-            </div>
-
-            <!-- Strategy Info -->
-            <div class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-lg p-6 border border-blue-200">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">📋 Strategy Rules</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h3 class="font-semibold text-gray-800 mb-2">Entry Criteria</h3>
-                        <ul class="space-y-2 text-sm text-gray-700">
-                            <li class="flex items-start">
-                                <span class="text-green-600 mr-2">✓</span>
-                                <span>Half-life &lt; 50 days (mean-reverting only)</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="text-green-600 mr-2">✓</span>
-                                <span>3-day cumulative move &gt; 1%</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="text-green-600 mr-2">✓</span>
-                                <span>|Z-Score| &gt; 2.0 for strong signals</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="text-green-600 mr-2">✓</span>
-                                <span>Contrarian direction (fade the move)</span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-gray-800 mb-2">Exit Levels</h3>
-                        <ul class="space-y-2 text-sm text-gray-700">
-                            <li class="flex items-start">
-                                <span class="text-purple-600 mr-2">•</span>
-                                <span>Take Profit: Mean distance ÷ 2</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="text-purple-600 mr-2">•</span>
-                                <span>Stop Loss: 1.5× ATR from entry</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="text-purple-600 mr-2">•</span>
-                                <span>Time Stop: 2× half-life (max 10 days)</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="text-purple-600 mr-2">•</span>
-                                <span>Expected Win Rate: 70-75%</span>
-                            </li>
-                        </ul>
-                    </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Execute & Manage</h3>
+                    <p>Enter trades with confidence knowing you have statistical backing. Use the provided stop-loss and take-profit levels for proper trade management.</p>
                 </div>
             </div>
         </div>
-    </div>
-
-    <script>
-        // Configuration
-        const PROXY_URL = 'https://oanda-proxy.onrender.com/api';
-        const PAIRS = [
-            // Major Pairs
-            'EUR_USD', 'GBP_USD', 'USD_JPY', 'USD_CAD', 'AUD_USD',
-            // Commodity
-            'XAU_USD',  // Gold - Excellent mean reversion characteristics
-            // European Crosses
-            'EUR_GBP', 'EUR_CHF', 'EUR_AUD',
-            // Commodity Crosses
-            'AUD_NZD', 'AUD_CAD',
-            // Other Crosses
-            'NZD_USD', 'USD_CHF', 'GBP_AUD'
-        ];
-        const ACCOUNT_ID = '101-004-37956081-001';
-
-        // Default settings
-        const DEFAULT_SETTINGS = {
-            zScoreThreshold: 2.0,
-            threeDayMoveThreshold: 1.0,
-            halfLifeCutoff: 50
-        };
-
-        // Load settings from localStorage
-        function loadSettings() {
-            const saved = localStorage.getItem('strategySettings');
-            return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
-        }
-
-        // Current settings
-        let SETTINGS = loadSettings();
-
-        // Settings modal functions
-        function openSettings() {
-            document.getElementById('settingsZScore').value = SETTINGS.zScoreThreshold;
-            document.getElementById('settings3DayMove').value = SETTINGS.threeDayMoveThreshold;
-            document.getElementById('settingsHalfLife').value = SETTINGS.halfLifeCutoff;
-            document.getElementById('settingsModal').style.display = 'flex';
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').style.display = 'none';
-        }
-
-        function saveSettings() {
-            SETTINGS.zScoreThreshold = parseFloat(document.getElementById('settingsZScore').value);
-            SETTINGS.threeDayMoveThreshold = parseFloat(document.getElementById('settings3DayMove').value);
-            SETTINGS.halfLifeCutoff = parseFloat(document.getElementById('settingsHalfLife').value);
-            
-            localStorage.setItem('strategySettings', JSON.stringify(SETTINGS));
-            closeSettings();
-            
-            // Show notification
-            alert('✅ Settings saved! Refreshing signals...');
-            
-            // Refresh data with new settings
-            refreshData();
-        }
-
-        function resetSettings() {
-            SETTINGS = {...DEFAULT_SETTINGS};
-            document.getElementById('settingsZScore').value = DEFAULT_SETTINGS.zScoreThreshold;
-            document.getElementById('settings3DayMove').value = DEFAULT_SETTINGS.threeDayMoveThreshold;
-            document.getElementById('settingsHalfLife').value = DEFAULT_SETTINGS.halfLifeCutoff;
-        }
-
-        // State
-        let marketData = {};
-        let qualifiedPairsData = [];
-
-        // Fetch candles from Oanda via proxy
-        async function fetchCandles(pair, count = 500) {
-            try {
-                const response = await fetch(
-                    `${PROXY_URL}/v3/instruments/${pair}/candles?count=${count}&granularity=D&price=M`
-                );
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const data = await response.json();
-                return data.candles.map(c => ({
-                    time: c.time,
-                    close: parseFloat(c.mid.c),
-                    open: parseFloat(c.mid.o),
-                    high: parseFloat(c.mid.h),
-                    low: parseFloat(c.mid.l)
-                }));
-            } catch (error) {
-                console.error(`Error fetching ${pair}:`, error);
-                return null;
-            }
-        }
-
-        // Calculate half-life for mean reversion
-        function calculateHalfLife(prices) {
-            if (prices.length < 30) return Infinity;
-            
-            try {
-                const logPrices = prices.map(p => Math.log(p));
-                const n = logPrices.length;
-                const yLag = logPrices.slice(0, n - 1);
-                const yDiff = logPrices.slice(1).map((val, i) => val - logPrices[i]);
-                
-                const nPoints = yLag.length;
-                const sumX = yLag.reduce((a, b) => a + b, 0);
-                const sumY = yDiff.reduce((a, b) => a + b, 0);
-                const sumXX = yLag.reduce((a, b) => a + b * b, 0);
-                const sumXY = yLag.reduce((a, b, i) => a + b * yDiff[i], 0);
-                
-                const slope = (nPoints * sumXY - sumX * sumY) / (nPoints * sumXX - sumX * sumX);
-                
-                if (slope >= -0.001) return Infinity;
-                
-                const theta = -slope;
-                const halfLife = Math.log(2) / theta;
-                
-                return (halfLife > 0 && halfLife < 500) ? halfLife : Infinity;
-            } catch (error) {
-                return Infinity;
-            }
-        }
-
-        // Calculate Z-score
-        function calculateZScore(prices, lookback = 20) {
-            if (prices.length < lookback) return 0;
-            
-            const recent = prices.slice(-lookback);
-            const mean = recent.reduce((a, b) => a + b, 0) / recent.length;
-            const variance = recent.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / recent.length;
-            const std = Math.sqrt(variance);
-            
-            const currentPrice = prices[prices.length - 1];
-            return std > 0 ? (currentPrice - mean) / std : 0;
-        }
-
-        // Calculate ATR
-        function calculateATR(candles, period = 14) {
-            if (candles.length < period + 1) return 0;
-            
-            const recentCandles = candles.slice(-period - 1);
-            const trueRanges = [];
-            
-            for (let i = 1; i < recentCandles.length; i++) {
-                const high = recentCandles[i].high;
-                const low = recentCandles[i].low;
-                const prevClose = recentCandles[i - 1].close;
-                
-                const tr = Math.max(
-                    high - low,
-                    Math.abs(high - prevClose),
-                    Math.abs(low - prevClose)
-                );
-                trueRanges.push(tr);
-            }
-            
-            return trueRanges.reduce((a, b) => a + b, 0) / trueRanges.length;
-        }
-
-        // Analyze pair
-        function analyzePair(pair, candles) {
-            if (!candles || candles.length < 50) return null;
-
-            const prices = candles.map(c => c.close);
-            const currentPrice = prices[prices.length - 1];
-            
-            const halfLife = calculateHalfLife(prices);
-            
-            if (halfLife >= SETTINGS.halfLifeCutoff) {
-                return {
-                    pair,
-                    qualified: false,
-                    halfLife,
-                    currentPrice,
-                    reason: 'Half-life too high (not mean-reverting enough)'
-                };
-            }
-            
-            const price3DaysAgo = prices[prices.length - 4];
-            const threeDayReturn = ((currentPrice - price3DaysAgo) / price3DaysAgo) * 100;
-            
-            const lookback = Math.max(10, Math.min(Math.floor(halfLife), 50));
-            const zScore = calculateZScore(prices, lookback);
-            const atr = calculateATR(candles);
-            
-            const meanPrice = prices.slice(-lookback).reduce((a, b) => a + b, 0) / lookback;
-            const deviation = Math.abs(currentPrice - meanPrice);
-            
-            const hasThreeDayMove = Math.abs(threeDayReturn) > SETTINGS.threeDayMoveThreshold;
-            const hasZScoreSignal = Math.abs(zScore) > SETTINGS.zScoreThreshold;
-            const hasSignal = hasThreeDayMove && hasZScoreSignal;
-            
-            // Generate waiting message based on missing conditions
-            let waitingMessage = 'No entry signal yet - waiting for ';
-            const missingConditions = [];
-            if (!hasZScoreSignal) missingConditions.push(`|Z-score| > ${SETTINGS.zScoreThreshold}`);
-            if (!hasThreeDayMove) missingConditions.push(`3-day move > ${SETTINGS.threeDayMoveThreshold}%`);
-            waitingMessage += missingConditions.join(' and ');
-            waitingMessage += missingConditions.join(' and ');
-            
-            const direction = threeDayReturn > 0 ? 'SHORT' : 'LONG';
-            
-            let entry, takeProfit, stopLoss;
-            
-            if (direction === 'LONG') {
-                entry = currentPrice;
-                takeProfit = currentPrice + (deviation * 0.5);
-                stopLoss = currentPrice - (1.5 * atr);
-            } else {
-                entry = currentPrice;
-                takeProfit = currentPrice - (deviation * 0.5);
-                stopLoss = currentPrice + (1.5 * atr);
-            }
-            
-            const maxHoldDays = Math.min(Math.floor(halfLife * 2), 10);
-            
-            // Pip multiplier based on instrument type
-            const isJPY = pair.includes('JPY');
-            const isGold = pair.includes('XAU');
-            const pipMultiplier = isGold ? 1 : (isJPY ? 100 : 10000);
-            
-            return {
-                pair,
-                qualified: true,
-                halfLife: halfLife.toFixed(1),
-                currentPrice,
-                currentPriceFormatted: isGold ? currentPrice.toFixed(2) : currentPrice.toFixed(5),
-                threeDayReturn,
-                zScore,
-                atr,
-                meanPrice,
-                meanPriceFormatted: isGold ? meanPrice.toFixed(2) : meanPrice.toFixed(5),
-                hasSignal,
-                waitingMessage,
-                signalStrength: (hasThreeDayMove && Math.abs(zScore) > 2.5) ? 'STRONG' : 
-                              hasSignal ? 'MODERATE' : 'NONE',
-                direction,
-                entry: isGold ? entry.toFixed(2) : entry.toFixed(5),
-                takeProfit: isGold ? takeProfit.toFixed(2) : takeProfit.toFixed(5),
-                stopLoss: isGold ? stopLoss.toFixed(2) : stopLoss.toFixed(5),
-                maxHoldDays,
-                tpPips: (Math.abs(takeProfit - entry) * pipMultiplier).toFixed(1),
-                slPips: (Math.abs(stopLoss - entry) * pipMultiplier).toFixed(1),
-                pipLabel: isGold ? '$' : 'pips',
-                riskReward: (Math.abs(takeProfit - entry) / Math.abs(stopLoss - entry)).toFixed(2)
-            };
-        }
-
-        // Render signals
-        function renderSignals() {
-            const container = document.getElementById('signalsContainer');
-            
-            if (qualifiedPairsData.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-white rounded-lg shadow p-12 text-center">
-                        <div class="text-6xl mb-4">❌</div>
-                        <p class="text-xl text-gray-600 mb-2">No pairs currently qualify</p>
-                        <p class="text-sm text-gray-500">All pairs have half-life ≥ 50 days</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = qualifiedPairsData.map(pair => `
-                <div class="signal-card bg-white rounded-lg shadow-lg p-6 border-2 ${
-                    pair.hasSignal 
-                        ? pair.signalStrength === 'STRONG'
-                            ? 'border-red-500 bg-red-50'
-                            : 'border-yellow-500 bg-yellow-50'
-                        : 'border-gray-200'
-                }">
-                    <!-- Header -->
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="text-2xl font-bold text-gray-900">${pair.pair.replace('_', '/')}</h3>
-                            <div class="flex items-center gap-4 mt-2 text-sm">
-                                <span class="text-gray-600">
-                                    Half-life: <strong>${pair.halfLife} days</strong>
-                                </span>
-                                <span class="${Math.abs(pair.threeDayReturn) > 1 ? 'text-red-600' : 'text-gray-600'}">
-                                    3-Day: <strong>${pair.threeDayReturn.toFixed(2)}%</strong>
-                                </span>
-                                <span class="${Math.abs(pair.zScore) > 2 ? 'text-red-600' : 'text-gray-600'}">
-                                    Z-Score: <strong>${pair.zScore.toFixed(2)}</strong>
-                                </span>
-                            </div>
-                        </div>
-                        ${pair.hasSignal ? `
-                            <div class="px-4 py-2 rounded-lg font-bold ${
-                                pair.signalStrength === 'STRONG'
-                                    ? 'bg-red-600 text-white'
-                                    : 'bg-yellow-500 text-gray-900'
-                            }">
-                                ${pair.signalStrength} ${pair.direction} SIGNAL
-                            </div>
-                        ` : ''}
-                    </div>
-
-                    <!-- Current Price -->
-                    <div class="mb-4 pb-4 border-b">
-                        <div class="text-sm text-gray-500 mb-1">Current Price</div>
-                        <div class="text-4xl font-bold text-gray-900">${pair.currentPriceFormatted}</div>
-                    </div>
-
-                    ${pair.hasSignal ? `
-                        <!-- Trade Levels -->
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div class="bg-white p-4 rounded-lg border-2 border-blue-500">
-                                <div class="text-xs font-semibold text-blue-600 uppercase mb-1">Entry</div>
-                                <div class="text-2xl font-bold text-gray-900">${pair.entry}</div>
-                                <div class="text-xs text-gray-500 mt-1">${pair.direction}</div>
-                            </div>
-                            
-                            <div class="bg-white p-4 rounded-lg border-2 border-green-500">
-                                <div class="text-xs font-semibold text-green-600 uppercase mb-1">Take Profit</div>
-                                <div class="text-2xl font-bold text-gray-900">${pair.takeProfit}</div>
-                                <div class="text-xs text-gray-500 mt-1">${pair.tpPips} ${pair.pipLabel}</div>
-                            </div>
-                            
-                            <div class="bg-white p-4 rounded-lg border-2 border-red-500">
-                                <div class="text-xs font-semibold text-red-600 uppercase mb-1">Stop Loss</div>
-                                <div class="text-2xl font-bold text-gray-900">${pair.stopLoss}</div>
-                                <div class="text-xs text-gray-500 mt-1">${pair.slPips} ${pair.pipLabel}</div>
-                            </div>
-                            
-                            <div class="bg-white p-4 rounded-lg border-2 border-purple-500">
-                                <div class="text-xs font-semibold text-purple-600 uppercase mb-1">Max Hold</div>
-                                <div class="text-2xl font-bold text-gray-900">${pair.maxHoldDays}</div>
-                                <div class="text-xs text-gray-500 mt-1">days</div>
-                            </div>
-                        </div>
-
-                        <!-- Risk/Reward -->
-                        <div class="mt-4 pt-4 border-t flex justify-between items-center">
-                            <div class="text-sm text-gray-600">
-                                <strong>Risk/Reward:</strong> 1:${pair.riskReward}
-                            </div>
-                            <div class="text-sm text-gray-600">
-                                <strong>Mean Price:</strong> ${pair.meanPriceFormatted}
-                            </div>
-                        </div>
-                    ` : `
-                        <div class="text-center py-4 text-gray-500">
-                            ${pair.waitingMessage}
-                        </div>
-                    `}
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="/" class="nav-logo">📊 <span>VNMR Signal</span></a>
+                    <p>Professional forex trading tools powered by statistical analysis and data-driven signals.</p>
                 </div>
-            `).join('');
-        }
-
-        // Fetch and analyze all data
-        async function refreshData() {
-            const btn = document.getElementById('refreshBtn');
-            const status = document.getElementById('status');
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Products</h4>
+                        <ul>
+                            <li><a href="/sweepsignal/">SweepSignal</a></li>
+                            <li><a href="/vnmr-classic.html">VNMR Classic</a></li>
+                            <li><a href="/tracker.html">VNMR Tracker</a></li>
+                            <li><a href="/position-calculator.html">Position Calculator</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>SweepSignal</h4>
+                        <ul>
+                            <li><a href="/sweepsignal/">Home</a></li>
+                            <li><a href="/sweepsignal/login.html">Login</a></li>
+                            <li><a href="/sweepsignal/signup.html">Sign Up</a></li>
+                            <li><a href="/sweepsignal/subscribe.html">Pricing</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <ul>
+                            <li><a href="/sweepsignal/terms.html">Terms of Service</a></li>
+                            <li><a href="/sweepsignal/privacy.html">Privacy Policy</a></li>
+                            <li><a href="/sweepsignal/risk-disclaimer.html">Risk Disclaimer</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
             
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span>';
-            status.textContent = 'Loading...';
-
-            qualifiedPairsData = [];
-            const allPairs = [];
-
-            for (const pair of PAIRS) {
-                const candles = await fetchCandles(pair);
-                if (candles) {
-                    const analysis = analyzePair(pair, candles);
-                    if (analysis) {
-                        allPairs.push(analysis);
-                        if (analysis.qualified) {
-                            qualifiedPairsData.push(analysis);
-                        }
-                    }
-                }
-                await new Promise(r => setTimeout(r, 200));
-            }
-
-            qualifiedPairsData.sort((a, b) => {
-                if (a.hasSignal && !b.hasSignal) return -1;
-                if (!a.hasSignal && b.hasSignal) return 1;
-                return Math.abs(b.zScore) - Math.abs(a.zScore);
-            });
-
-            // Update stats
-            document.getElementById('totalPairs').textContent = PAIRS.length;
-            document.getElementById('qualifiedPairs').textContent = qualifiedPairsData.length;
-            document.getElementById('activeSignals').textContent = 
-                qualifiedPairsData.filter(p => p.hasSignal).length;
-            
-            const now = new Date();
-            document.getElementById('lastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
-            status.textContent = 'Live';
-
-            renderSignals();
-
-            btn.disabled = false;
-            btn.textContent = 'Refresh';
-
-            // Hide proxy notice if successful
-            if (allPairs.length > 0) {
-                document.getElementById('proxyNotice').style.display = 'none';
-            }
-        }
-
-        // Auto-refresh every 5 minutes
-        setInterval(refreshData, 5 * 60 * 1000);
-
-        // Initial load
-        refreshData();
-    </script>
+            <div class="footer-bottom">
+                <p class="footer-disclaimer">
+                    © 2026 VNMR Signal. All rights reserved.<br><br>
+                    <strong>Risk Disclaimer:</strong> Trading foreign exchange on margin carries a high level of risk and may not be suitable for all investors. The high degree of leverage can work against you as well as for you. Before deciding to trade foreign exchange, you should carefully consider your investment objectives, level of experience, and risk appetite. The possibility exists that you could sustain a loss of some or all of your initial investment and therefore you should not invest money that you cannot afford to lose. You should be aware of all the risks associated with foreign exchange trading. VNMR Signal is not a financial advisor and does not provide financial advice. All trading decisions are made by you.
+                </p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
