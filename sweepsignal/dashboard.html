@@ -225,6 +225,153 @@
             font-weight: 600;
         }
         
+        /* Telegram Section */
+        .telegram-section {
+            margin-bottom: 12px;
+        }
+        
+        .telegram-card {
+            background: rgba(0,136,204,0.1);
+            border: 1px solid rgba(0,136,204,0.3);
+            border-radius: 10px;
+            padding: 16px 20px;
+        }
+        
+        .telegram-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .telegram-icon {
+            font-size: 1.4rem;
+        }
+        
+        .telegram-header h3 {
+            font-size: 1rem;
+            color: #fff;
+            margin: 0;
+            flex: 1;
+        }
+        
+        .telegram-status {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            color: #888;
+        }
+        
+        .telegram-status.connected {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+        }
+        
+        .telegram-body p {
+            color: #a0a0a0;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+        
+        .btn-telegram {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #0088cc, #0066aa);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-telegram:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0,136,204,0.4);
+        }
+        
+        .btn-telegram-secondary {
+            padding: 8px 16px;
+            background: transparent;
+            color: #0088cc;
+            border: 1px solid #0088cc;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .btn-telegram-disconnect {
+            padding: 8px 16px;
+            background: transparent;
+            color: #ff4757;
+            border: 1px solid rgba(255,71,87,0.5);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .telegram-code-section {
+            text-align: center;
+            padding: 15px 0;
+        }
+        
+        .telegram-code-section p {
+            color: #a0a0a0;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        
+        .verification-code {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: monospace;
+            letter-spacing: 8px;
+            color: #ffd700;
+            background: rgba(0,0,0,0.3);
+            padding: 15px 25px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        
+        .code-instructions {
+            font-size: 0.8rem;
+            color: #888;
+            line-height: 1.8;
+            margin-top: 15px;
+        }
+        
+        .code-instructions a {
+            color: #0088cc;
+        }
+        
+        .code-instructions code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ffd700;
+        }
+        
+        .telegram-connected {
+            text-align: center;
+            padding: 10px 0;
+        }
+        
+        .connected-text {
+            color: #00ff88;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .connected-info {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
         /* Session Indicator */
         .session-indicator {
             display: flex;
@@ -886,6 +1033,38 @@
             <a href="subscribe.html">Upgrade Now</a>
         </div>
         
+        <!-- Telegram Connection (Pro Only) -->
+        <div class="telegram-section" id="telegramSection" style="display:none;">
+            <div class="telegram-card">
+                <div class="telegram-header">
+                    <span class="telegram-icon">📱</span>
+                    <h3>Telegram Alerts</h3>
+                    <span class="telegram-status" id="telegramStatus">Not Connected</span>
+                </div>
+                <div class="telegram-body" id="telegramBody">
+                    <p>Get real-time A+ signals directly to your phone via Telegram.</p>
+                    <button class="btn-telegram" id="connectTelegramBtn" onclick="generateTelegramCode()">
+                        Connect Telegram
+                    </button>
+                </div>
+                <div class="telegram-code-section" id="telegramCodeSection" style="display:none;">
+                    <p>Send this code to our bot:</p>
+                    <div class="verification-code" id="verificationCode">------</div>
+                    <p class="code-instructions">
+                        1. Open <a href="https://t.me/SweepSignalBot" target="_blank">@SweepSignalBot</a> on Telegram<br>
+                        2. Send: <code>/connect <span id="codeForCopy">------</span></code><br>
+                        3. Code expires in 10 minutes
+                    </p>
+                    <button class="btn-telegram-secondary" onclick="generateTelegramCode()">Generate New Code</button>
+                </div>
+                <div class="telegram-connected" id="telegramConnected" style="display:none;">
+                    <p class="connected-text">✅ Connected to Telegram</p>
+                    <p class="connected-info">You'll receive alerts for B+ and above signals.</p>
+                    <button class="btn-telegram-disconnect" onclick="disconnectTelegram()">Disconnect</button>
+                </div>
+            </div>
+        </div>
+        
         <!-- Warning Banner -->
         <div class="warning-banner hidden" id="warningBanner">
             <span>⚠️</span>
@@ -1166,7 +1345,100 @@
                 }
             }
             
-            // Pro: All features enabled (nothing to disable)
+            // Pro: Show Telegram section
+            if (userTier === 'pro') {
+                document.getElementById('telegramSection').style.display = 'block';
+                checkTelegramConnection();
+            }
+        }
+        
+        // Check if Telegram is already connected
+        async function checkTelegramConnection() {
+            if (!userProfile) return;
+            
+            if (userProfile.telegram_chat_id) {
+                // Already connected
+                document.getElementById('telegramStatus').textContent = 'Connected';
+                document.getElementById('telegramStatus').classList.add('connected');
+                document.getElementById('telegramBody').style.display = 'none';
+                document.getElementById('telegramCodeSection').style.display = 'none';
+                document.getElementById('telegramConnected').style.display = 'block';
+            } else {
+                // Not connected
+                document.getElementById('telegramStatus').textContent = 'Not Connected';
+                document.getElementById('telegramStatus').classList.remove('connected');
+                document.getElementById('telegramBody').style.display = 'block';
+                document.getElementById('telegramCodeSection').style.display = 'none';
+                document.getElementById('telegramConnected').style.display = 'none';
+            }
+        }
+        
+        // Generate Telegram verification code
+        async function generateTelegramCode() {
+            const btn = document.getElementById('connectTelegramBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Generating...';
+            }
+            
+            try {
+                // Call the database function to generate code
+                const { data, error } = await supabaseClient
+                    .rpc('generate_telegram_code', { p_user_id: currentUser.id });
+                
+                if (error) throw error;
+                
+                const code = data;
+                
+                // Show the code section
+                document.getElementById('telegramBody').style.display = 'none';
+                document.getElementById('telegramCodeSection').style.display = 'block';
+                document.getElementById('verificationCode').textContent = code;
+                document.getElementById('codeForCopy').textContent = code;
+                
+            } catch (error) {
+                console.error('Error generating code:', error);
+                alert('Error generating verification code. Please try again.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Connect Telegram';
+                }
+            }
+        }
+        
+        // Disconnect Telegram
+        async function disconnectTelegram() {
+            if (!confirm('Are you sure you want to disconnect Telegram alerts?')) return;
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('profiles')
+                    .update({ telegram_chat_id: null })
+                    .eq('id', currentUser.id);
+                
+                if (error) throw error;
+                
+                // Update local profile
+                userProfile.telegram_chat_id = null;
+                
+                // Update UI
+                document.getElementById('telegramStatus').textContent = 'Not Connected';
+                document.getElementById('telegramStatus').classList.remove('connected');
+                document.getElementById('telegramBody').style.display = 'block';
+                document.getElementById('telegramCodeSection').style.display = 'none';
+                document.getElementById('telegramConnected').style.display = 'none';
+                
+                // Reset button
+                const btn = document.getElementById('connectTelegramBtn');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Connect Telegram';
+                }
+                
+            } catch (error) {
+                console.error('Error disconnecting:', error);
+                alert('Error disconnecting Telegram. Please try again.');
+            }
         }
         
         // Handle logout
