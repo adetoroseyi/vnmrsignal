@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Plan - SweepSignal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #ff8c00;
+            --green: #00ff88;
+            --red: #ff4757;
+            --bg-dark: #0a0a12;
+            --bg-card: #12121c;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border: rgba(255,255,255,0.1);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .nav {
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+        
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .nav-user span {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .btn-logout {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .trial-expired {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(255,71,87,0.1);
+            border: 1px solid rgba(255,71,87,0.3);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--red);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .pricing-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 35px 30px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card:hover {
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        .pricing-card.popular {
+            border-color: var(--gold);
+            transform: scale(1.02);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #000;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .pricing-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+        
+        .pricing-price {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .pricing-price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+        
+        .pricing-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+        
+        .pricing-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--green);
+            font-weight: 700;
+        }
+        
+        .pricing-features li.disabled {
+            color: var(--text-muted);
+        }
+        
+        .pricing-features li.disabled::before {
+            content: '—';
+            color: var(--text-muted);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            display: block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255,215,0,0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .guarantee {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .guarantee a {
+            color: var(--text-secondary);
+        }
+        
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10,10,18,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="./" class="nav-logo">⭐ SweepSignal</a>
+        <div class="nav-user">
+            <span id="userEmail">Loading...</span>
+            <button class="btn-logout" id="logoutBtn">Log Out</button>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="header">
+            <div class="trial-expired" id="trialExpiredBadge">
+                ⏰ Your free trial has ended
+            </div>
+            <h1>Choose Your Plan</h1>
+            <p>Continue using SweepSignal to find A+ trading setups automatically</p>
+        </div>
+        
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <p class="pricing-name">Basic</p>
+                <p class="pricing-price">$37<span>/mo</span></p>
+                <p class="pricing-description">For traders who want to explore</p>
+                <ul class="pricing-features">
+                    <li>Dashboard access</li>
+                    <li>Manual scan refresh</li>
+                    <li>H1 timeframe</li>
+                    <li>Signal grading system</li>
+                    <li class="disabled">Telegram alerts</li>
+                    <li class="disabled">All timeframes</li>
+                </ul>
+                <button class="btn btn-secondary" onclick="subscribe('basic')">
+                    Choose Basic
+                </button>
+            </div>
+            
+            <div class="pricing-card popular">
+                <span class="popular-badge">Most Popular</span>
+                <p class="pricing-name">Pro</p>
+                <p class="pricing-price">$67<span>/mo</span></p>
+                <p class="pricing-description">For serious traders</p>
+                <ul class="pricing-features">
+                    <li>Everything in Basic</li>
+                    <li>Telegram alerts</li>
+                    <li>Auto-scan every 5 minutes</li>
+                    <li>All timeframes (M30 - Daily)</li>
+                    <li>News bias toggle</li>
+                    <li>Email support</li>
+                </ul>
+                <button class="btn btn-primary" onclick="subscribe('pro')">
+                    Choose Pro
+                </button>
+            </div>
+        </div>
+        
+        <p class="guarantee">
+            Questions? <a href="mailto:toventuresltd@gmail.com">Contact us</a>
+        </p>
+    </div>
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p class="loading-text">Redirecting to checkout...</p>
+    </div>
+    
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://kinrktzmbelrswsowwwd.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_p9O4Hlx9qmIc55UOCBnnbQ_5LNxzvu5';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUser = null;
+        
+        // Check authentication
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session) {
+                // Not logged in, redirect to login
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            currentUser = session.user;
+            document.getElementById('userEmail').textContent = currentUser.email;
+            
+            // Check if user already has active subscription
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+            
+            if (profile && profile.subscription_status === 'active') {
+                // Already subscribed, go to dashboard
+                window.location.href = 'dashboard.html';
+            }
+            
+            // Check if still in trial
+            if (profile && profile.subscription_status === 'trialing') {
+                const trialEnd = new Date(profile.trial_end_date);
+                if (trialEnd > new Date()) {
+                    // Trial still active, show different message
+                    document.getElementById('trialExpiredBadge').innerHTML = '⏰ Trial ends: ' + trialEnd.toLocaleDateString();
+                    document.getElementById('trialExpiredBadge').style.background = 'rgba(255,215,0,0.1)';
+                    document.getElementById('trialExpiredBadge').style.borderColor = 'rgba(255,215,0,0.3)';
+                    document.getElementById('trialExpiredBadge').style.color = '#ffd700';
+                }
+            }
+        }
+        checkAuth();
+        
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        });
+        
+        // Subscribe function (will be connected to Stripe in Phase 5)
+        async function subscribe(plan) {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.add('active');
+            
+            // For now, show message that Stripe is not yet configured
+            // This will be replaced with actual Stripe checkout in Phase 5
+            setTimeout(() => {
+                loadingOverlay.classList.remove('active');
+                alert(`Stripe integration coming soon!\n\nPlan selected: ${plan.toUpperCase()}\n\nFor now, contact toventuresltd@gmail.com to activate your subscription manually.`);
+            }, 1500);
+            
+            /* 
+            // PHASE 5: Replace above with Stripe checkout
+            try {
+                const response = await fetch('YOUR_BACKEND_URL/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        plan: plan,
+                        userId: currentUser.id,
+                        email: currentUser.email
+                    })
+                });
+                
+                const { url } = await response.json();
+                window.location.href = url; // Redirect to Stripe Checkout
+            } catch (error) {
+                console.error('Checkout error:', error);
+                loadingOverlay.classList.remove('active');
+                alert('Error creating checkout session. Please try again.');
+            }
+            */
+        }
+    </script>
+</body>
+</html>
