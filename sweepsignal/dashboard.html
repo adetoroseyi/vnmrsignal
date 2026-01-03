@@ -1049,7 +1049,7 @@
         const SUPABASE_URL = 'https://kinrktzmbelrswsowwwd.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_p9O4Hlx9qmIc55UOCBnnbQ_5LNxzvu5';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let currentUser = null;
         let userProfile = null;
@@ -1058,7 +1058,7 @@
         // Check auth and access before loading dashboard
         async function checkAuthAndAccess() {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session } } = await supabaseClient.auth.getSession();
                 
                 if (!session) {
                     // Not logged in, redirect to login
@@ -1069,7 +1069,7 @@
                 currentUser = session.user;
                 
                 // Get user profile
-                const { data: profile, error } = await supabase
+                const { data: profile, error } = await supabaseClient
                     .from('profiles')
                     .select('*')
                     .eq('id', currentUser.id)
@@ -1090,7 +1090,7 @@
                     
                     if (trialEnd <= now) {
                         // Trial expired
-                        await supabase
+                        await supabaseClient
                             .from('profiles')
                             .update({ subscription_status: 'expired' })
                             .eq('id', currentUser.id);
@@ -1168,7 +1168,7 @@
         
         // Handle logout
         document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = 'login.html';
         });
         
