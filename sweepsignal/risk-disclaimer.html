@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Disclaimer - SweepSignal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --gold: #ffd700;
+            --gold-dark: #ff8c00;
+            --red: #ff4757;
+            --bg-dark: #0a0a12;
+            --bg-card: #12121c;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border: rgba(255,255,255,0.1);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+        
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 15px 30px;
+            background: rgba(10,10,18,0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-left: 25px;
+        }
+        
+        .nav-links a:hover { color: var(--text-primary); }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 30px 80px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 40px;
+        }
+        
+        h2 {
+            font-size: 1.4rem;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            color: var(--gold);
+        }
+        
+        p, li {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+        
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 20px;
+        }
+        
+        li { margin-bottom: 8px; }
+        
+        strong { color: var(--text-primary); }
+        
+        a { color: var(--gold); }
+        
+        .warning-box {
+            background: rgba(255,71,87,0.15);
+            border: 2px solid rgba(255,71,87,0.5);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        
+        .warning-box h3 {
+            color: var(--red);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .warning-box p { margin-bottom: 10px; }
+        .warning-box p:last-child { margin-bottom: 0; }
+        
+        .highlight-box {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .highlight-box p { margin-bottom: 0; }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-box {
+            background: rgba(255,71,87,0.1);
+            border: 1px solid rgba(255,71,87,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-box .number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--red);
+        }
+        
+        .stat-box .label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 30px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .footer a { color: var(--text-secondary); margin: 0 15px; text-decoration: none; }
+        .footer a:hover { color: var(--text-primary); }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="./" class="nav-logo">⭐ SweepSignal</a>
+        <div class="nav-links">
+            <a href="./">Home</a>
+            <a href="terms">Terms of Service</a>
+            <a href="privacy">Privacy Policy</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>Risk Disclaimer</h1>
+        <p class="last-updated">Last Updated: January 2026</p>
+        
+        <div class="warning-box">
+            <h3>⚠️ Important Risk Warning</h3>
+            <p><strong>Trading foreign exchange (forex) on margin carries a HIGH LEVEL OF RISK and may not be suitable for all investors.</strong></p>
+            <p>Before deciding to trade forex, you should carefully consider your investment objectives, level of experience, and risk appetite. <strong>You could lose some or all of your initial investment.</strong> Do not invest money you cannot afford to lose.</p>
+        </div>
+        
+        <p>This Risk Disclaimer applies to all users of SweepSignal, a service operated by T&O Ventures Ltd. By using our Service, you acknowledge that you have read, understood, and agree to the risks described below.</p>
+        
+        <h2>1. Forex Trading Risks</h2>
+        
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div class="number">74-89%</div>
+                <div class="label">of retail investor accounts lose money trading CFDs/forex</div>
+            </div>
+            <div class="stat-box">
+                <div class="number">High</div>
+                <div class="label">leverage can magnify both gains and losses</div>
+            </div>
+        </div>
+        
+        <p>Forex trading involves substantial risk of loss. The following risks should be carefully considered:</p>
+        
+        <ul>
+            <li><strong>Leverage Risk:</strong> Forex trading typically involves high leverage, which can amplify both profits and losses. A small market movement can result in proportionally larger losses (or gains) relative to your margin.</li>
+            <li><strong>Market Volatility:</strong> Currency markets can be highly volatile. Prices can move rapidly and unpredictably due to economic events, political developments, or market sentiment.</li>
+            <li><strong>Liquidity Risk:</strong> In certain market conditions, it may be difficult to execute trades at desired prices, particularly during news events or market gaps.</li>
+            <li><strong>Gap Risk:</strong> Markets can "gap" — open at a significantly different price than the previous close — potentially causing losses beyond your stop loss.</li>
+            <li><strong>Counterparty Risk:</strong> You bear the risk that your broker may fail to meet its financial obligations to you.</li>
+            <li><strong>Currency Risk:</strong> If you trade in currencies other than your base currency, exchange rate fluctuations can affect your returns.</li>
+        </ul>
+        
+        <h2>2. No Guarantee of Profits</h2>
+        
+        <div class="warning-box">
+            <h3>⚠️ No Profit Guarantee</h3>
+            <p>SweepSignal does NOT guarantee any profits or trading results. Past performance is NOT indicative of future results. There is no assurance that any signal will result in a profitable trade.</p>
+        </div>
+        
+        <p>You should be aware that:</p>
+        <ul>
+            <li>Our signals are generated based on technical analysis and algorithms. They are not infallible.</li>
+            <li>Market conditions change constantly. A strategy that worked in the past may not work in the future.</li>
+            <li>Even "A+" graded signals can and will result in losses. No signal system has a 100% win rate.</li>
+            <li>Slippage, spread widening, and execution delays can negatively impact trade outcomes.</li>
+            <li>Your actual results will depend on many factors including execution, lot size, and market conditions.</li>
+        </ul>
+        
+        <h2>3. SweepSignal Is Not Financial Advice</h2>
+        
+        <div class="highlight-box">
+            <p><strong>SweepSignal is an analytical tool, not a financial advisor.</strong> We do not provide personalised investment advice, manage your funds, or execute trades on your behalf. All signals are for informational purposes only.</p>
+        </div>
+        
+        <p>Specifically, you acknowledge that:</p>
+        <ul>
+            <li>Our signals are <strong>not</strong> recommendations to buy or sell any financial instrument.</li>
+            <li>We do <strong>not</strong> know your personal financial situation, risk tolerance, or investment goals.</li>
+            <li>We are <strong>not</strong> licensed or registered as financial advisors, investment advisors, or brokers.</li>
+            <li>You should seek advice from a qualified financial professional before making any investment decisions.</li>
+            <li>All trading decisions are made <strong>solely by you</strong> and are your own responsibility.</li>
+        </ul>
+        
+        <h2>4. Your Responsibilities</h2>
+        <p>By using SweepSignal, you acknowledge and agree that:</p>
+        
+        <ul>
+            <li>You are solely responsible for your own trading decisions and their outcomes.</li>
+            <li>You have sufficient knowledge and experience to evaluate the risks of trading.</li>
+            <li>You understand that leverage can work against you as well as for you.</li>
+            <li>You will only trade with capital you can afford to lose entirely.</li>
+            <li>You will implement proper risk management, including position sizing and stop losses.</li>
+            <li>You will not blame SweepSignal or T&O Ventures Ltd. for any trading losses.</li>
+            <li>You are responsible for ensuring forex trading is legal in your jurisdiction.</li>
+        </ul>
+        
+        <h2>5. Signal Limitations</h2>
+        <p>Our signal service has inherent limitations:</p>
+        
+        <ul>
+            <li><strong>Technical Issues:</strong> Signal delivery may be delayed or interrupted due to technical issues with our systems, Telegram, or internet connectivity.</li>
+            <li><strong>Data Accuracy:</strong> While we strive for accuracy, market data and price feeds may contain errors or delays.</li>
+            <li><strong>Execution Differences:</strong> The prices shown in our signals may differ from the prices available at your broker.</li>
+            <li><strong>Market Hours:</strong> Signals are generated based on specific market conditions that may change rapidly.</li>
+            <li><strong>Not Comprehensive:</strong> Our signals do not account for fundamental analysis, news events, or geopolitical factors.</li>
+        </ul>
+        
+        <h2>6. Risk Management Recommendations</h2>
+        <p>While not financial advice, we strongly encourage responsible trading practices:</p>
+        
+        <ul>
+            <li><strong>Use Stop Losses:</strong> Always use stop loss orders to limit potential losses on every trade.</li>
+            <li><strong>Manage Position Sizes:</strong> Risk only a small percentage of your account per trade (commonly 1-2%).</li>
+            <li><strong>Don't Overtrade:</strong> Taking every signal is not required. Be selective.</li>
+            <li><strong>Use Demo Accounts:</strong> Practice with demo accounts before risking real money.</li>
+            <li><strong>Diversify:</strong> Don't put all your capital into forex trading.</li>
+            <li><strong>Stay Educated:</strong> Continuously learn about trading and risk management.</li>
+            <li><strong>Control Emotions:</strong> Don't trade based on fear, greed, or revenge.</li>
+        </ul>
+        
+        <h2>7. No Liability</h2>
+        <p>To the maximum extent permitted by law:</p>
+        
+        <ul>
+            <li>T&O Ventures Ltd. and SweepSignal shall not be liable for any trading losses you incur.</li>
+            <li>We are not liable for any decisions you make based on our signals.</li>
+            <li>We are not liable for any indirect, incidental, special, or consequential damages.</li>
+            <li>We are not liable for losses due to technical failures, delays, or errors.</li>
+            <li>Our total liability is limited to the fees you paid us in the preceding 3 months.</li>
+        </ul>
+        
+        <h2>8. Regulatory Notice</h2>
+        <p>SweepSignal provides general market analysis and signal alerts. We are not:</p>
+        
+        <ul>
+            <li>Authorised or regulated by the Financial Conduct Authority (FCA)</li>
+            <li>A registered investment advisor or broker</li>
+            <li>Providing managed account services or discretionary trading</li>
+        </ul>
+        
+        <p>Forex trading services offered by brokers may be regulated. You should ensure your broker is properly licensed and regulated in your jurisdiction.</p>
+        
+        <h2>9. Acknowledgement</h2>
+        
+        <div class="warning-box">
+            <h3>By Using SweepSignal, You Acknowledge:</h3>
+            <p>✓ I have read and understood this Risk Disclaimer.</p>
+            <p>✓ I understand that forex trading carries a high level of risk.</p>
+            <p>✓ I understand that I could lose some or all of my invested capital.</p>
+            <p>✓ I understand that past performance does not guarantee future results.</p>
+            <p>✓ I accept full responsibility for my own trading decisions.</p>
+            <p>✓ I will not hold SweepSignal or T&O Ventures Ltd. liable for any trading losses.</p>
+        </div>
+        
+        <h2>10. Contact Us</h2>
+        <p>If you have questions about this Risk Disclaimer, please contact us:</p>
+        <p>
+            <strong>T&O Ventures Ltd.</strong><br>
+            Email: <a href="mailto:toventuresltd@gmail.com">toventuresltd@gmail.com</a>
+        </p>
+    </div>
+    
+    <footer class="footer">
+        <p>© 2026 SweepSignal. Trading as T&O Ventures Ltd. All rights reserved.</p>
+        <p style="margin-top: 15px;">
+            <a href="./">Home</a>
+            <a href="terms">Terms of Service</a>
+            <a href="privacy">Privacy Policy</a>
+            <a href="risk-disclaimer">Risk Disclaimer</a>
+        </p>
+    </footer>
+</body>
+</html>
