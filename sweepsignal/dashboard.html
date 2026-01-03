@@ -1030,7 +1030,7 @@
         <!-- Upgrade Banner -->
         <div class="upgrade-banner" id="upgradeBanner">
             <p>🚀 <span id="upgradeMessage">Upgrade to Pro for Telegram alerts & all timeframes</span></p>
-            <a href="subscribe.html">Upgrade Now</a>
+            <a href="/sweepsignal/subscribe.html">Upgrade Now</a>
         </div>
         
         <!-- Telegram Connection (Pro Only) -->
@@ -1241,7 +1241,7 @@
                 
                 if (!session) {
                     // Not logged in, redirect to login
-                    window.location.href = 'login.html';
+                    window.location.href = '/sweepsignal/login.html';
                     return false;
                 }
                 
@@ -1256,7 +1256,7 @@
                 
                 if (error || !profile) {
                     console.error('Profile error:', error);
-                    window.location.href = 'login.html';
+                    window.location.href = '/sweepsignal/login.html';
                     return false;
                 }
                 
@@ -1273,7 +1273,7 @@
                             .from('profiles')
                             .update({ subscription_status: 'expired' })
                             .eq('id', currentUser.id);
-                        window.location.href = 'subscribe.html';
+                        window.location.href = '/sweepsignal/subscribe.html';
                         return false;
                     }
                     
@@ -1299,7 +1299,7 @@
                     
                 } else {
                     // Expired or cancelled
-                    window.location.href = 'subscribe.html';
+                    window.location.href = '/sweepsignal/subscribe.html';
                     return false;
                 }
                 
@@ -1316,7 +1316,7 @@
                 
             } catch (error) {
                 console.error('Auth check error:', error);
-                window.location.href = 'login.html';
+                window.location.href = '/sweepsignal/login.html';
                 return false;
             }
         }
@@ -1444,7 +1444,7 @@
         // Handle logout
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await supabaseClient.auth.signOut();
-            window.location.href = 'login.html';
+            window.location.href = '/sweepsignal/login.html';
         });
         
         // ================================================
