@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SweepSignal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #ffffff;
+        }
+        
+        .auth-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .auth-loading.hidden {
+            display: none;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: #f5a623;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .access-denied {
+            display: none;
+            text-align: center;
+            padding: 100px 20px;
+        }
+        
+        .access-denied.visible {
+            display: block;
+        }
+        
+        .access-denied h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ef4444;
+        }
+        
+        .access-denied p {
+            color: #a0a0a0;
+            margin-bottom: 30px;
+        }
+        
+        .access-denied a {
+            color: #f5a623;
+            text-decoration: none;
+        }
+        
+        .dashboard {
+            display: none;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .dashboard.visible {
+            display: block;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .header h1 span {
+            color: #f5a623;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .admin-badge {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .btn-refresh {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-refresh:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .btn-back {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #a0a0a0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            border-color: #f5a623;
+            color: #f5a623;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            border-color: rgba(245, 166, 35, 0.3);
+        }
+        
+        .stat-card.highlight {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: #a0a0a0;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+        }
+        
+        .stat-value.revenue {
+            color: #22c55e;
+        }
+        
+        .stat-value.trial {
+            color: #f5a623;
+        }
+        
+        .stat-value.basic {
+            color: #3b82f6;
+        }
+        
+        .stat-value.pro {
+            color: #8b5cf6;
+        }
+        
+        .stat-subtext {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .table-container {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        th {
+            background: rgba(255,255,255,0.05);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #a0a0a0;
+            font-weight: 600;
+        }
+        
+        td {
+            font-size: 14px;
+        }
+        
+        tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-trial {
+            background: rgba(245, 166, 35, 0.2);
+            color: #f5a623;
+        }
+        
+        .badge-basic {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+        
+        .badge-pro {
+            background: rgba(139, 92, 246, 0.2);
+            color: #8b5cf6;
+        }
+        
+        .badge-active {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .badge-trialing {
+            background: rgba(245, 166, 35, 0.2);
+            color: #f5a623;
+        }
+        
+        .badge-canceled {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .badge-past_due {
+            background: rgba(249, 115, 22, 0.2);
+            color: #f97316;
+        }
+        
+        .telegram-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .telegram-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #666;
+        }
+        
+        .telegram-dot.connected {
+            background: #22c55e;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .last-updated {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .revenue-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .revenue-item {
+            text-align: center;
+        }
+        
+        .revenue-item-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .revenue-item-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Loading -->
+    <div class="auth-loading" id="authLoading">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Access Denied -->
+    <div class="access-denied" id="accessDenied">
+        <h1>🚫</h1>
+        <h2>Access Denied</h2>
+        <p>You don't have permission to view this page.</p>
+        <a href="/sweepsignal/dashboard.html">← Back to Dashboard</a>
+    </div>
+    
+    <!-- Admin Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <div class="header">
+            <h1>⭐ <span>SweepSignal</span> Admin</h1>
+            <div class="header-actions">
+                <span class="admin-badge">🔐 Super Admin</span>
+                <button class="btn-refresh" onclick="loadAnalytics()">↻ Refresh</button>
+                <a href="/sweepsignal/dashboard.html" class="btn-back">← Dashboard</a>
+            </div>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card highlight">
+                <div class="stat-label">Monthly Revenue</div>
+                <div class="stat-value revenue" id="monthlyRevenue">$0</div>
+                <div class="stat-subtext" id="revenueSubtext">Calculating...</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Total Users</div>
+                <div class="stat-value" id="totalUsers">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Trial Users</div>
+                <div class="stat-value trial" id="trialUsers">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Basic Subscribers</div>
+                <div class="stat-value basic" id="basicUsers">0</div>
+                <div class="stat-subtext">$37/mo each</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Pro Subscribers</div>
+                <div class="stat-value pro" id="proUsers">0</div>
+                <div class="stat-subtext">$67/mo each</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Telegram Connected</div>
+                <div class="stat-value" id="telegramUsers">0</div>
+            </div>
+        </div>
+        
+        <!-- Users Table -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">All Users</h2>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Tier</th>
+                            <th>Status</th>
+                            <th>Telegram</th>
+                            <th>Signed Up</th>
+                            <th>Trial Ends</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="7" class="empty-state">Loading users...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="last-updated" id="lastUpdated"></div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Recent Signups (Last 7 Days)</h2>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Tier</th>
+                            <th>Signed Up</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentSignupsBody">
+                        <tr>
+                            <td colspan="3" class="empty-state">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://kinrktzmbelrswsowwwd.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_p9O4Hlx9qmIc55UOCBnnbQ_5LNxzvu5';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Super Admin Email
+        const SUPER_ADMIN_EMAIL = 'toventuresltd@gmail.com';
+        
+        let currentUser = null;
+        
+        // Check authentication and admin access
+        async function checkAdminAccess() {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                
+                if (!session) {
+                    window.location.href = '/sweepsignal/login.html';
+                    return false;
+                }
+                
+                currentUser = session.user;
+                
+                // Check if super admin
+                if (currentUser.email !== SUPER_ADMIN_EMAIL) {
+                    document.getElementById('authLoading').classList.add('hidden');
+                    document.getElementById('accessDenied').classList.add('visible');
+                    return false;
+                }
+                
+                // Show dashboard
+                document.getElementById('authLoading').classList.add('hidden');
+                document.getElementById('dashboard').classList.add('visible');
+                
+                // Load analytics
+                await loadAnalytics();
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Auth error:', error);
+                window.location.href = '/sweepsignal/login.html';
+                return false;
+            }
+        }
+        
+        // Load analytics data
+        async function loadAnalytics() {
+            try {
+                // Fetch all profiles
+                const { data: profiles, error } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                // Calculate stats
+                const totalUsers = profiles.length;
+                const trialUsers = profiles.filter(p => p.subscription_status === 'trialing').length;
+                const basicUsers = profiles.filter(p => p.subscription_tier === 'basic' && p.subscription_status === 'active').length;
+                const proUsers = profiles.filter(p => p.subscription_tier === 'pro' && p.subscription_status === 'active').length;
+                const telegramUsers = profiles.filter(p => p.telegram_chat_id).length;
+                
+                // Calculate revenue
+                const monthlyRevenue = (basicUsers * 37) + (proUsers * 67);
+                
+                // Update stats display
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('trialUsers').textContent = trialUsers;
+                document.getElementById('basicUsers').textContent = basicUsers;
+                document.getElementById('proUsers').textContent = proUsers;
+                document.getElementById('telegramUsers').textContent = telegramUsers;
+                document.getElementById('monthlyRevenue').textContent = `$${monthlyRevenue.toLocaleString()}`;
+                document.getElementById('revenueSubtext').textContent = `${basicUsers} Basic + ${proUsers} Pro`;
+                
+                // Populate users table
+                const usersTableBody = document.getElementById('usersTableBody');
+                if (profiles.length === 0) {
+                    usersTableBody.innerHTML = '<tr><td colspan="7" class="empty-state">No users found</td></tr>';
+                } else {
+                    usersTableBody.innerHTML = profiles.map(profile => `
+                        <tr>
+                            <td>${profile.email || 'N/A'}</td>
+                            <td>${profile.full_name || '-'}</td>
+                            <td><span class="badge badge-${profile.subscription_tier}">${profile.subscription_tier || 'trial'}</span></td>
+                            <td><span class="badge badge-${profile.subscription_status}">${profile.subscription_status || 'unknown'}</span></td>
+                            <td>
+                                <div class="telegram-status">
+                                    <span class="telegram-dot ${profile.telegram_chat_id ? 'connected' : ''}"></span>
+                                    ${profile.telegram_chat_id ? 'Connected' : 'Not connected'}
+                                </div>
+                            </td>
+                            <td>${formatDate(profile.created_at)}</td>
+                            <td>${profile.trial_end_date ? formatDate(profile.trial_end_date) : '-'}</td>
+                        </tr>
+                    `).join('');
+                }
+                
+                // Recent signups (last 7 days)
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                
+                const recentSignups = profiles.filter(p => new Date(p.created_at) >= sevenDaysAgo);
+                
+                const recentSignupsBody = document.getElementById('recentSignupsBody');
+                if (recentSignups.length === 0) {
+                    recentSignupsBody.innerHTML = '<tr><td colspan="3" class="empty-state">No signups in the last 7 days</td></tr>';
+                } else {
+                    recentSignupsBody.innerHTML = recentSignups.map(profile => `
+                        <tr>
+                            <td>${profile.email || 'N/A'}</td>
+                            <td><span class="badge badge-${profile.subscription_tier}">${profile.subscription_tier || 'trial'}</span></td>
+                            <td>${formatDate(profile.created_at)}</td>
+                        </tr>
+                    `).join('');
+                }
+                
+                // Update last updated time
+                document.getElementById('lastUpdated').textContent = `Last updated: ${new Date().toLocaleString()}`;
+                
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+        
+        // Initialize
+        checkAdminAccess();
+    </script>
+</body>
+</html>
