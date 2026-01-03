@@ -3,83 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Choose Your Plan - SweepSignal</title>
+    <title>Subscribe - SweepSignal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        :root {
-            --gold: #ffd700;
-            --gold-dark: #ff8c00;
-            --green: #00ff88;
-            --red: #ff4757;
-            --bg-dark: #0a0a12;
-            --bg-card: #12121c;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --text-muted: #666666;
-            --border: rgba(255,255,255,0.1);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
             min-height: 100vh;
-        }
-        
-        .nav {
-            padding: 20px 30px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .nav-logo {
-            font-size: 1.4rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-decoration: none;
-        }
-        
-        .nav-user {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .nav-user span {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-        
-        .btn-logout {
-            padding: 8px 16px;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .btn-logout:hover {
-            background: rgba(255,255,255,0.05);
-            color: var(--text-primary);
+            color: #ffffff;
+            padding: 40px 20px;
         }
         
         .container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 60px 20px;
         }
         
         .header {
@@ -87,54 +32,50 @@
             margin-bottom: 50px;
         }
         
-        .trial-expired {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: rgba(255,71,87,0.1);
-            border: 1px solid rgba(255,71,87,0.3);
-            border-radius: 50px;
-            font-size: 0.85rem;
-            color: var(--red);
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f5a623;
+            text-decoration: none;
+            display: inline-block;
             margin-bottom: 20px;
         }
         
         .header h1 {
-            font-size: 2.2rem;
+            font-size: 36px;
+            font-weight: 700;
             margin-bottom: 15px;
         }
         
         .header p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            max-width: 500px;
-            margin: 0 auto;
+            font-size: 18px;
+            color: #a0a0a0;
         }
         
-        .pricing-grid {
+        .plans {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
             margin-bottom: 40px;
         }
         
-        .pricing-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 35px 30px;
+        .plan-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 35px;
             position: relative;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
         
-        .pricing-card:hover {
-            border-color: rgba(255,255,255,0.2);
+        .plan-card:hover {
+            border-color: rgba(245, 166, 35, 0.3);
+            transform: translateY(-5px);
         }
         
-        .pricing-card.popular {
-            border-color: var(--gold);
-            transform: scale(1.02);
+        .plan-card.featured {
+            border-color: #f5a623;
+            background: rgba(245, 166, 35, 0.05);
         }
         
         .popular-badge {
@@ -142,304 +83,495 @@
             top: -12px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            background: linear-gradient(135deg, #f5a623 0%, #f57c00 100%);
             color: #000;
-            padding: 5px 20px;
+            padding: 6px 20px;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
         }
         
-        .pricing-name {
-            font-size: 1.1rem;
-            font-weight: 600;
+        .plan-name {
+            font-size: 24px;
+            font-weight: 700;
             margin-bottom: 10px;
-            color: var(--text-secondary);
         }
         
-        .pricing-price {
-            font-size: 2.8rem;
+        .plan-price {
+            font-size: 48px;
             font-weight: 800;
             margin-bottom: 5px;
         }
         
-        .pricing-price span {
-            font-size: 1rem;
+        .plan-price span {
+            font-size: 18px;
             font-weight: 400;
-            color: var(--text-muted);
+            color: #a0a0a0;
         }
         
-        .pricing-description {
-            color: var(--text-muted);
-            font-size: 0.9rem;
+        .plan-description {
+            color: #a0a0a0;
+            font-size: 14px;
             margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .pricing-features {
+        .plan-features {
             list-style: none;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
         
-        .pricing-features li {
+        .plan-features li {
             padding: 10px 0;
-            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            color: #e0e0e0;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
+            gap: 12px;
         }
         
-        .pricing-features li:last-child {
-            border-bottom: none;
-        }
-        
-        .pricing-features li::before {
-            content: '✓';
-            color: var(--green);
+        .plan-features li::before {
+            content: "✓";
+            color: #22c55e;
             font-weight: 700;
+            font-size: 16px;
         }
         
-        .pricing-features li.disabled {
-            color: var(--text-muted);
+        .plan-features li.disabled {
+            color: #666;
         }
         
-        .pricing-features li.disabled::before {
-            content: '—';
-            color: var(--text-muted);
+        .plan-features li.disabled::before {
+            content: "✗";
+            color: #666;
         }
         
         .btn {
             width: 100%;
-            padding: 14px 24px;
-            border-radius: 10px;
+            padding: 16px;
+            font-size: 16px;
             font-weight: 600;
-            font-size: 1rem;
-            text-decoration: none;
-            text-align: center;
-            transition: all 0.2s;
-            cursor: pointer;
             border: none;
-            font-family: inherit;
-            display: block;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            background: linear-gradient(135deg, #f5a623 0%, #f57c00 100%);
             color: #000;
         }
         
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255,215,0,0.3);
+            box-shadow: 0 4px 20px rgba(245, 166, 35, 0.4);
         }
         
         .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .btn-secondary:hover {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
         
         .guarantee {
             text-align: center;
-            color: var(--text-muted);
-            font-size: 0.9rem;
+            padding: 30px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 12px;
+            margin-bottom: 30px;
         }
         
-        .guarantee a {
-            color: var(--text-secondary);
+        .guarantee h3 {
+            color: #22c55e;
+            font-size: 18px;
+            margin-bottom: 10px;
         }
         
-        .loading-overlay {
+        .guarantee p {
+            color: #a0a0a0;
+            font-size: 14px;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .back-link a {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-link a:hover {
+            color: #f5a623;
+        }
+        
+        .current-plan-badge {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(10,10,18,0.9);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            gap: 20px;
         }
         
-        .loading-overlay.active {
-            display: flex;
+        .alert.visible {
+            display: block;
         }
         
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid var(--border);
-            border-top-color: var(--gold);
+        .alert-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        
+        .alert-success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+        
+        .alert-info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0,0,0,0.3);
+            border-top-color: #000;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
-        .loading-text {
-            color: var(--text-secondary);
+        .faq-section {
+            margin-top: 50px;
+            padding-top: 50px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .faq-section h2 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        
+        .faq-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .faq-item h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #f5a623;
+        }
+        
+        .faq-item p {
+            font-size: 14px;
+            color: #a0a0a0;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .plan-price {
+                font-size: 36px;
+            }
         }
     </style>
 </head>
 <body>
-    <nav class="nav">
-        <a href="./" class="nav-logo">⭐ SweepSignal</a>
-        <div class="nav-user">
-            <span id="userEmail">Loading...</span>
-            <button class="btn-logout" id="logoutBtn">Log Out</button>
-        </div>
-    </nav>
-    
     <div class="container">
         <div class="header">
-            <div class="trial-expired" id="trialExpiredBadge">
-                ⏰ Your free trial has ended
-            </div>
+            <a href="/sweepsignal/" class="logo">⭐ SweepSignal</a>
             <h1>Choose Your Plan</h1>
-            <p>Continue using SweepSignal to find A+ trading setups automatically</p>
+            <p>Start catching A+ setups today. Cancel anytime.</p>
         </div>
         
-        <div class="pricing-grid">
-            <div class="pricing-card">
-                <p class="pricing-name">Basic</p>
-                <p class="pricing-price">$37<span>/mo</span></p>
-                <p class="pricing-description">For traders who want to explore</p>
-                <ul class="pricing-features">
-                    <li>Dashboard access</li>
-                    <li>Manual scan refresh</li>
+        <div class="alert alert-error" id="errorAlert"></div>
+        <div class="alert alert-success" id="successAlert"></div>
+        <div class="alert alert-info" id="infoAlert"></div>
+        
+        <div class="plans">
+            <!-- Basic Plan -->
+            <div class="plan-card" id="basicCard">
+                <h2 class="plan-name">Basic <span id="basicCurrentBadge" class="current-plan-badge" style="display: none;">Current Plan</span></h2>
+                <div class="plan-price">$37<span>/month</span></div>
+                <p class="plan-description">Essential tools for manual traders</p>
+                
+                <ul class="plan-features">
+                    <li>Real-time signal scanner</li>
                     <li>H1 timeframe</li>
-                    <li>Signal grading system</li>
+                    <li>Signal grading (A+ to D)</li>
+                    <li>Entry, SL & 3 TP levels</li>
+                    <li>Manual scan button</li>
+                    <li class="disabled">M30, H4, Daily timeframes</li>
+                    <li class="disabled">Auto-refresh (60s)</li>
                     <li class="disabled">Telegram alerts</li>
-                    <li class="disabled">All timeframes</li>
                 </ul>
-                <button class="btn btn-secondary" onclick="subscribe('basic')">
-                    Choose Basic
+                
+                <button class="btn btn-secondary" id="basicBtn" onclick="subscribe('basic')">
+                    Subscribe to Basic
                 </button>
             </div>
             
-            <div class="pricing-card popular">
-                <span class="popular-badge">Most Popular</span>
-                <p class="pricing-name">Pro</p>
-                <p class="pricing-price">$67<span>/mo</span></p>
-                <p class="pricing-description">For serious traders</p>
-                <ul class="pricing-features">
+            <!-- Pro Plan -->
+            <div class="plan-card featured" id="proCard">
+                <div class="popular-badge">Most Popular</div>
+                <h2 class="plan-name">Pro <span id="proCurrentBadge" class="current-plan-badge" style="display: none;">Current Plan</span></h2>
+                <div class="plan-price">$67<span>/month</span></div>
+                <p class="plan-description">Full power for serious traders</p>
+                
+                <ul class="plan-features">
                     <li>Everything in Basic</li>
-                    <li>Telegram alerts</li>
-                    <li>Auto-scan every 5 minutes</li>
-                    <li>All timeframes (M30 - Daily)</li>
-                    <li>News bias toggle</li>
-                    <li>Email support</li>
+                    <li>All timeframes (M30, H1, H4, D)</li>
+                    <li>Auto-refresh every 60 seconds</li>
+                    <li>Telegram alerts (B+ signals)</li>
+                    <li>Priority signal delivery</li>
+                    <li>Never miss an A+ setup</li>
                 </ul>
-                <button class="btn btn-primary" onclick="subscribe('pro')">
-                    Choose Pro
+                
+                <button class="btn btn-primary" id="proBtn" onclick="subscribe('pro')">
+                    Subscribe to Pro
                 </button>
             </div>
         </div>
         
-        <p class="guarantee">
-            Questions? <a href="/cdn-cgi/l/email-protection#a6d2c9d0c3c8d2d3d4c3d5cad2c2e6c1cbc7cfca88c5c9cb">Contact us</a>
-        </p>
+        <div class="guarantee">
+            <h3>🔒 30-Day Money Back Guarantee</h3>
+            <p>Not satisfied? Get a full refund within 30 days, no questions asked.</p>
+        </div>
+        
+        <div class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <h4>Can I upgrade from Basic to Pro?</h4>
+                <p>Yes! You can upgrade anytime. You'll be charged the prorated difference for the remainder of your billing period.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>How does the free trial work?</h4>
+                <p>New users get 7 days free with Basic features. No credit card required to start. Upgrade anytime to access Pro features.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Can I cancel anytime?</h4>
+                <p>Absolutely. Cancel with one click from your dashboard. Your access continues until the end of your billing period.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>What payment methods do you accept?</h4>
+                <p>We accept all major credit cards (Visa, Mastercard, American Express) through our secure payment processor, Stripe.</p>
+            </div>
+        </div>
+        
+        <div class="back-link">
+            <a href="/sweepsignal/dashboard.html">← Back to Dashboard</a>
+        </div>
     </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Stripe SDK -->
+    <script src="https://js.stripe.com/v3/"></script>
     
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-        <p class="loading-text">Redirecting to checkout...</p>
-    </div>
-    
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         // Supabase Configuration
         const SUPABASE_URL = 'https://kinrktzmbelrswsowwwd.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_p9O4Hlx9qmIc55UOCBnnbQ_5LNxzvu5';
         
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Stripe Configuration
+        const STRIPE_PUBLISHABLE_KEY = 'pk_test_51R7ushKv9gEvbEL30KFUsfRgpc9L8Jq4I0YFWnUEDdv7LdhVEOkIVk50yRBkT4JmY2gT7EjXSSZZMMog4cGlQ4lG00Wi3KQTfn';
+        const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+        
+        // Price IDs
+        const PRICE_IDS = {
+            basic: 'price_1SlayfQT1CuWvAqcxR0CIQAO',
+            pro: 'price_1SlazeQT1CuWvAqcChhfhFNB'
+        };
+        
+        // Backend URL for creating checkout sessions
+        const BACKEND_URL = 'https://oanda-proxy.onrender.com';
         
         let currentUser = null;
+        let currentTier = null;
         
-        // Check authentication
+        // Show/hide alerts
+        function showError(message) {
+            const alert = document.getElementById('errorAlert');
+            alert.textContent = message;
+            alert.classList.add('visible');
+            setTimeout(() => alert.classList.remove('visible'), 5000);
+        }
+        
+        function showSuccess(message) {
+            const alert = document.getElementById('successAlert');
+            alert.textContent = message;
+            alert.classList.add('visible');
+        }
+        
+        function showInfo(message) {
+            const alert = document.getElementById('infoAlert');
+            alert.textContent = message;
+            alert.classList.add('visible');
+        }
+        
+        // Check authentication and current subscription
         async function checkAuth() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             
             if (!session) {
-                // Not logged in, redirect to login
                 window.location.href = '/sweepsignal/login.html';
                 return;
             }
             
             currentUser = session.user;
-            document.getElementById('userEmail').textContent = currentUser.email;
             
-            // Check if user already has active subscription
-            const { data: profile } = await supabaseClient
+            // Get user profile
+            const { data: profile, error } = await supabaseClient
                 .from('profiles')
                 .select('*')
                 .eq('id', currentUser.id)
                 .single();
             
-            if (profile && profile.subscription_status === 'active') {
-                // Already subscribed, go to dashboard
-                window.location.href = '/sweepsignal/dashboard.html';
-            }
-            
-            // Check if still in trial
-            if (profile && profile.subscription_status === 'trialing') {
-                const trialEnd = new Date(profile.trial_end_date);
-                if (trialEnd > new Date()) {
-                    // Trial still active, show different message
-                    document.getElementById('trialExpiredBadge').innerHTML = '⏰ Trial ends: ' + trialEnd.toLocaleDateString();
-                    document.getElementById('trialExpiredBadge').style.background = 'rgba(255,215,0,0.1)';
-                    document.getElementById('trialExpiredBadge').style.borderColor = 'rgba(255,215,0,0.3)';
-                    document.getElementById('trialExpiredBadge').style.color = '#ffd700';
-                }
+            if (profile) {
+                currentTier = profile.subscription_tier;
+                updateUI(profile);
             }
         }
-        checkAuth();
         
-        // Handle logout
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await supabaseClient.auth.signOut();
-            window.location.href = '/sweepsignal/login.html';
-        });
+        // Update UI based on current subscription
+        function updateUI(profile) {
+            const basicBtn = document.getElementById('basicBtn');
+            const proBtn = document.getElementById('proBtn');
+            const basicBadge = document.getElementById('basicCurrentBadge');
+            const proBadge = document.getElementById('proCurrentBadge');
+            
+            if (profile.subscription_status === 'active') {
+                if (profile.subscription_tier === 'basic') {
+                    basicBadge.style.display = 'inline-block';
+                    basicBtn.textContent = 'Current Plan';
+                    basicBtn.disabled = true;
+                    proBtn.textContent = 'Upgrade to Pro';
+                } else if (profile.subscription_tier === 'pro') {
+                    proBadge.style.display = 'inline-block';
+                    proBtn.textContent = 'Current Plan';
+                    proBtn.disabled = true;
+                    basicBtn.textContent = 'Downgrade to Basic';
+                }
+            } else if (profile.subscription_status === 'trialing') {
+                basicBtn.textContent = 'Subscribe to Basic';
+                proBtn.textContent = 'Subscribe to Pro';
+            }
+        }
         
-        // Subscribe function (will be connected to Stripe in Phase 5)
+        // Subscribe to a plan
         async function subscribe(plan) {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.classList.add('active');
+            const btn = document.getElementById(plan + 'Btn');
+            const originalText = btn.textContent;
             
-            // For now, show message that Stripe is not yet configured
-            // This will be replaced with actual Stripe checkout in Phase 5
-            setTimeout(() => {
-                loadingOverlay.classList.remove('active');
-                alert(`Stripe integration coming soon!\n\nPlan selected: ${plan.toUpperCase()}\n\nFor now, contact toventuresltd@gmail.com to activate your subscription manually.`);
-            }, 1500);
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>Processing...';
             
-            /* 
-            // PHASE 5: Replace above with Stripe checkout
             try {
-                const response = await fetch('YOUR_BACKEND_URL/create-checkout-session', {
+                // Create checkout session on backend
+                const response = await fetch(`${BACKEND_URL}/create-checkout-session`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        plan: plan,
+                        priceId: PRICE_IDS[plan],
                         userId: currentUser.id,
-                        email: currentUser.email
+                        userEmail: currentUser.email,
+                        plan: plan,
+                        successUrl: `${window.location.origin}/sweepsignal/dashboard.html?payment=success`,
+                        cancelUrl: `${window.location.origin}/sweepsignal/subscribe.html?payment=cancelled`
                     })
                 });
                 
-                const { url } = await response.json();
-                window.location.href = url; // Redirect to Stripe Checkout
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Redirect to Stripe Checkout
+                const { error } = await stripe.redirectToCheckout({
+                    sessionId: data.sessionId
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
             } catch (error) {
-                console.error('Checkout error:', error);
-                loadingOverlay.classList.remove('ac
+                console.error('Subscription error:', error);
+                showError(error.message || 'Failed to start checkout. Please try again.');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // Check for payment status in URL
+        function checkPaymentStatus() {
+            const params = new URLSearchParams(window.location.search);
+            
+            if (params.get('payment') === 'success') {
+                showSuccess('🎉 Payment successful! Your subscription is now active.');
+                // Clean URL
+                window.history.replaceState({}, '', '/sweepsignal/subscribe.html');
+            } else if (params.get('payment') === 'cancelled') {
+                showInfo('Payment cancelled. You can try again when ready.');
+                window.history.replaceState({}, '', '/sweepsignal/subscribe.html');
+            }
+        }
+        
+        // Initialize
+        checkAuth();
+        checkPaymentStatus();
+    </script>
+</body>
+</html>
