@@ -226,7 +226,7 @@
                 </div>
                 
                 <div class="forgot-password">
-                    <a href="forgot-password.html">Forgot password?</a>
+                    <a href="/sweepsignal/forgot-password.html">Forgot password?</a>
                 </div>
                 
                 <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -235,7 +235,7 @@
             </form>
             
             <div class="auth-footer">
-                Don't have an account? <a href="signup.html">Start free trial</a>
+                Don't have an account? <a href="/sweepsignal/signup.html">Start free trial</a>
             </div>
         </div>
     </div>
@@ -252,7 +252,7 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 // Already logged in, redirect to dashboard
-                window.location.href = 'dashboard.html';
+                window.location.href = '/sweepsignal/dashboard.html';
             }
         }
         checkAuth();
@@ -291,7 +291,7 @@
                     successMessage.style.display = 'block';
                     
                     setTimeout(() => {
-                        window.location.href = 'dashboard.html';
+                        window.location.href = '/sweepsignal/dashboard.html';
                     }, 1000);
                 }
             } catch (error) {
