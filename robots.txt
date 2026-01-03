@@ -1,0 +1,23 @@
+# Robots.txt for vnmrsignal.app
+# Only allow crawling of main products
+
+User-agent: *
+
+# Allow main pages
+Allow: /index.html
+Allow: /vnmr-classic.html
+Allow: /tracker.html
+Allow: /position-calculator.html
+Allow: /sweepsignal/
+
+# Block everything else
+Disallow: /backtest.html
+Disallow: /liquidity_dashboard.html
+Disallow: /ml-dashboard.html
+Disallow: /ml-trading-system-complete-universal.html
+Disallow: /ml-trading-system-complete.html
+Disallow: /vnmr-batch-optimizer.html
+Disallow: /vnmr-classic-backtest.html
+
+# Sitemap
+Sitemap: https://vnmrsignal.app/sitemap.xml
