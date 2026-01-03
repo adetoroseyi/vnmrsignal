@@ -4,8 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SweepSignal Dashboard - A+ Signal Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* Auth Loading Screen */
+        .auth-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            gap: 20px;
+        }
+        
+        .auth-loading.hidden { display: none; }
+        
+        .auth-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .auth-loading p {
+            color: #a0a0a0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -76,6 +111,119 @@
         .grade-count.a { background: rgba(0,255,136,0.3); color: #00ff88; }
         .grade-count.b { background: rgba(0,217,255,0.3); color: #00d9ff; }
         .grade-count.c { background: rgba(255,255,255,0.1); color: #888; }
+        
+        /* User Info */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .tier-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .tier-badge.trial {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+        }
+        
+        .tier-badge.basic {
+            background: rgba(0,217,255,0.2);
+            color: #00d9ff;
+        }
+        
+        .tier-badge.pro {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+        }
+        
+        .user-email {
+            font-size: 0.8rem;
+            color: #888;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .btn-logout {
+            padding: 4px 10px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 4px;
+            color: #888;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .trial-countdown {
+            font-size: 0.75rem;
+            color: #ffd700;
+        }
+        
+        .feature-locked {
+            position: relative;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .feature-locked::after {
+            content: '🔒 PRO';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,215,0,0.9);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .upgrade-banner {
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,140,0,0.1));
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            display: none;
+        }
+        
+        .upgrade-banner.visible { display: flex; }
+        
+        .upgrade-banner p {
+            color: #ffd700;
+            font-size: 0.9rem;
+        }
+        
+        .upgrade-banner a {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
         
         /* Session Indicator */
         .session-indicator {
@@ -694,6 +842,12 @@
     </style>
 </head>
 <body>
+    <!-- Auth Loading Screen -->
+    <div class="auth-loading" id="authLoading">
+        <div class="auth-spinner"></div>
+        <p>Loading dashboard...</p>
+    </div>
+    
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -716,7 +870,20 @@
                     <div class="session-dot"></div>
                     <span id="currentSession">Loading...</span>
                 </div>
+                <!-- User Info -->
+                <div class="user-info">
+                    <span class="tier-badge trial" id="tierBadge">TRIAL</span>
+                    <span class="trial-countdown" id="trialCountdown"></span>
+                    <span class="user-email" id="userEmail"></span>
+                    <button class="btn-logout" id="logoutBtn">Logout</button>
+                </div>
             </div>
+        </div>
+        
+        <!-- Upgrade Banner -->
+        <div class="upgrade-banner" id="upgradeBanner">
+            <p>🚀 <span id="upgradeMessage">Upgrade to Pro for Telegram alerts & all timeframes</span></p>
+            <a href="subscribe.html">Upgrade Now</a>
         </div>
         
         <!-- Warning Banner -->
@@ -876,6 +1043,135 @@
     </div>
     
     <script>
+        // ================================================
+        // SUPABASE AUTH
+        // ================================================
+        const SUPABASE_URL = 'https://kinrktzmbelrswsowwwd.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_p9O4Hlx9qmIc55UOCBnnbQ_5LNxzvu5';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUser = null;
+        let userProfile = null;
+        let userTier = 'trial'; // trial, basic, pro
+        
+        // Check auth and access before loading dashboard
+        async function checkAuthAndAccess() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    // Not logged in, redirect to login
+                    window.location.href = 'login.html';
+                    return false;
+                }
+                
+                currentUser = session.user;
+                
+                // Get user profile
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (error || !profile) {
+                    console.error('Profile error:', error);
+                    window.location.href = 'login.html';
+                    return false;
+                }
+                
+                userProfile = profile;
+                
+                // Check access
+                if (profile.subscription_status === 'trialing') {
+                    const trialEnd = new Date(profile.trial_end_date);
+                    const now = new Date();
+                    
+                    if (trialEnd <= now) {
+                        // Trial expired
+                        await supabase
+                            .from('profiles')
+                            .update({ subscription_status: 'expired' })
+                            .eq('id', currentUser.id);
+                        window.location.href = 'subscribe.html';
+                        return false;
+                    }
+                    
+                    // Trial active
+                    userTier = 'trial';
+                    const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+                    document.getElementById('trialCountdown').textContent = `${daysLeft} days left`;
+                    document.getElementById('tierBadge').textContent = 'TRIAL';
+                    document.getElementById('tierBadge').className = 'tier-badge trial';
+                    document.getElementById('upgradeBanner').classList.add('visible');
+                    document.getElementById('upgradeMessage').textContent = `Trial ends in ${daysLeft} days. Upgrade to continue access.`;
+                    
+                } else if (profile.subscription_status === 'active') {
+                    userTier = profile.subscription_tier; // basic or pro
+                    document.getElementById('trialCountdown').textContent = '';
+                    document.getElementById('tierBadge').textContent = userTier.toUpperCase();
+                    document.getElementById('tierBadge').className = 'tier-badge ' + userTier;
+                    
+                    if (userTier === 'basic') {
+                        document.getElementById('upgradeBanner').classList.add('visible');
+                        document.getElementById('upgradeMessage').textContent = 'Upgrade to Pro for Telegram alerts & all timeframes';
+                    }
+                    
+                } else {
+                    // Expired or cancelled
+                    window.location.href = 'subscribe.html';
+                    return false;
+                }
+                
+                // Show user email
+                document.getElementById('userEmail').textContent = currentUser.email;
+                
+                // Apply feature gating
+                applyFeatureGating();
+                
+                // Hide loading screen
+                document.getElementById('authLoading').classList.add('hidden');
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = 'login.html';
+                return false;
+            }
+        }
+        
+        // Feature gating based on tier
+        function applyFeatureGating() {
+            // Trial and Basic: Only H1 timeframe
+            if (userTier === 'trial' || userTier === 'basic') {
+                // Lock other timeframes in select dropdown
+                const tfSelect = document.getElementById('timeframeSelect');
+                if (tfSelect) {
+                    Array.from(tfSelect.options).forEach(option => {
+                        if (option.value !== 'H1') {
+                            option.disabled = true;
+                            option.textContent = option.textContent + ' 🔒';
+                        }
+                    });
+                    // Force H1 selection
+                    tfSelect.value = 'H1';
+                }
+                
+                // Disable auto-refresh (only manual)
+                // Auto-refresh is Pro only - handled in setInterval
+            }
+            
+            // Pro: All features enabled (nothing to disable)
+        }
+        
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        });
+        
         // ================================================
         // CONFIG
         // ================================================
@@ -1080,6 +1376,12 @@
         }
         
         function changeTimeframe(tf) {
+            // Feature gating: Only Pro users can change timeframe
+            if ((userTier === 'trial' || userTier === 'basic') && tf !== 'H1') {
+                alert('Upgrade to Pro to access all timeframes');
+                document.getElementById('timeframeSelect').value = 'H1';
+                return;
+            }
             settings.timeframe = tf;
             saveSettings();
             updateFilterTags();
@@ -1363,18 +1665,32 @@
             }
         }
         
-        // Init
-        loadSettings();
-        runScan();
+        // ================================================
+        // INITIALIZATION (called after auth check passes)
+        // ================================================
+        function initDashboard() {
+            loadSettings();
+            runScan();
+            
+            setInterval(() => {
+                refreshCountdown--;
+                document.getElementById('refreshTimer').textContent = refreshCountdown;
+                if (refreshCountdown <= 0) {
+                    // Only auto-refresh for Pro users
+                    if (userTier === 'pro') {
+                        runScan(false);
+                    }
+                    refreshCountdown = 60;
+                }
+            }, 1000);
+        }
         
-        setInterval(() => {
-            refreshCountdown--;
-            document.getElementById('refreshTimer').textContent = refreshCountdown;
-            if (refreshCountdown <= 0) {
-                runScan(false);
-                refreshCountdown = 60;
+        // Initialize auth check, then load dashboard
+        checkAuthAndAccess().then(hasAccess => {
+            if (hasAccess) {
+                initDashboard();
             }
-        }, 1000);
+        });
     </script>
 </body>
 </html>
