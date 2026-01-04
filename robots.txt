@@ -1,23 +1,36 @@
 # Robots.txt for vnmrsignal.app
-# Only allow crawling of main products
+# Control crawling of public and private pages
 
 User-agent: *
 
-# Allow main pages
+# Allow main public pages
 Allow: /index.html
-Allow: /vnmr-classic.html
-Allow: /tracker.html
-Allow: /position-calculator.html
 Allow: /sweepsignal/
+Allow: /vnmr-classic/
+Allow: /tracker/
+Allow: /tools/index.html
 
-# Block everything else
+# Block private tools (internal use only)
+Disallow: /tools/vnmr-classic-backtest.html
+Disallow: /tools/vnmr-batch-optimizer.html
+Disallow: /tools/backtest.html
+
+# Block ML section (coming soon - not ready for public)
+Disallow: /ml/
+
+# Block old URLs at root level
+Disallow: /vnmr-classic.html
+Disallow: /tracker.html
+Disallow: /position-calculator.html
 Disallow: /backtest.html
-Disallow: /liquidity_dashboard.html
 Disallow: /ml-dashboard.html
 Disallow: /ml-trading-system-complete-universal.html
 Disallow: /ml-trading-system-complete.html
 Disallow: /vnmr-batch-optimizer.html
 Disallow: /vnmr-classic-backtest.html
+
+# Block other internal files
+Disallow: /liquidity_dashboard.html
 
 # Sitemap
 Sitemap: https://vnmrsignal.app/sitemap.xml
