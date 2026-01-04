@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XAU_USD Backtest - Mean Reversion Strategy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+        #assessmentCard {
+            transition: all 0.3s ease;
+        }
+        #assessmentRecommendation {
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">
+                📊 Mean Reversion Backtest
+            </h1>
+            <p class="text-gray-600">5-Year Historical Performance Analysis</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+            <h2 class="text-2xl font-bold mb-6 text-center">Select Currency Pair to Backtest</h2>
+            
+            <div class="max-w-md mx-auto mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Choose Instrument:</label>
+                <select id="instrument" onchange="runBacktest()" class="w-full p-4 border-2 border-blue-500 rounded-lg text-lg font-semibold cursor-pointer hover:border-blue-600 focus:ring-4 focus:ring-blue-200">
+                    <option value="">-- Click to Select Pair --</option>
+                    <option value="XAU_USD">🏆 XAU/USD (Gold)</option>
+                    <option value="EUR_USD">💶 EUR/USD</option>
+                    <option value="GBP_USD">💷 GBP/USD</option>
+                    <option value="USD_JPY">💴 USD/JPY</option>
+                    <option value="USD_CAD">🍁 USD/CAD</option>
+                    <option value="AUD_USD">🦘 AUD/USD</option>
+                    <option value="EUR_GBP">🇪🇺 EUR/GBP</option>
+                    <option value="AUD_NZD">🌏 AUD/NZD</option>
+                    <option value="EUR_CHF">🏔️ EUR/CHF</option>
+                    <option value="NZD_USD">🥝 NZD/USD</option>
+                    <option value="USD_CHF">🇨🇭 USD/CHF</option>
+                    <option value="EUR_AUD">🌍 EUR/AUD</option>
+                    <option value="GBP_AUD">🎭 GBP/AUD</option>
+                    <option value="AUD_CAD">🍁 AUD/CAD</option>
+                </select>
+            </div>
+
+            <!-- Advanced Settings (Collapsible) -->
+            <div class="text-center">
+                <button onclick="toggleAdvanced()" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">
+                    ⚙️ Advanced Settings
+                </button>
+            </div>
+            
+            <div id="advancedSettings" style="display:none;" class="mt-6 pt-6 border-t">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Initial Capital</label>
+                        <input type="number" id="initialCapital" value="10000" class="w-full p-3 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Risk % Per Trade</label>
+                        <input type="number" id="riskPct" value="1" step="0.1" class="w-full p-3 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Z-Score Threshold</label>
+                        <input type="number" id="zScoreThreshold" value="2.0" step="0.1" class="w-full p-3 border rounded-lg">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" style="display:none;" class="bg-white rounded-lg shadow-lg p-12 text-center mb-6">
+            <div class="mb-6">
+                <div class="text-6xl mb-4">📊</div>
+                <h2 id="loadingPair" class="text-3xl font-bold text-gray-900 mb-2">XAU/USD</h2>
+                <p class="text-gray-600">Fetching 5 years of historical data...</p>
+            </div>
+            <div class="spinner mx-auto mb-4"></div>
+            <div class="max-w-md mx-auto">
+                <div class="bg-gray-200 rounded-full h-4 mb-2">
+                    <div id="progressBar" class="bg-blue-600 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p id="loadingProgress" class="text-sm text-gray-600">Initializing...</p>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" style="display:none;">
+            <!-- Results Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg p-8 mb-6 text-white">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 id="resultsPair" class="text-4xl font-bold mb-2">XAU/USD</h2>
+                        <p class="text-blue-100">5-Year Backtest Results (2020-2025)</p>
+                    </div>
+                    <div class="text-right">
+                        <button onclick="exportCSV()" class="bg-white text-blue-600 hover:bg-blue-50 font-bold py-4 px-8 rounded-lg text-lg shadow-lg transform hover:scale-105 transition">
+                            📥 Download Results CSV
+                        </button>
+                        <p class="text-xs text-blue-100 mt-2">Export all trades to Excel</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Assessment -->
+            <div id="assessmentCard" class="rounded-lg shadow-lg p-6 mb-6" style="display:none;">
+                <div class="flex items-start gap-4">
+                    <div id="assessmentIcon" class="text-6xl">⭐</div>
+                    <div class="flex-1">
+                        <h2 class="text-3xl font-bold mb-2" id="assessmentTitle">Excellent Strategy</h2>
+                        <p class="text-lg mb-4" id="assessmentSubtitle">This strategy shows strong performance across all metrics</p>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span id="ratingROI" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>ROI:</strong> <span id="ratingROIText">Good</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="ratingWinRate" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>Win Rate:</strong> <span id="ratingWinRateText">Good</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="ratingPF" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>Profit Factor:</strong> <span id="ratingPFText">Good</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="ratingTrades" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>Trade Count:</strong> <span id="ratingTradesText">Good</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="ratingAvgWin" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>Avg Win:</strong> <span id="ratingAvgWinText">Good</span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="ratingHoldTime" class="text-2xl">✅</span>
+                                <span class="text-sm"><strong>Hold Time:</strong> <span id="ratingHoldTimeText">Good</span></span>
+                            </div>
+                        </div>
+                        
+                        <div id="assessmentRecommendation" class="bg-white bg-opacity-50 p-4 rounded-lg">
+                            <div class="font-semibold mb-2">💡 Recommendation:</div>
+                            <p id="assessmentRecommendationText" class="text-sm">
+                                This strategy is ready for paper trading. Monitor performance over 1-2 months before going live.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-gray-500 mb-1">Total Return</div>
+                    <div id="totalReturn" class="text-3xl font-bold text-green-600">-</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-gray-500 mb-1">Win Rate</div>
+                    <div id="winRate" class="text-3xl font-bold text-blue-600">-</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-gray-500 mb-1">Total Trades</div>
+                    <div id="totalTrades" class="text-3xl font-bold text-gray-900">-</div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-sm text-gray-500 mb-1">Profit Factor</div>
+                    <div id="profitFactor" class="text-3xl font-bold text-purple-600">-</div>
+                </div>
+            </div>
+
+            <!-- Equity Curve -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">Equity Curve</h2>
+                <canvas id="equityChart"></canvas>
+            </div>
+
+            <!-- Year by Year -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">Year-by-Year Performance</h2>
+                <div id="yearlyResults"></div>
+            </div>
+
+            <!-- Detailed Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-bold mb-4">Trade Statistics</h2>
+                    <div id="tradeStats"></div>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-bold mb-4">Exit Analysis</h2>
+                    <canvas id="exitChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Trade List -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-4">All Trades (Click Download Above for CSV)</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left">Entry Date</th>
+                                <th class="px-4 py-2 text-left">Exit Date</th>
+                                <th class="px-4 py-2 text-left">Dir</th>
+                                <th class="px-4 py-2 text-right">Entry</th>
+                                <th class="px-4 py-2 text-right">Exit</th>
+                                <th class="px-4 py-2 text-right">Days</th>
+                                <th class="px-4 py-2 text-left">Result</th>
+                                <th class="px-4 py-2 text-right">P&L</th>
+                                <th class="px-4 py-2 text-right">Z-Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradeList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PROXY_URL = 'https://oanda-proxy.onrender.com/api';
+        let allTrades = [];
+        let equityChart = null;
+        let exitChart = null;
+
+        // Toggle advanced settings
+        function toggleAdvanced() {
+            const settings = document.getElementById('advancedSettings');
+            settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Fetch historical data
+        async function fetchHistoricalData(instrument, yearsBack = 5) {
+            const end = new Date();
+            const start = new Date();
+            start.setFullYear(start.getFullYear() - yearsBack);
+            
+            // Oanda API limits to 5000 candles, so we'll fetch in chunks
+            const candles = [];
+            let currentStart = new Date(start);
+            
+            while (currentStart < end) {
+                const currentEnd = new Date(currentStart);
+                currentEnd.setDate(currentEnd.getDate() + 500); // ~500 days per request
+                
+                if (currentEnd > end) currentEnd.setTime(end.getTime());
+                
+                const fromStr = currentStart.toISOString();
+                const toStr = currentEnd.toISOString();
+                
+                const url = `${PROXY_URL}/v3/instruments/${instrument}/candles?from=${fromStr}&to=${toStr}&granularity=D&price=M`;
+                
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const data = await response.json();
+                    candles.push(...data.candles);
+                    
+                    currentStart = new Date(currentEnd);
+                    currentStart.setDate(currentStart.getDate() + 1);
+                    
+                    // Update progress
+                    const progress = Math.floor(((currentStart - start) / (end - start)) * 100);
+                    document.getElementById('loadingProgress').textContent = 
+                        `Downloading data: ${progress}% complete (${candles.length} candles)`;
+                    document.getElementById('progressBar').style.width = `${progress}%`;
+                    
+                    await new Promise(r => setTimeout(r, 100)); // Rate limiting
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    throw error;
+                }
+            }
+            
+            return candles.map(c => ({
+                time: new Date(c.time),
+                open: parseFloat(c.mid.o),
+                high: parseFloat(c.mid.h),
+                low: parseFloat(c.mid.l),
+                close: parseFloat(c.mid.c)
+            }));
+        }
+
+        // Calculate half-life
+        function calculateHalfLife(prices) {
+            if (prices.length < 30) return Infinity;
+            
+            const logPrices = prices.map(p => Math.log(p));
+            const n = logPrices.length;
+            const yLag = logPrices.slice(0, n - 1);
+            const yDiff = [];
+            for (let i = 1; i < logPrices.length; i++) {
+                yDiff.push(logPrices[i] - logPrices[i - 1]);
+            }
+            
+            const nPoints = yLag.length;
+            const sumX = yLag.reduce((a, b) => a + b, 0);
+            const sumY = yDiff.reduce((a, b) => a + b, 0);
+            const sumXX = yLag.reduce((a, b) => a + b * b, 0);
+            const sumXY = yLag.reduce((a, b, i) => a + b * yDiff[i], 0);
+            
+            const slope = (nPoints * sumXY - sumX * sumY) / (nPoints * sumXX - sumX * sumX);
+            
+            if (slope >= -0.001) return Infinity;
+            
+            const theta = -slope;
+            const halfLife = Math.log(2) / theta;
+            
+            return (halfLife > 0 && halfLife < 500) ? halfLife : Infinity;
+        }
+
+        // Calculate ATR
+        function calculateATR(candles, period = 14) {
+            if (candles.length < period + 1) return 0;
+            
+            const trueRanges = [];
+            for (let i = 1; i < candles.length; i++) {
+                const high = candles[i].high;
+                const low = candles[i].low;
+                const prevClose = candles[i - 1].close;
+                
+                const tr = Math.max(
+                    high - low,
+                    Math.abs(high - prevClose),
+                    Math.abs(low - prevClose)
+                );
+                trueRanges.push(tr);
+            }
+            
+            const recent = trueRanges.slice(-period);
+            return recent.reduce((a, b) => a + b, 0) / recent.length;
+        }
+
+        // Evaluate backtest performance
+        function evaluatePerformance(totalReturn, winRate, profitFactor, totalTrades, avgWin, avgLoss, avgHold) {
+            // Normalize ROI to annual (5-year backtest)
+            const annualROI = totalReturn / 5;
+            
+            // Evaluate each metric
+            const ratings = {
+                roi: evaluateROI(annualROI),
+                winRate: evaluateWinRate(winRate),
+                profitFactor: evaluateProfitFactor(profitFactor),
+                trades: evaluateTrades(totalTrades / 5), // per year
+                avgWin: evaluateAvgWin(avgWin),
+                holdTime: evaluateHoldTime(avgHold)
+            };
+            
+            // Calculate overall score
+            const weights = { roi: 30, winRate: 20, profitFactor: 20, trades: 10, avgWin: 10, holdTime: 10 };
+            let totalScore = 0;
+            for (const [key, weight] of Object.entries(weights)) {
+                totalScore += ratings[key].score * weight / 100;
+            }
+            
+            // Determine overall rating
+            let overall;
+            if (totalScore >= 80) {
+                overall = { level: 'Excellent', color: 'from-green-500 to-emerald-600', icon: '🌟', textColor: 'text-white' };
+            } else if (totalScore >= 65) {
+                overall = { level: 'Good', color: 'from-blue-500 to-blue-600', icon: '✅', textColor: 'text-white' };
+            } else if (totalScore >= 50) {
+                overall = { level: 'Acceptable', color: 'from-yellow-400 to-yellow-500', icon: '⚠️', textColor: 'text-slate-900' };
+            } else if (totalScore >= 35) {
+                overall = { level: 'Poor', color: 'from-orange-400 to-orange-500', icon: '❌', textColor: 'text-white' };
+            } else {
+                overall = { level: 'Failed', color: 'from-red-500 to-red-600', icon: '🚫', textColor: 'text-white' };
+            }
+            
+            const recommendation = generateRecommendation(overall.level, ratings, annualROI, totalTrades);
+            
+            return { ratings, overall, recommendation, score: totalScore };
+        }
+        
+        function evaluateROI(annualROI) {
+            if (annualROI >= 20) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (annualROI >= 15) return { score: 85, rating: 'Very Good', icon: '✅', color: 'text-green-600' };
+            if (annualROI >= 10) return { score: 75, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (annualROI >= 5) return { score: 60, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (annualROI >= 2) return { score: 40, rating: 'Poor', icon: '❌', color: 'text-orange-600' };
+            return { score: 0, rating: 'Failed', icon: '🚫', color: 'text-red-600' };
+        }
+        
+        function evaluateWinRate(winRate) {
+            if (winRate >= 60) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (winRate >= 55) return { score: 85, rating: 'Very Good', icon: '✅', color: 'text-green-600' };
+            if (winRate >= 50) return { score: 75, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (winRate >= 45) return { score: 60, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (winRate >= 40) return { score: 40, rating: 'Poor', icon: '❌', color: 'text-orange-600' };
+            return { score: 20, rating: 'Failed', icon: '🚫', color: 'text-red-600' };
+        }
+        
+        function evaluateProfitFactor(pf) {
+            if (pf >= 2.0) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (pf >= 1.7) return { score: 85, rating: 'Very Good', icon: '✅', color: 'text-green-600' };
+            if (pf >= 1.5) return { score: 75, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (pf >= 1.3) return { score: 60, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (pf >= 1.1) return { score: 40, rating: 'Poor', icon: '❌', color: 'text-orange-600' };
+            return { score: 0, rating: 'Failed', icon: '🚫', color: 'text-red-600' };
+        }
+        
+        function evaluateTrades(tradesPerYear) {
+            if (tradesPerYear >= 20 && tradesPerYear <= 100) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (tradesPerYear >= 15 && tradesPerYear <= 150) return { score: 85, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (tradesPerYear >= 10 && tradesPerYear <= 200) return { score: 70, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (tradesPerYear >= 5) return { score: 50, rating: 'Limited', icon: '⚠️', color: 'text-orange-600' };
+            return { score: 30, rating: 'Too Few', icon: '❌', color: 'text-red-600' };
+        }
+        
+        function evaluateAvgWin(avgWin) {
+            if (avgWin >= 500) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (avgWin >= 300) return { score: 85, rating: 'Very Good', icon: '✅', color: 'text-green-600' };
+            if (avgWin >= 200) return { score: 75, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (avgWin >= 100) return { score: 60, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (avgWin >= 50) return { score: 40, rating: 'Poor', icon: '❌', color: 'text-orange-600' };
+            return { score: 20, rating: 'Failed', icon: '🚫', color: 'text-red-600' };
+        }
+        
+        function evaluateHoldTime(avgHold) {
+            if (avgHold >= 2 && avgHold <= 7) return { score: 100, rating: 'Excellent', icon: '🌟', color: 'text-green-600' };
+            if (avgHold >= 1 && avgHold <= 10) return { score: 85, rating: 'Good', icon: '✅', color: 'text-blue-600' };
+            if (avgHold >= 1 && avgHold <= 15) return { score: 70, rating: 'Acceptable', icon: '⚠️', color: 'text-yellow-600' };
+            if (avgHold < 1) return { score: 50, rating: 'Too Fast', icon: '⚠️', color: 'text-orange-600' };
+            return { score: 40, rating: 'Too Slow', icon: '❌', color: 'text-orange-600' };
+        }
+        
+        function generateRecommendation(level, ratings, annualROI, totalTrades) {
+            let rec = '';
+            
+            if (level === 'Excellent') {
+                rec = `🎉 <strong>Outstanding performance!</strong> This strategy shows exceptional mean reversion results. ` +
+                      `Expected annual return: ${annualROI.toFixed(1)}% with ${totalTrades} trades over 5 years. ` +
+                      `Ready for paper trading. Monitor 1-2 months, then consider going live.`;
+            } else if (level === 'Good') {
+                rec = `✅ <strong>Solid strategy!</strong> The results show good mean reversion characteristics. ` +
+                      `Expected annual return: ${annualROI.toFixed(1)}%. Paper trade for 1-2 months to verify. `;
+                
+                if (ratings.winRate.score < 70) rec += `Consider adjusting Z-score threshold to improve win rate. `;
+                if (ratings.avgWin.score < 70) rec += `Review take-profit levels for better average wins. `;
+            } else if (level === 'Acceptable') {
+                rec = `⚠️ <strong>Marginal performance.</strong> Strategy is profitable but could be better. Try: `;
+                
+                const suggestions = [];
+                if (ratings.roi.score < 60) suggestions.push('increase Z-score threshold for better quality signals');
+                if (ratings.winRate.score < 60) suggestions.push('adjust entry criteria');
+                if (ratings.trades.score < 60) suggestions.push('review half-life cutoff');
+                
+                rec += suggestions.slice(0, 2).join(', ') + '. Or test different pair/timeframe.';
+            } else if (level === 'Poor') {
+                rec = `❌ <strong>Weak performance.</strong> Do not trade live. Try: `;
+                
+                const fixes = [];
+                if (ratings.roi.score < 40) fixes.push('test different pairs - may not mean-revert well');
+                if (ratings.profitFactor.score < 40) fixes.push('increase Z-score threshold to 2.5+');
+                if (ratings.winRate.score < 40) fixes.push('adjust half-life cutoff parameter');
+                
+                rec += fixes.slice(0, 3).join('; ') + '.';
+            } else {
+                rec = `🚫 <strong>Failed strategy - do NOT trade!</strong> `;
+                if (annualROI < 0) rec += `Strategy loses money. `;
+                rec += `This pair may not exhibit mean reversion characteristics. Try different instrument.`;
+            }
+            
+            return rec;
+        }
+
+        // Run backtest
+        async function runBacktest() {
+            const instrument = document.getElementById('instrument').value;
+            
+            // Validate selection
+            if (!instrument || instrument === '') {
+                return; // No selection yet
+            }
+            
+            const initialCapital = parseFloat(document.getElementById('initialCapital').value);
+            const riskPct = parseFloat(document.getElementById('riskPct').value) / 100;
+            const zScoreThreshold = parseFloat(document.getElementById('zScoreThreshold').value);
+            const halfLifeCutoff = 50; // Fixed at 50 days
+            
+            // Format pair name for display
+            const pairDisplay = instrument.replace('_', '/');
+            
+            // Show loading with pair name
+            document.getElementById('loadingPair').textContent = pairDisplay;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            try {
+                // Fetch data
+                document.getElementById('loadingProgress').textContent = 'Connecting to Oanda...';
+                document.getElementById('progressBar').style.width = '5%';
+                const candles = await fetchHistoricalData(instrument, 5);
+                
+                // Run backtest
+                document.getElementById('loadingProgress').textContent = 'Analyzing 5 years of data...';
+                document.getElementById('progressBar').style.width = '70%';
+                await new Promise(r => setTimeout(r, 100));
+                
+                const trades = [];
+                const equityCurve = [initialCapital];
+                let currentCapital = initialCapital;
+                let position = null;
+                
+                const lookbackHL = 252;
+                const lookbackZScore = 20;
+                
+                for (let i = lookbackHL; i < candles.length; i++) {
+                    const currentDate = candles[i].time;
+                    const currentPrice = candles[i].close;
+                    
+                    // Check if we have an open position
+                    if (position !== null) {
+                        const daysHeld = Math.floor((currentDate - position.entryDate) / (1000 * 60 * 60 * 24));
+                        
+                        let exitReason = null;
+                        let exitPrice = null;
+                        
+                        // Check exit conditions
+                        if (position.direction === 'LONG' && currentPrice >= position.tp) {
+                            exitReason = 'TP';
+                            exitPrice = position.tp;
+                        } else if (position.direction === 'SHORT' && currentPrice <= position.tp) {
+                            exitReason = 'TP';
+                            exitPrice = position.tp;
+                        } else if (position.direction === 'LONG' && currentPrice <= position.sl) {
+                            exitReason = 'SL';
+                            exitPrice = position.sl;
+                        } else if (position.direction === 'SHORT' && currentPrice >= position.sl) {
+                            exitReason = 'SL';
+                            exitPrice = position.sl;
+                        } else if (daysHeld >= position.maxHoldDays) {
+                            exitReason = 'TIME';
+                            exitPrice = currentPrice;
+                        }
+                        
+                        // Close position if exit triggered
+                        if (exitReason) {
+                            let pnl;
+                            if (position.direction === 'LONG') {
+                                pnl = (exitPrice - position.entry) * position.positionSize;
+                            } else {
+                                pnl = (position.entry - exitPrice) * position.positionSize;
+                            }
+                            
+                            currentCapital += pnl;
+                            
+                            trades.push({
+                                entryDate: position.entryDate,
+                                exitDate: currentDate,
+                                direction: position.direction,
+                                entry: position.entry,
+                                exit: exitPrice,
+                                tp: position.tp,
+                                sl: position.sl,
+                                daysHeld: daysHeld,
+                                exitReason: exitReason,
+                                pnl: pnl,
+                                capital: currentCapital,
+                                zscore: position.zscore,
+                                halfLife: position.halfLife
+                            });
+                            
+                            position = null;
+                        }
+                    }
+                    
+                    // Look for new entry if no position
+                    if (position === null) {
+                        const recentPrices = candles.slice(i - lookbackHL, i).map(c => c.close);
+                        const halfLife = calculateHalfLife(recentPrices);
+                        
+                        if (halfLife < halfLifeCutoff) {
+                            const recentWindow = candles.slice(i - lookbackZScore, i).map(c => c.close);
+                            const meanPrice = recentWindow.reduce((a, b) => a + b, 0) / recentWindow.length;
+                            const variance = recentWindow.reduce((a, b) => a + Math.pow(b - meanPrice, 2), 0) / recentWindow.length;
+                            const stdPrice = Math.sqrt(variance);
+                            const zscore = stdPrice > 0 ? (currentPrice - meanPrice) / stdPrice : 0;
+                            
+                            const price3dAgo = i >= 3 ? candles[i - 3].close : currentPrice;
+                            const threeDayReturn = ((currentPrice - price3dAgo) / price3dAgo) * 100;
+                            
+                            const hasZScoreSignal = Math.abs(zscore) > zScoreThreshold;
+                            const hasMove = Math.abs(threeDayReturn) > 1.0;
+                            
+                            if (hasZScoreSignal && hasMove) {
+                                const direction = zscore > 0 ? 'SHORT' : 'LONG';
+                                
+                                const atr = calculateATR(candles.slice(Math.max(0, i - 14), i + 1));
+                                const deviation = Math.abs(currentPrice - meanPrice);
+                                
+                                let tp, sl;
+                                if (direction === 'LONG') {
+                                    tp = currentPrice + (deviation * 0.5);
+                                    sl = currentPrice - (1.5 * atr);
+                                } else {
+                                    tp = currentPrice - (deviation * 0.5);
+                                    sl = currentPrice + (1.5 * atr);
+                                }
+                                
+                                const riskAmount = currentCapital * riskPct;
+                                const riskDistance = Math.abs(currentPrice - sl);
+                                const positionSize = riskDistance > 0 ? riskAmount / riskDistance : 0;
+                                
+                                const maxHoldDays = Math.min(Math.floor(halfLife * 2), 10);
+                                
+                                if (positionSize > 0) {
+                                    position = {
+                                        entryDate: currentDate,
+                                        direction: direction,
+                                        entry: currentPrice,
+                                        tp: tp,
+                                        sl: sl,
+                                        positionSize: positionSize,
+                                        maxHoldDays: maxHoldDays,
+                                        zscore: zscore,
+                                        halfLife: halfLife
+                                    };
+                                }
+                            }
+                        }
+                    }
+                    
+                    equityCurve.push(currentCapital);
+                }
+                
+                // Display results
+                document.getElementById('loadingProgress').textContent = 'Generating charts and statistics...';
+                document.getElementById('progressBar').style.width = '95%';
+                await new Promise(r => setTimeout(r, 100));
+                
+                displayResults(trades, equityCurve, initialCapital, pairDisplay);
+                
+            } catch (error) {
+                alert('Error running backtest: ' + error.message);
+                console.error(error);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Display results
+        function displayResults(trades, equityCurve, initialCapital, pairDisplay) {
+            allTrades = trades;
+            
+            // Update pair name in results header
+            document.getElementById('resultsPair').textContent = pairDisplay;
+            
+            const finalCapital = equityCurve[equityCurve.length - 1];
+            const totalReturn = ((finalCapital - initialCapital) / initialCapital * 100);
+            
+            const wins = trades.filter(t => t.pnl > 0).length;
+            const winRate = trades.length > 0 ? (wins / trades.length * 100) : 0;
+            
+            const totalWins = trades.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0);
+            const totalLosses = Math.abs(trades.filter(t => t.pnl <= 0).reduce((sum, t) => sum + t.pnl, 0));
+            const profitFactor = totalLosses > 0 ? (totalWins / totalLosses) : 0;
+            
+            const avgWin = wins > 0 ? totalWins / wins : 0;
+            const avgLoss = (trades.length - wins) > 0 ? totalLosses / (trades.length - wins) : 0;
+            const avgHold = trades.reduce((sum, t) => sum + t.daysHeld, 0) / trades.length;
+            
+            // Evaluate performance
+            const assessment = evaluatePerformance(totalReturn, winRate, profitFactor, trades.length, avgWin, avgLoss, avgHold);
+            
+            // Update assessment card
+            const assessmentCard = document.getElementById('assessmentCard');
+            assessmentCard.className = `rounded-lg shadow-lg p-6 mb-6 bg-gradient-to-r ${assessment.overall.color}`;
+            assessmentCard.style.display = 'block';
+            
+            document.getElementById('assessmentIcon').textContent = assessment.overall.icon;
+            document.getElementById('assessmentTitle').textContent = `${assessment.overall.level} Strategy`;
+            document.getElementById('assessmentTitle').className = `text-3xl font-bold mb-2 ${assessment.overall.textColor}`;
+            document.getElementById('assessmentSubtitle').textContent = `Overall Score: ${Math.round(assessment.score)}/100`;
+            document.getElementById('assessmentSubtitle').className = `text-lg mb-4 ${assessment.overall.textColor}`;
+            
+            // Update individual ratings
+            document.getElementById('ratingROI').textContent = assessment.ratings.roi.icon;
+            document.getElementById('ratingROIText').textContent = assessment.ratings.roi.rating;
+            document.getElementById('ratingROIText').className = assessment.ratings.roi.color;
+            
+            document.getElementById('ratingWinRate').textContent = assessment.ratings.winRate.icon;
+            document.getElementById('ratingWinRateText').textContent = assessment.ratings.winRate.rating;
+            document.getElementById('ratingWinRateText').className = assessment.ratings.winRate.color;
+            
+            document.getElementById('ratingPF').textContent = assessment.ratings.profitFactor.icon;
+            document.getElementById('ratingPFText').textContent = assessment.ratings.profitFactor.rating;
+            document.getElementById('ratingPFText').className = assessment.ratings.profitFactor.color;
+            
+            document.getElementById('ratingTrades').textContent = assessment.ratings.trades.icon;
+            document.getElementById('ratingTradesText').textContent = assessment.ratings.trades.rating;
+            document.getElementById('ratingTradesText').className = assessment.ratings.trades.color;
+            
+            document.getElementById('ratingAvgWin').textContent = assessment.ratings.avgWin.icon;
+            document.getElementById('ratingAvgWinText').textContent = assessment.ratings.avgWin.rating;
+            document.getElementById('ratingAvgWinText').className = assessment.ratings.avgWin.color;
+            
+            document.getElementById('ratingHoldTime').textContent = assessment.ratings.holdTime.icon;
+            document.getElementById('ratingHoldTimeText').textContent = assessment.ratings.holdTime.rating;
+            document.getElementById('ratingHoldTimeText').className = assessment.ratings.holdTime.color;
+            
+            document.getElementById('assessmentRecommendationText').innerHTML = assessment.recommendation;
+            
+            // Summary cards
+            document.getElementById('totalReturn').textContent = totalReturn.toFixed(2) + '%';
+            document.getElementById('totalReturn').className = 'text-3xl font-bold ' + 
+                (totalReturn >= 0 ? 'text-green-600' : 'text-red-600');
+            document.getElementById('winRate').textContent = winRate.toFixed(1) + '%';
+            document.getElementById('totalTrades').textContent = trades.length;
+            document.getElementById('profitFactor').textContent = profitFactor.toFixed(2);
+            
+            // Equity chart
+            drawEquityChart(equityCurve);
+            
+            // Yearly results
+            displayYearlyResults(trades, initialCapital);
+            
+            // Trade stats
+            displayTradeStats(trades);
+            
+            // Exit chart
+            drawExitChart(trades);
+            
+            // Trade list
+            displayTradeList(trades);
+            
+            document.getElementById('results').style.display = 'block';
+        }
+
+        // Draw equity chart
+        function drawEquityChart(equityCurve) {
+            const ctx = document.getElementById('equityChart').getContext('2d');
+            
+            if (equityChart) equityChart.destroy();
+            
+            equityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: equityCurve.map((_, i) => i),
+                    datasets: [{
+                        label: 'Equity',
+                        data: equityCurve,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Display yearly results
+        function displayYearlyResults(trades, initialCapital) {
+            const yearlyStats = {};
+            
+            trades.forEach(trade => {
+                const year = trade.entryDate.getFullYear();
+                if (!yearlyStats[year]) {
+                    yearlyStats[year] = {
+                        trades: 0,
+                        wins: 0,
+                        pnl: 0,
+                        startCapital: initialCapital
+                    };
+                }
+                yearlyStats[year].trades++;
+                if (trade.pnl > 0) yearlyStats[year].wins++;
+                yearlyStats[year].pnl += trade.pnl;
+            });
+            
+            // Calculate start capital for each year
+            let runningCapital = initialCapital;
+            const years = Object.keys(yearlyStats).sort();
+            years.forEach(year => {
+                yearlyStats[year].startCapital = runningCapital;
+                runningCapital += yearlyStats[year].pnl;
+                yearlyStats[year].endCapital = runningCapital;
+                yearlyStats[year].roi = (yearlyStats[year].pnl / yearlyStats[year].startCapital * 100);
+            });
+            
+            let html = '<div class="space-y-4">';
+            years.forEach(year => {
+                const stats = yearlyStats[year];
+                const winRate = (stats.wins / stats.trades * 100).toFixed(1);
+                const roiClass = stats.roi >= 0 ? 'text-green-600' : 'text-red-600';
+                
+                html += `
+                    <div class="border-b pb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-xl font-bold">${year}</h3>
+                            <div class="text-right">
+                                <div class="${roiClass} text-2xl font-bold">${stats.roi >= 0 ? '+' : ''}${stats.roi.toFixed(2)}%</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <div class="text-gray-500">Trades</div>
+                                <div class="font-semibold">${stats.trades}</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">Win Rate</div>
+                                <div class="font-semibold">${winRate}%</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">P&L</div>
+                                <div class="font-semibold ${stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}">
+                                    ${stats.pnl >= 0 ? '+' : ''}$${stats.pnl.toFixed(2)}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500">Capital</div>
+                                <div class="font-semibold">$${stats.startCapital.toFixed(0)} → $${stats.endCapital.toFixed(0)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            document.getElementById('yearlyResults').innerHTML = html;
+        }
+
+        // Display trade stats
+        function displayTradeStats(trades) {
+            const avgWin = trades.filter(t => t.pnl > 0).length > 0 ?
+                trades.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0) / trades.filter(t => t.pnl > 0).length : 0;
+            const avgLoss = trades.filter(t => t.pnl <= 0).length > 0 ?
+                trades.filter(t => t.pnl <= 0).reduce((sum, t) => sum + t.pnl, 0) / trades.filter(t => t.pnl <= 0).length : 0;
+            const avgHold = trades.reduce((sum, t) => sum + t.daysHeld, 0) / trades.length;
+            const largestWin = Math.max(...trades.map(t => t.pnl));
+            const largestLoss = Math.min(...trades.map(t => t.pnl));
+            
+            const html = `
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Average Win:</span>
+                        <span class="font-bold text-green-600">$${avgWin.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Average Loss:</span>
+                        <span class="font-bold text-red-600">$${avgLoss.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Largest Win:</span>
+                        <span class="font-bold text-green-600">$${largestWin.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Largest Loss:</span>
+                        <span class="font-bold text-red-600">$${largestLoss.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Avg Hold Time:</span>
+                        <span class="font-bold">${avgHold.toFixed(1)} days</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tradeStats').innerHTML = html;
+        }
+
+        // Draw exit chart
+        function drawExitChart(trades) {
+            const tpCount = trades.filter(t => t.exitReason === 'TP').length;
+            const slCount = trades.filter(t => t.exitReason === 'SL').length;
+            const timeCount = trades.filter(t => t.exitReason === 'TIME').length;
+            
+            const ctx = document.getElementById('exitChart').getContext('2d');
+            
+            if (exitChart) exitChart.destroy();
+            
+            exitChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['TP Hit', 'SL Hit', 'Time Stop'],
+                    datasets: [{
+                        data: [tpCount, slCount, timeCount],
+                        backgroundColor: [
+                            'rgb(34, 197, 94)',
+                            'rgb(239, 68, 68)',
+                            'rgb(156, 163, 175)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Display trade list
+        function displayTradeList(trades) {
+            let html = '';
+            
+            trades.forEach(trade => {
+                const pnlClass = trade.pnl >= 0 ? 'text-green-600' : 'text-red-600';
+                const exitClass = trade.exitReason === 'TP' ? 'bg-green-100 text-green-800' :
+                                 trade.exitReason === 'SL' ? 'bg-red-100 text-red-800' :
+                                 'bg-gray-100 text-gray-800';
+                
+                html += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-2">${trade.entryDate.toLocaleDateString()}</td>
+                        <td class="px-4 py-2">${trade.exitDate.toLocaleDateString()}</td>
+                        <td class="px-4 py-2">${trade.direction}</td>
+                        <td class="px-4 py-2 text-right">${trade.entry.toFixed(5)}</td>
+                        <td class="px-4 py-2 text-right">${trade.exit.toFixed(5)}</td>
+                        <td class="px-4 py-2 text-right">${trade.daysHeld}</td>
+                        <td class="px-4 py-2">
+                            <span class="px-2 py-1 rounded text-xs font-semibold ${exitClass}">
+                                ${trade.exitReason}
+                            </span>
+                        </td>
+                        <td class="px-4 py-2 text-right font-bold ${pnlClass}">
+                            ${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toFixed(2)}
+                        </td>
+                        <td class="px-4 py-2 text-right">${trade.zscore.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            document.getElementById('tradeList').innerHTML = html;
+        }
+
+        // Export CSV
+        function exportCSV() {
+            if (allTrades.length === 0) {
+                alert('No trades to export');
+                return;
+            }
+            
+            const pairName = document.getElementById('resultsPair').textContent.replace('/', '_');
+            
+            let csv = 'Entry Date,Exit Date,Direction,Entry,Exit,TP,SL,Days Held,Exit Reason,P&L,Z-Score,Half-Life\n';
+            
+            allTrades.forEach(trade => {
+                csv += `${trade.entryDate.toISOString()},${trade.exitDate.toISOString()},${trade.direction},${trade.entry},${trade.exit},${trade.tp},${trade.sl},${trade.daysHeld},${trade.exitReason},${trade.pnl},${trade.zscore},${trade.halfLife}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${pairName}_5yr_backtest_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
