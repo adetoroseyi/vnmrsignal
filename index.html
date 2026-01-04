@@ -271,6 +271,29 @@
             font-weight: 700;
         }
         
+        .product-card.coming-soon {
+            border-color: rgba(139, 92, 246, 0.3);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05));
+        }
+        
+        .product-card.coming-soon::before {
+            content: '🚀 COMING SOON';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        
+        .product-card.coming-soon .btn {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
         .product-icon {
             font-size: 48px;
             margin-bottom: 20px;
@@ -522,6 +545,7 @@
         </a>
         <div class="nav-links">
             <a href="#products">Products</a>
+            <a href="#ml-products">AI/ML</a>
             <a href="#how-it-works">How It Works</a>
             <a href="/sweepsignal/">SweepSignal</a>
             <a href="/sweepsignal/login.html" class="btn btn-primary">Login</a>
@@ -597,7 +621,7 @@
                     <li>Real-time signals</li>
                 </ul>
                 <p class="product-price"><span>Free</span> to use</p>
-                <a href="/vnmr-classic.html" class="btn btn-secondary">Open Dashboard</a>
+                <a href="/vnmr-classic/" class="btn btn-secondary">Open Dashboard</a>
             </div>
             
             <!-- Tracker -->
@@ -613,7 +637,7 @@
                     <li>Statistical validation</li>
                 </ul>
                 <p class="product-price"><span>Free</span> to use</p>
-                <a href="/tracker.html" class="btn btn-secondary">Open Tracker</a>
+                <a href="/tracker/" class="btn btn-secondary">Open Tracker</a>
             </div>
             
             <!-- Position Calculator -->
@@ -629,7 +653,66 @@
                     <li>Risk/reward analysis</li>
                 </ul>
                 <p class="product-price"><span>Free</span> to use</p>
-                <a href="/position-calculator.html" class="btn btn-secondary">Open Calculator</a>
+                <a href="/tools/" class="btn btn-secondary">Open Calculator</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- ML Products Coming Soon -->
+    <section class="products" id="ml-products">
+        <div class="section-header">
+            <p class="section-label">Coming Soon</p>
+            <h2 class="section-title">AI-Powered Trading</h2>
+            <p class="section-subtitle">Machine learning models trained on market data to predict high-probability setups</p>
+        </div>
+        
+        <div class="products-grid">
+            <!-- ML Dashboard -->
+            <div class="product-card coming-soon">
+                <div class="product-icon">🤖</div>
+                <h3 class="product-name">ML Dashboard</h3>
+                <p class="product-tagline">Neural Network Signals</p>
+                <p class="product-description">Real-time trading signals powered by deep learning models. Combines technical analysis with pattern recognition for smarter entries.</p>
+                <ul class="product-features">
+                    <li>LSTM neural networks</li>
+                    <li>Pattern recognition</li>
+                    <li>Confidence scoring</li>
+                    <li>Multi-pair analysis</li>
+                </ul>
+                <p class="product-price"><span>Coming</span> Q2 2026</p>
+                <span class="btn btn-secondary">Notify Me</span>
+            </div>
+            
+            <!-- ML Complete System -->
+            <div class="product-card coming-soon">
+                <div class="product-icon">🧠</div>
+                <h3 class="product-name">ML Trading System</h3>
+                <p class="product-tagline">End-to-End ML Strategy</p>
+                <p class="product-description">Complete machine learning trading system with backtesting, optimization, and live signal generation. Built for serious algorithmic traders.</p>
+                <ul class="product-features">
+                    <li>Feature engineering</li>
+                    <li>Model training pipeline</li>
+                    <li>Walk-forward optimization</li>
+                    <li>Live signal generation</li>
+                </ul>
+                <p class="product-price"><span>Coming</span> Q2 2026</p>
+                <span class="btn btn-secondary">Notify Me</span>
+            </div>
+            
+            <!-- ML Universal -->
+            <div class="product-card coming-soon">
+                <div class="product-icon">🌐</div>
+                <h3 class="product-name">ML Universal</h3>
+                <p class="product-tagline">Multi-Asset ML Engine</p>
+                <p class="product-description">Universal machine learning engine that works across forex, crypto, and stocks. One model architecture, multiple markets.</p>
+                <ul class="product-features">
+                    <li>Cross-asset compatibility</li>
+                    <li>Transfer learning</li>
+                    <li>Adaptive algorithms</li>
+                    <li>Market regime detection</li>
+                </ul>
+                <p class="product-price"><span>Coming</span> Q3 2026</p>
+                <span class="btn btn-secondary">Notify Me</span>
             </div>
         </div>
     </section>
@@ -690,9 +773,18 @@
                         <h4>Products</h4>
                         <ul>
                             <li><a href="/sweepsignal/">SweepSignal</a></li>
-                            <li><a href="/vnmr-classic.html">VNMR Classic</a></li>
-                            <li><a href="/tracker.html">VNMR Tracker</a></li>
-                            <li><a href="/position-calculator.html">Position Calculator</a></li>
+                            <li><a href="/vnmr-classic/">VNMR Classic</a></li>
+                            <li><a href="/tracker/">VNMR Tracker</a></li>
+                            <li><a href="/tools/">Position Calculator</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Coming Soon</h4>
+                        <ul>
+                            <li><a href="#ml-products">ML Dashboard</a></li>
+                            <li><a href="#ml-products">ML Trading System</a></li>
+                            <li><a href="#ml-products">ML Universal</a></li>
                         </ul>
                     </div>
                     
