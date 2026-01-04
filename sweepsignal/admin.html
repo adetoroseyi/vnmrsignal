@@ -401,7 +401,7 @@
             <h1>⭐ <span>SweepSignal</span> Admin</h1>
             <div class="header-actions">
                 <span class="admin-badge">🔐 Super Admin</span>
-                <button class="btn-refresh" onclick="loadAnalytics()">↻ Refresh</button>
+                <button class="btn-refresh" id="refreshBtn" onclick="refreshData()">↻ Refresh</button>
                 <a href="/sweepsignal/dashboard.html" class="btn-back">← Dashboard</a>
             </div>
         </div>
@@ -544,6 +544,27 @@
                 console.error('Auth error:', error);
                 window.location.href = '/sweepsignal/login.html';
                 return false;
+            }
+        }
+        
+        // Refresh data with visual feedback
+        async function refreshData() {
+            const btn = document.getElementById('refreshBtn');
+            const originalText = btn.textContent;
+            
+            btn.disabled = true;
+            btn.textContent = '↻ Refreshing...';
+            btn.style.opacity = '0.6';
+            
+            try {
+                await loadAnalytics();
+            } catch (error) {
+                console.error('Refresh error:', error);
+                alert('Failed to refresh data. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                btn.style.opacity = '1';
             }
         }
         
