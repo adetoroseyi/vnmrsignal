@@ -349,6 +349,17 @@
                         throw new Error('An account with this email already exists.');
                     }
                     
+                    // Send welcome email
+                    try {
+                        await fetch('https://oanda-proxy.onrender.com/send-welcome-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: email, name: fullName })
+                        });
+                    } catch (emailError) {
+                        console.log('Welcome email skipped:', emailError);
+                    }
+                    
                     if (data.session) {
                         // Logged in immediately (no email confirmation required)
                         successMessage.textContent = 'Account created! Redirecting to dashboard...';
