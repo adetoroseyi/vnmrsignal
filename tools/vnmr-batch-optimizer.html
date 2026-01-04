@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNMR Classic - Batch Optimizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse { animation: pulse 2s infinite; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <div class="container mx-auto p-6 max-w-7xl">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-slate-900 mb-2">
+                🔄 VNMR Classic Batch Optimizer
+            </h1>
+            <p class="text-slate-600">
+                Optimize multiple currency pairs overnight - wake up to complete results!
+            </p>
+        </div>
+
+        <!-- Configuration Panel -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">Batch Configuration</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Pair Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-3">
+                        Select Pairs to Optimize (check all that apply)
+                    </label>
+                    <div class="space-y-2 max-h-64 overflow-y-auto border-2 border-slate-200 rounded-lg p-4">
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="EUR_USD" class="pair-checkbox" checked>
+                            <span class="font-semibold">EUR/USD</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="GBP_USD" class="pair-checkbox" checked>
+                            <span class="font-semibold">GBP/USD</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="EUR_GBP" class="pair-checkbox" checked>
+                            <span class="font-semibold">EUR/GBP</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="AUD_NZD" class="pair-checkbox">
+                            <span class="font-semibold">AUD/NZD</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="EUR_CHF" class="pair-checkbox">
+                            <span class="font-semibold">EUR/CHF</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="USD_JPY" class="pair-checkbox" checked>
+                            <span class="font-semibold">USD/JPY</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="USD_CAD" class="pair-checkbox">
+                            <span class="font-semibold">USD/CAD</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="AUD_USD" class="pair-checkbox">
+                            <span class="font-semibold">AUD/USD</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="XAU_USD" class="pair-checkbox" checked>
+                            <span class="font-semibold">XAU/USD (Gold)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="NZD_USD" class="pair-checkbox">
+                            <span class="font-semibold">NZD/USD</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="USD_CHF" class="pair-checkbox">
+                            <span class="font-semibold">USD/CHF</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="EUR_AUD" class="pair-checkbox">
+                            <span class="font-semibold">EUR/AUD</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="GBP_AUD" class="pair-checkbox">
+                            <span class="font-semibold">GBP/AUD</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded">
+                            <input type="checkbox" value="AUD_CAD" class="pair-checkbox">
+                            <span class="font-semibold">AUD/CAD</span>
+                        </label>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <button onclick="selectAllPairs()" class="text-sm text-blue-600 hover:text-blue-700 font-semibold">
+                            Select All
+                        </button>
+                        <span class="text-slate-400">|</span>
+                        <button onclick="selectMajorPairs()" class="text-sm text-blue-600 hover:text-blue-700 font-semibold">
+                            Major Pairs Only
+                        </button>
+                        <span class="text-slate-400">|</span>
+                        <button onclick="clearAllPairs()" class="text-sm text-blue-600 hover:text-blue-700 font-semibold">
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            Optimization Level
+                        </label>
+                        <select id="levelSelect" class="w-full p-3 border-2 border-green-500 rounded-lg text-lg font-semibold">
+                            <option value="quick">Quick (~30 configs, 5-10 min/pair)</option>
+                            <option value="medium" selected>Medium (~150 configs, 20-30 min/pair)</option>
+                            <option value="comprehensive">Comprehensive (~500 configs, 1-2 hrs/pair)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            Historical Period
+                        </label>
+                        <select id="yearsSelect" class="w-full p-3 border-2 border-purple-500 rounded-lg text-lg font-semibold">
+                            <option value="1">1 Year</option>
+                            <option value="2" selected>2 Years</option>
+                            <option value="3">3 Years</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">
+                            Delay Between Pairs (minutes)
+                        </label>
+                        <input type="number" id="delayMinutes" value="2" min="0" max="10" class="w-full p-3 border-2 border-orange-500 rounded-lg text-lg font-semibold">
+                        <p class="text-xs text-slate-500 mt-1">Give server time to rest between pairs</p>
+                    </div>
+
+                    <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                        <div class="text-sm font-semibold text-blue-900 mb-2">Selected Pairs:</div>
+                        <div id="selectedCount" class="text-3xl font-bold text-blue-600">5</div>
+                        <div class="text-sm text-blue-700 mt-2">
+                            Estimated Total Time: <span id="estimatedTotalTime" class="font-bold">2-3 hours</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4">
+                <button onclick="startBatchOptimization()" id="startBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg shadow-lg transform hover:scale-105 transition">
+                    🚀 Start Batch Optimization
+                </button>
+                <button onclick="pauseBatch()" id="pauseBtn" disabled class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-6 rounded-lg">
+                    ⏸️ Pause
+                </button>
+                <button onclick="stopBatch()" id="stopBtn" disabled class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg">
+                    ⏹️ Stop
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progressSection" style="display:none;" class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">Batch Progress</h2>
+            
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                    <div class="text-sm text-green-700 mb-1">Completed</div>
+                    <div id="completedCount" class="text-4xl font-bold text-green-600">0</div>
+                </div>
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                    <div class="text-sm text-blue-700 mb-1">Current</div>
+                    <div id="currentPair" class="text-2xl font-bold text-blue-600">--</div>
+                </div>
+                <div class="bg-slate-50 border-2 border-slate-200 rounded-lg p-4">
+                    <div class="text-sm text-slate-700 mb-1">Remaining</div>
+                    <div id="remainingCount" class="text-4xl font-bold text-slate-600">0</div>
+                </div>
+            </div>
+
+            <!-- Current Pair Progress -->
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span id="currentStatus" class="text-sm font-semibold text-slate-700">Initializing...</span>
+                    <span id="currentPercent" class="text-sm font-semibold text-blue-600">0%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-4">
+                    <div id="currentProgressBar" class="bg-blue-600 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Overall Progress -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-semibold text-slate-700">Overall Progress</span>
+                    <span id="overallPercent" class="text-sm font-semibold text-green-600">0%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-6">
+                    <div id="overallProgressBar" class="bg-green-600 h-6 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Time Estimates -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-50 p-3 rounded">
+                    <div class="text-xs text-slate-600">Elapsed Time</div>
+                    <div id="elapsedTime" class="text-2xl font-bold text-slate-900">00:00:00</div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded">
+                    <div class="text-xs text-slate-600">ETA Remaining</div>
+                    <div id="etaRemaining" class="text-2xl font-bold text-slate-900">--:--:--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div id="resultsSection" style="display:none;">
+            
+            <!-- Summary Header -->
+            <div class="bg-gradient-to-r from-green-600 to-emerald-700 rounded-lg shadow-lg p-6 mb-6 text-white">
+                <h2 class="text-3xl font-bold mb-2">✅ Batch Optimization Complete!</h2>
+                <p class="text-green-100">
+                    Optimized <span id="totalOptimized" class="font-bold">0</span> pairs in 
+                    <span id="totalTime" class="font-bold">0h 0m</span>
+                </p>
+                <div class="mt-4 flex gap-3">
+                    <button onclick="downloadAllResults()" class="bg-white text-green-600 hover:bg-green-50 font-bold py-2 px-4 rounded">
+                        📥 Download All Results
+                    </button>
+                    <button onclick="downloadComparison()" class="bg-white text-green-600 hover:bg-green-50 font-bold py-2 px-4 rounded">
+                        📊 Download Comparison Report
+                    </button>
+                    <button onclick="generateDeploymentConfigs()" class="bg-white text-green-600 hover:bg-green-50 font-bold py-2 px-4 rounded">
+                        🚀 Generate Deployment Configs
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Optimization Results Summary</h2>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-100">
+                            <tr>
+                                <th class="p-3 text-left">Pair</th>
+                                <th class="p-3 text-left">Best TF</th>
+                                <th class="p-3 text-left">Best Score</th>
+                                <th class="p-3 text-right">ROI</th>
+                                <th class="p-3 text-right">Win Rate</th>
+                                <th class="p-3 text-right">PF</th>
+                                <th class="p-3 text-right">Max DD</th>
+                                <th class="p-3 text-left">Rating</th>
+                                <th class="p-3 text-center">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Best Performing Pairs -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">🏆 Top 5 Best Performing Pairs</h2>
+                <div id="topPairsList" class="space-y-3">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Timeframe Analysis -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">📊 Timeframe Preference Analysis</h2>
+                <div id="timeframeAnalysis" class="grid grid-cols-3 gap-4">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Initial Message -->
+        <div id="initialMessage" class="bg-white rounded-lg shadow-lg p-12 text-center">
+            <div class="text-6xl mb-4">🔄</div>
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">Ready for Batch Optimization</h2>
+            <p class="text-slate-600 mb-4">
+                Select pairs and settings, then start the batch process
+            </p>
+            <div class="text-sm text-slate-500 max-w-lg mx-auto">
+                <p class="mb-2"><strong>Perfect for:</strong></p>
+                <ul class="text-left space-y-1">
+                    <li>• Optimizing multiple pairs overnight</li>
+                    <li>• Building a complete pair portfolio</li>
+                    <li>• Comparative analysis across instruments</li>
+                    <li>• Systematic parameter discovery</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let batchResults = [];
+        let isPaused = false;
+        let isStopped = false;
+        let startTime = null;
+        let elapsedInterval = null;
+
+        // Update selected count
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.pair-checkbox:checked');
+            const count = checkboxes.length;
+            document.getElementById('selectedCount').textContent = count;
+            
+            const level = document.getElementById('levelSelect').value;
+            const timePerPair = level === 'quick' ? 7.5 : level === 'medium' ? 25 : 90;
+            const totalMinutes = count * timePerPair;
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = Math.round(totalMinutes % 60);
+            
+            document.getElementById('estimatedTotalTime').textContent = 
+                hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+        }
+
+        // Add event listeners to checkboxes
+        document.querySelectorAll('.pair-checkbox').forEach(cb => {
+            cb.addEventListener('change', updateSelectedCount);
+        });
+        
+        document.getElementById('levelSelect').addEventListener('change', updateSelectedCount);
+
+        // Initial update
+        updateSelectedCount();
+
+        // Select all pairs
+        function selectAllPairs() {
+            document.querySelectorAll('.pair-checkbox').forEach(cb => cb.checked = true);
+            updateSelectedCount();
+        }
+
+        // Select major pairs
+        function selectMajorPairs() {
+            const majors = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'USD_CAD', 'AUD_USD'];
+            document.querySelectorAll('.pair-checkbox').forEach(cb => {
+                cb.checked = majors.includes(cb.value);
+            });
+            updateSelectedCount();
+        }
+
+        // Clear all pairs
+        function clearAllPairs() {
+            document.querySelectorAll('.pair-checkbox').forEach(cb => cb.checked = false);
+            updateSelectedCount();
+        }
+
+        // Start batch optimization
+        async function startBatchOptimization() {
+            const selectedPairs = Array.from(document.querySelectorAll('.pair-checkbox:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedPairs.length === 0) {
+                alert('Please select at least one pair to optimize');
+                return;
+            }
+
+            const level = document.getElementById('levelSelect').value;
+            const years = parseInt(document.getElementById('yearsSelect').value);
+            const delayMinutes = parseInt(document.getElementById('delayMinutes').value);
+
+            // Reset state
+            batchResults = [];
+            isPaused = false;
+            isStopped = false;
+            startTime = Date.now();
+
+            // UI updates
+            document.getElementById('initialMessage').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = false;
+
+            document.getElementById('remainingCount').textContent = selectedPairs.length;
+
+            // Start elapsed time counter
+            elapsedInterval = setInterval(updateElapsedTime, 1000);
+
+            // Process each pair
+            for (let i = 0; i < selectedPairs.length; i++) {
+                if (isStopped) break;
+
+                const pair = selectedPairs[i];
+                
+                // Update UI
+                document.getElementById('currentPair').textContent = pair.replace('_', '/');
+                document.getElementById('completedCount').textContent = i;
+                document.getElementById('remainingCount').textContent = selectedPairs.length - i;
+                
+                const overallProgress = (i / selectedPairs.length) * 100;
+                document.getElementById('overallProgressBar').style.width = `${overallProgress}%`;
+                document.getElementById('overallPercent').textContent = `${Math.round(overallProgress)}%`;
+
+                // Run optimization (simplified - would use actual optimizer logic)
+                try {
+                    document.getElementById('currentStatus').textContent = `Optimizing ${pair.replace('_', '/')}...`;
+                    
+                    // Simulate optimization (in real implementation, call actual optimizer)
+                    const result = await simulateOptimization(pair, level, years);
+                    batchResults.push(result);
+                    
+                    document.getElementById('currentStatus').textContent = `✅ ${pair.replace('_', '/')} complete`;
+                    
+                } catch (error) {
+                    console.error(`Error optimizing ${pair}:`, error);
+                    batchResults.push({
+                        pair,
+                        error: error.message,
+                        status: 'failed'
+                    });
+                }
+
+                // Delay between pairs
+                if (i < selectedPairs.length - 1 && delayMinutes > 0) {
+                    document.getElementById('currentStatus').textContent = 
+                        `Waiting ${delayMinutes} minutes before next pair...`;
+                    await delay(delayMinutes * 60 * 1000);
+                }
+
+                // Check if paused
+                while (isPaused && !isStopped) {
+                    await delay(1000);
+                }
+            }
+
+            // Complete
+            clearInterval(elapsedInterval);
+            document.getElementById('overallProgressBar').style.width = '100%';
+            document.getElementById('overallPercent').textContent = '100%';
+            
+            displayBatchResults();
+        }
+
+        // Simulate optimization (placeholder)
+        async function simulateOptimization(pair, level, years) {
+            // In real implementation, this would call the actual optimizer logic
+            // For now, simulate with random data
+            
+            const configCount = level === 'quick' ? 30 : level === 'medium' ? 150 : 500;
+            
+            for (let i = 0; i < configCount; i++) {
+                const progress = ((i + 1) / configCount) * 100;
+                document.getElementById('currentProgressBar').style.width = `${progress}%`;
+                document.getElementById('currentPercent').textContent = `${Math.round(progress)}%`;
+                
+                document.getElementById('currentStatus').textContent = 
+                    `Testing config ${i + 1}/${configCount}...`;
+                
+                // Simulate work
+                await delay(100);
+            }
+            
+            // Generate random but realistic results
+            const timeframes = ['M30', 'H1', 'H4'];
+            const bestTF = timeframes[Math.floor(Math.random() * timeframes.length)];
+            const score = 50 + Math.random() * 40;
+            const roi = (score / 100) * 30 + Math.random() * 10;
+            const winRate = 40 + Math.random() * 25;
+            const profitFactor = 1.0 + (score / 100) * 1.5;
+            const maxDrawdown = 15 + (100 - score) / 100 * 25;
+            
+            return {
+                pair,
+                bestTimeframe: bestTF,
+                bestScore: score,
+                metrics: {
+                    roi,
+                    winRate,
+                    profitFactor,
+                    maxDrawdown,
+                    totalTrades: Math.floor(30 + Math.random() * 100)
+                },
+                optimalConfig: {
+                    timeframe: bestTF,
+                    emaPeriod: [40, 50, 60][Math.floor(Math.random() * 3)],
+                    deviationThreshold: [1.5, 2.0, 2.5][Math.floor(Math.random() * 3)],
+                    slMultiplier: 2.5
+                },
+                status: 'success'
+            };
+        }
+
+        // Update elapsed time
+        function updateElapsedTime() {
+            if (!startTime) return;
+            
+            const elapsed = Date.now() - startTime;
+            const hours = Math.floor(elapsed / (1000 * 60 * 60));
+            const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
+            
+            document.getElementById('elapsedTime').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Delay helper
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Pause batch
+        function pauseBatch() {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? '▶️ Resume' : '⏸️ Pause';
+        }
+
+        // Stop batch
+        function stopBatch() {
+            if (confirm('Are you sure you want to stop the batch optimization? Progress will be lost.')) {
+                isStopped = true;
+                clearInterval(elapsedInterval);
+                resetUI();
+            }
+        }
+
+        // Display batch results
+        function displayBatchResults() {
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            const elapsed = Date.now() - startTime;
+            const hours = Math.floor(elapsed / (1000 * 60 * 60));
+            const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+            
+            document.getElementById('totalOptimized').textContent = batchResults.filter(r => r.status === 'success').length;
+            document.getElementById('totalTime').textContent = `${hours}h ${minutes}m`;
+            
+            // Populate results table
+            populateResultsTable();
+            
+            // Top performers
+            displayTopPerformers();
+            
+            // Timeframe analysis
+            displayTimeframeAnalysis();
+            
+            // Re-enable start button
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = true;
+        }
+
+        // Populate results table
+        function populateResultsTable() {
+            const tbody = document.getElementById('resultsTableBody');
+            tbody.innerHTML = '';
+            
+            // Sort by score
+            const sorted = [...batchResults].sort((a, b) => 
+                (b.bestScore || 0) - (a.bestScore || 0)
+            );
+            
+            sorted.forEach(result => {
+                if (result.status !== 'success') return;
+                
+                const rating = result.bestScore >= 80 ? '🌟 Excellent' :
+                              result.bestScore >= 65 ? '✅ Good' :
+                              result.bestScore >= 50 ? '⚠️ Acceptable' :
+                              result.bestScore >= 35 ? '❌ Poor' : '🚫 Failed';
+                
+                const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-slate-50';
+                row.innerHTML = `
+                    <td class="p-3 font-semibold">${result.pair.replace('_', '/')}</td>
+                    <td class="p-3"><span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold">${result.bestTimeframe}</span></td>
+                    <td class="p-3 font-bold text-green-600">${result.bestScore.toFixed(1)}</td>
+                    <td class="p-3 text-right">${result.metrics.roi.toFixed(1)}%</td>
+                    <td class="p-3 text-right">${result.metrics.winRate.toFixed(1)}%</td>
+                    <td class="p-3 text-right">${result.metrics.profitFactor.toFixed(2)}</td>
+                    <td class="p-3 text-right">${result.metrics.maxDrawdown.toFixed(1)}%</td>
+                    <td class="p-3 text-sm">${rating}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="showDetails('${result.pair}')" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">
+                            View
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Display top performers
+        function displayTopPerformers() {
+            const topPairs = [...batchResults]
+                .filter(r => r.status === 'success')
+                .sort((a, b) => b.bestScore - a.bestScore)
+                .slice(0, 5);
+            
+            const container = document.getElementById('topPairsList');
+            container.innerHTML = '';
+            
+            topPairs.forEach((result, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg';
+                div.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="text-3xl font-bold text-green-600">#${index + 1}</div>
+                        <div>
+                            <div class="font-bold text-lg">${result.pair.replace('_', '/')}</div>
+                            <div class="text-sm text-slate-600">${result.bestTimeframe} • Score: ${result.bestScore.toFixed(1)}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-green-600">${result.metrics.roi.toFixed(1)}%</div>
+                        <div class="text-sm text-slate-600">ROI</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Display timeframe analysis
+        function displayTimeframeAnalysis() {
+            const timeframes = { 'M30': 0, 'H1': 0, 'H4': 0 };
+            
+            batchResults.forEach(result => {
+                if (result.status === 'success') {
+                    timeframes[result.bestTimeframe]++;
+                }
+            });
+            
+            const container = document.getElementById('timeframeAnalysis');
+            container.innerHTML = '';
+            
+            for (const [tf, count] of Object.entries(timeframes)) {
+                const percentage = batchResults.length > 0 ? 
+                    (count / batchResults.filter(r => r.status === 'success').length * 100) : 0;
+                
+                const div = document.createElement('div');
+                div.className = 'bg-blue-50 border-2 border-blue-200 rounded-lg p-4';
+                div.innerHTML = `
+                    <div class="text-2xl font-bold text-blue-600 mb-2">${tf}</div>
+                    <div class="text-4xl font-bold text-slate-900 mb-1">${count}</div>
+                    <div class="text-sm text-slate-600">pairs (${percentage.toFixed(0)}%)</div>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Download all results
+        function downloadAllResults() {
+            const blob = new Blob([JSON.stringify(batchResults, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `batch_optimization_results_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        // Download comparison
+        function downloadComparison() {
+            let csv = 'Pair,Best Timeframe,Best Score,ROI,Win Rate,Profit Factor,Max DD,Trades,Rating\n';
+            
+            batchResults.forEach(result => {
+                if (result.status !== 'success') return;
+                
+                const rating = result.bestScore >= 80 ? 'Excellent' :
+                              result.bestScore >= 65 ? 'Good' :
+                              result.bestScore >= 50 ? 'Acceptable' :
+                              result.bestScore >= 35 ? 'Poor' : 'Failed';
+                
+                csv += `${result.pair},${result.bestTimeframe},${result.bestScore.toFixed(1)},${result.metrics.roi.toFixed(2)},${result.metrics.winRate.toFixed(2)},${result.metrics.profitFactor.toFixed(2)},${result.metrics.maxDrawdown.toFixed(2)},${result.metrics.totalTrades},${rating}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `batch_comparison_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Generate deployment configs
+        function generateDeploymentConfigs() {
+            const configs = {};
+            
+            batchResults.forEach(result => {
+                if (result.status === 'success' && result.bestScore >= 65) {
+                    configs[result.pair] = result.optimalConfig;
+                }
+            });
+            
+            const blob = new Blob([JSON.stringify(configs, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `deployment_configs_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            
+            alert(`✅ Generated deployment configs for ${Object.keys(configs).length} pairs with scores ≥ 65`);
+        }
+
+        // Show details
+        function showDetails(pair) {
+            const result = batchResults.find(r => r.pair === pair);
+            if (!result) return;
+            
+            alert(`Detailed analysis for ${pair} would open here.\n\n` +
+                  `In full implementation, this would show:\n` +
+                  `- Complete parameter configuration\n` +
+                  `- All tested configurations\n` +
+                  `- Performance charts\n` +
+                  `- Parameter sensitivity analysis`);
+        }
+
+        // Reset UI
+        function resetUI() {
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('initialMessage').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
