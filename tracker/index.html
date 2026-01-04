@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mean Reversion Trading Dashboard - With Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+        .signal-card {
+            transition: all 0.3s ease;
+        }
+        .signal-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100">
+    <div class="min-h-screen p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h1 class="text-4xl font-bold text-gray-900 mb-2">
+                            📊 Mean Reversion Trading Dashboard
+                        </h1>
+                        <p class="text-gray-600">
+                            Live signals • Trade tracking • Performance analytics
+                        </p>
+                        <p id="lastUpdate" class="text-sm text-gray-500 mt-1"></p>
+                    </div>
+                    <button onclick="openSettings()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
+                        ⚙️ Settings
+                    </button>
+                </div>
+            </div>
+
+            <!-- Settings Modal -->
+            <div id="settingsModal" style="display:none;" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                <div class="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">Strategy Settings</h2>
+                            <button onclick="closeSettings()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <!-- Z-Score Threshold -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    Z-Score Threshold
+                                    <span class="text-xs text-gray-500 font-normal">(Entry signal trigger)</span>
+                                </label>
+                                <input type="number" id="settingsZScore" step="0.1" min="0.5" max="3.0" 
+                                    class="w-full p-3 border-2 border-blue-500 rounded-lg text-lg font-semibold focus:ring-4 focus:ring-blue-200">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Lower = more signals, Higher = fewer but stronger signals
+                                </p>
+                                <div class="mt-2 text-sm">
+                                    <div class="flex justify-between text-gray-600">
+                                        <span>1.0 = Aggressive</span>
+                                        <span>2.0 = Balanced</span>
+                                        <span>2.5 = Conservative</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3-Day Move Threshold -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    3-Day Move Threshold (%)
+                                    <span class="text-xs text-gray-500 font-normal">(Momentum confirmation)</span>
+                                </label>
+                                <input type="number" id="settings3DayMove" step="0.1" min="0.5" max="3.0" 
+                                    class="w-full p-3 border-2 border-blue-500 rounded-lg text-lg font-semibold focus:ring-4 focus:ring-blue-200">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Minimum price movement over 3 days to qualify
+                                </p>
+                            </div>
+
+                            <!-- Half-Life Filter -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    Maximum Half-Life (days)
+                                    <span class="text-xs text-gray-500 font-normal">(Mean reversion filter)</span>
+                                </label>
+                                <input type="number" id="settingsHalfLife" step="5" min="20" max="100" 
+                                    class="w-full p-3 border-2 border-blue-500 rounded-lg text-lg font-semibold focus:ring-4 focus:ring-blue-200">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Only trade pairs that revert within this timeframe
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex gap-3">
+                            <button onclick="resetSettings()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg">
+                                Reset to Defaults
+                            </button>
+                            <button onclick="saveSettings()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg">
+                                Save & Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="bg-white rounded-lg shadow mb-6">
+                <div class="flex border-b">
+                    <button onclick="switchTab('signals')" id="tab-signals" class="px-6 py-4 tab-active">
+                        📡 Signals
+                    </button>
+                    <button onclick="switchTab('active')" id="tab-active" class="px-6 py-4 hover:bg-gray-50">
+                        📊 Active Trades <span id="activeCount" class="ml-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">0</span>
+                    </button>
+                    <button onclick="switchTab('history')" id="tab-history" class="px-6 py-4 hover:bg-gray-50">
+                        📜 History
+                    </button>
+                    <button onclick="switchTab('stats')" id="tab-stats" class="px-6 py-4 hover:bg-gray-50">
+                        📈 Statistics
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Content: Signals -->
+            <div id="content-signals">
+                <!-- Performance Summary -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="text-sm text-gray-500 mb-1">Pairs Analyzed</div>
+                        <div id="totalPairs" class="text-3xl font-bold text-gray-900">-</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="text-sm text-gray-500 mb-1">Qualified Pairs</div>
+                        <div id="qualifiedPairs" class="text-3xl font-bold text-green-600">-</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="text-sm text-gray-500 mb-1">Active Signals</div>
+                        <div id="activeSignals" class="text-3xl font-bold text-purple-600">-</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">Status</div>
+                                <div id="status" class="text-sm font-semibold text-gray-900">Loading...</div>
+                            </div>
+                            <button onclick="refreshData()" id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signals Container -->
+                <div id="signalsContainer" class="space-y-6">
+                    <div class="bg-white rounded-lg shadow p-12 text-center">
+                        <div class="spinner mx-auto mb-4"></div>
+                        <p class="text-gray-600">Loading market data...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Active Trades -->
+            <div id="content-active" style="display:none;">
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-900">Active Trades</h2>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-500">Total Open P&L</div>
+                            <div id="totalOpenPnL" class="text-2xl font-bold text-green-600">$0.00</div>
+                        </div>
+                    </div>
+                    <div id="activeTradesContainer"></div>
+                </div>
+            </div>
+
+            <!-- Tab Content: History -->
+            <div id="content-history" style="display:none;">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-900">Trade History</h2>
+                        <button onclick="exportToCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
+                            📥 Export CSV
+                        </button>
+                    </div>
+                    <div id="historyContainer"></div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Statistics -->
+            <div id="content-stats" style="display:none;">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="text-sm text-gray-500 mb-1">Total Trades</div>
+                        <div id="stats-total" class="text-3xl font-bold text-gray-900">0</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="text-sm text-gray-500 mb-1">Win Rate</div>
+                        <div id="stats-winrate" class="text-3xl font-bold text-green-600">0%</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="text-sm text-gray-500 mb-1">Net P&L</div>
+                        <div id="stats-pnl" class="text-3xl font-bold">$0.00</div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-bold mb-4">Performance by Pair</h3>
+                        <div id="pairStatsContainer"></div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-bold mb-4">Recent Performance</h3>
+                        <div id="recentPerformanceContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Track Trade -->
+    <div id="trackModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Track Trade</h2>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const PROXY_URL = 'https://oanda-proxy.onrender.com/api';
+        const PAIRS = [
+            'EUR_USD', 'GBP_USD', 'USD_JPY', 'USD_CAD', 'AUD_USD',
+            'XAU_USD', 'EUR_GBP', 'AUD_NZD', 'EUR_CHF', 'NZD_USD',
+            'USD_CHF', 'EUR_AUD', 'GBP_AUD', 'AUD_CAD'
+        ];
+
+        // Default settings
+        const DEFAULT_SETTINGS = {
+            zScoreThreshold: 2.0,
+            threeDayMoveThreshold: 1.0,
+            halfLifeCutoff: 50
+        };
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('strategySettings');
+            return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+        }
+
+        // Current settings
+        let SETTINGS = loadSettings();
+
+        // Settings modal functions
+        function openSettings() {
+            document.getElementById('settingsZScore').value = SETTINGS.zScoreThreshold;
+            document.getElementById('settings3DayMove').value = SETTINGS.threeDayMoveThreshold;
+            document.getElementById('settingsHalfLife').value = SETTINGS.halfLifeCutoff;
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function saveSettings() {
+            SETTINGS.zScoreThreshold = parseFloat(document.getElementById('settingsZScore').value);
+            SETTINGS.threeDayMoveThreshold = parseFloat(document.getElementById('settings3DayMove').value);
+            SETTINGS.halfLifeCutoff = parseFloat(document.getElementById('settingsHalfLife').value);
+            
+            localStorage.setItem('strategySettings', JSON.stringify(SETTINGS));
+            closeSettings();
+            
+            // Show notification
+            alert('✅ Settings saved! Refreshing signals...');
+            
+            // Refresh data with new settings
+            refreshData();
+        }
+
+        function resetSettings() {
+            SETTINGS = {...DEFAULT_SETTINGS};
+            document.getElementById('settingsZScore').value = DEFAULT_SETTINGS.zScoreThreshold;
+            document.getElementById('settings3DayMove').value = DEFAULT_SETTINGS.threeDayMoveThreshold;
+            document.getElementById('settingsHalfLife').value = DEFAULT_SETTINGS.halfLifeCutoff;
+        }
+
+        // State
+        let marketData = {};
+        let qualifiedPairsData = [];
+        let currentTab = 'signals';
+        let livePrices = {};
+
+        // LocalStorage keys
+        const STORAGE_KEYS = {
+            ACTIVE_TRADES: 'mr_active_trades',
+            CLOSED_TRADES: 'mr_closed_trades'
+        };
+
+        // Tab switching
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Hide all content
+            document.querySelectorAll('[id^="content-"]').forEach(el => el.style.display = 'none');
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('[id^="tab-"]').forEach(el => {
+                el.classList.remove('tab-active');
+            });
+            
+            // Show selected content and activate tab
+            document.getElementById(`content-${tab}`).style.display = 'block';
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            
+            // Load data for the tab
+            if (tab === 'active') loadActiveTrades();
+            if (tab === 'history') loadHistory();
+            if (tab === 'stats') loadStats();
+        }
+
+        // Fetch candles from Oanda
+        async function fetchCandles(pair, count = 500) {
+            try {
+                const response = await fetch(
+                    `${PROXY_URL}/v3/instruments/${pair}/candles?count=${count}&granularity=D&price=M`
+                );
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                return data.candles.map(c => ({
+                    time: c.time,
+                    close: parseFloat(c.mid.c),
+                    open: parseFloat(c.mid.o),
+                    high: parseFloat(c.mid.h),
+                    low: parseFloat(c.mid.l)
+                }));
+            } catch (error) {
+                console.error(`Error fetching ${pair}:`, error);
+                return null;
+            }
+        }
+
+        // Fetch current price
+        async function fetchCurrentPrice(pair) {
+            try {
+                const response = await fetch(
+                    `${PROXY_URL}/v3/instruments/${pair}/candles?count=1&granularity=M5&price=M`
+                );
+                
+                if (!response.ok) return null;
+                
+                const data = await response.json();
+                return parseFloat(data.candles[0].mid.c);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        // Calculate half-life
+        function calculateHalfLife(prices) {
+            if (prices.length < 30) return Infinity;
+            
+            try {
+                const logPrices = prices.map(p => Math.log(p));
+                const n = logPrices.length;
+                const yLag = logPrices.slice(0, n - 1);
+                const yDiff = logPrices.slice(1).map((val, i) => val - logPrices[i]);
+                
+                const nPoints = yLag.length;
+                const sumX = yLag.reduce((a, b) => a + b, 0);
+                const sumY = yDiff.reduce((a, b) => a + b, 0);
+                const sumXX = yLag.reduce((a, b) => a + b * b, 0);
+                const sumXY = yLag.reduce((a, b, i) => a + b * yDiff[i], 0);
+                
+                const slope = (nPoints * sumXY - sumX * sumY) / (nPoints * sumXX - sumX * sumX);
+                
+                if (slope >= -0.001) return Infinity;
+                
+                const theta = -slope;
+                const halfLife = Math.log(2) / theta;
+                
+                return (halfLife > 0 && halfLife < 500) ? halfLife : Infinity;
+            } catch (error) {
+                return Infinity;
+            }
+        }
+
+        // Calculate Z-score
+        function calculateZScore(prices, lookback = 20) {
+            if (prices.length < lookback) return 0;
+            
+            const recent = prices.slice(-lookback);
+            const mean = recent.reduce((a, b) => a + b, 0) / recent.length;
+            const variance = recent.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / recent.length;
+            const std = Math.sqrt(variance);
+            
+            const currentPrice = prices[prices.length - 1];
+            return std > 0 ? (currentPrice - mean) / std : 0;
+        }
+
+        // Calculate ATR
+        function calculateATR(candles, period = 14) {
+            if (candles.length < period + 1) return 0;
+            
+            const recentCandles = candles.slice(-period - 1);
+            const trueRanges = [];
+            
+            for (let i = 1; i < recentCandles.length; i++) {
+                const high = recentCandles[i].high;
+                const low = recentCandles[i].low;
+                const prevClose = recentCandles[i - 1].close;
+                
+                const tr = Math.max(
+                    high - low,
+                    Math.abs(high - prevClose),
+                    Math.abs(low - prevClose)
+                );
+                trueRanges.push(tr);
+            }
+            
+            return trueRanges.reduce((a, b) => a + b, 0) / trueRanges.length;
+        }
+
+        // Analyze pair
+        function analyzePair(pair, candles) {
+            if (!candles || candles.length < 50) return null;
+
+            const prices = candles.map(c => c.close);
+            const currentPrice = prices[prices.length - 1];
+            
+            const halfLife = calculateHalfLife(prices);
+            
+            if (halfLife >= SETTINGS.halfLifeCutoff) {
+                return { pair, qualified: false, halfLife, currentPrice };
+            }
+            
+            const price3DaysAgo = prices[prices.length - 4];
+            const threeDayReturn = ((currentPrice - price3DaysAgo) / price3DaysAgo) * 100;
+            
+            const lookback = Math.max(10, Math.min(Math.floor(halfLife), 50));
+            const zScore = calculateZScore(prices, lookback);
+            const atr = calculateATR(candles);
+            
+            const meanPrice = prices.slice(-lookback).reduce((a, b) => a + b, 0) / lookback;
+            const deviation = Math.abs(currentPrice - meanPrice);
+            
+            const hasThreeDayMove = Math.abs(threeDayReturn) > SETTINGS.threeDayMoveThreshold;
+            const hasZScoreSignal = Math.abs(zScore) > SETTINGS.zScoreThreshold;
+            const hasSignal = hasThreeDayMove && hasZScoreSignal;
+            
+            // Generate waiting message based on missing conditions
+            let waitingMessage = 'No entry signal yet - waiting for ';
+            const missingConditions = [];
+            if (!hasZScoreSignal) missingConditions.push(`|Z-score| > ${SETTINGS.zScoreThreshold}`);
+            if (!hasThreeDayMove) missingConditions.push(`3-day move > ${SETTINGS.threeDayMoveThreshold}%`);
+            waitingMessage += missingConditions.join(' and ');
+            waitingMessage += missingConditions.join(' and ');
+            
+            const direction = threeDayReturn > 0 ? 'SHORT' : 'LONG';
+            
+            let entry, takeProfit, stopLoss;
+            
+            if (direction === 'LONG') {
+                entry = currentPrice;
+                takeProfit = currentPrice + (deviation * 0.5);
+                stopLoss = currentPrice - (1.5 * atr);
+            } else {
+                entry = currentPrice;
+                takeProfit = currentPrice - (deviation * 0.5);
+                stopLoss = currentPrice + (1.5 * atr);
+            }
+            
+            const maxHoldDays = Math.min(Math.floor(halfLife * 2), 10);
+            const isJPY = pair.includes('JPY');
+            const isGold = pair.includes('XAU');
+            const pipMultiplier = isGold ? 1 : (isJPY ? 100 : 10000);
+            
+            return {
+                pair,
+                qualified: true,
+                halfLife: halfLife.toFixed(1),
+                currentPrice,
+                currentPriceFormatted: isGold ? currentPrice.toFixed(2) : currentPrice.toFixed(5),
+                threeDayReturn,
+                zScore,
+                atr,
+                meanPrice,
+                meanPriceFormatted: isGold ? meanPrice.toFixed(2) : meanPrice.toFixed(5),
+                hasSignal,
+                waitingMessage,
+                signalStrength: (hasThreeDayMove && Math.abs(zScore) > 2.5) ? 'STRONG' : 
+                              hasSignal ? 'MODERATE' : 'NONE',
+                direction,
+                entry: isGold ? entry.toFixed(2) : entry.toFixed(5),
+                takeProfit: isGold ? takeProfit.toFixed(2) : takeProfit.toFixed(5),
+                stopLoss: isGold ? stopLoss.toFixed(2) : stopLoss.toFixed(5),
+                maxHoldDays,
+                tpPips: (Math.abs(takeProfit - entry) * pipMultiplier).toFixed(1),
+                slPips: (Math.abs(stopLoss - entry) * pipMultiplier).toFixed(1),
+                pipLabel: isGold ? '$' : 'pips',
+                riskReward: (Math.abs(takeProfit - entry) / Math.abs(stopLoss - entry)).toFixed(2)
+            };
+        }
+
+        // Render signals with Track Trade button
+        function renderSignals() {
+            const container = document.getElementById('signalsContainer');
+            
+            if (qualifiedPairsData.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-lg shadow p-12 text-center">
+                        <div class="text-6xl mb-4">❌</div>
+                        <p class="text-xl text-gray-600 mb-2">No pairs currently qualify</p>
+                        <p class="text-sm text-gray-500">All pairs have half-life ≥ 50 days</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = qualifiedPairsData.map(pair => `
+                <div class="signal-card bg-white rounded-lg shadow-lg p-6 border-2 ${
+                    pair.hasSignal 
+                        ? pair.signalStrength === 'STRONG'
+                            ? 'border-red-500 bg-red-50'
+                            : 'border-yellow-500 bg-yellow-50'
+                        : 'border-gray-200'
+                }">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">${pair.pair.replace('_', '/')}</h3>
+                            <div class="flex items-center gap-4 mt-2 text-sm">
+                                <span class="text-gray-600">Half-life: <strong>${pair.halfLife} days</strong></span>
+                                <span class="${Math.abs(pair.threeDayReturn) > 1 ? 'text-red-600' : 'text-gray-600'}">
+                                    3-Day: <strong>${pair.threeDayReturn.toFixed(2)}%</strong>
+                                </span>
+                                <span class="${Math.abs(pair.zScore) > 2 ? 'text-red-600' : 'text-gray-600'}">
+                                    Z-Score: <strong>${pair.zScore.toFixed(2)}</strong>
+                                </span>
+                            </div>
+                        </div>
+                        ${pair.hasSignal ? `
+                            <div>
+                                <div class="px-4 py-2 rounded-lg font-bold mb-2 ${
+                                    pair.signalStrength === 'STRONG'
+                                        ? 'bg-red-600 text-white'
+                                        : 'bg-yellow-500 text-gray-900'
+                                }">
+                                    ${pair.signalStrength} ${pair.direction} SIGNAL
+                                </div>
+                                <button onclick='openTrackModal(${JSON.stringify(pair)})' 
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                                    📊 Track Trade
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="mb-4 pb-4 border-b">
+                        <div class="text-sm text-gray-500 mb-1">Current Price</div>
+                        <div class="text-4xl font-bold text-gray-900">${pair.currentPriceFormatted}</div>
+                    </div>
+
+                    ${pair.hasSignal ? `
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="bg-white p-4 rounded-lg border-2 border-blue-500">
+                                <div class="text-xs font-semibold text-blue-600 uppercase mb-1">Entry</div>
+                                <div class="text-2xl font-bold text-gray-900">${pair.entry}</div>
+                                <div class="text-xs text-gray-500 mt-1">${pair.direction}</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg border-2 border-green-500">
+                                <div class="text-xs font-semibold text-green-600 uppercase mb-1">Take Profit</div>
+                                <div class="text-2xl font-bold text-gray-900">${pair.takeProfit}</div>
+                                <div class="text-xs text-gray-500 mt-1">${pair.tpPips} ${pair.pipLabel}</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg border-2 border-red-500">
+                                <div class="text-xs font-semibold text-red-600 uppercase mb-1">Stop Loss</div>
+                                <div class="text-2xl font-bold text-gray-900">${pair.stopLoss}</div>
+                                <div class="text-xs text-gray-500 mt-1">${pair.slPips} ${pair.pipLabel}</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg border-2 border-purple-500">
+                                <div class="text-xs font-semibold text-purple-600 uppercase mb-1">Max Hold</div>
+                                <div class="text-2xl font-bold text-gray-900">${pair.maxHoldDays}</div>
+                                <div class="text-xs text-gray-500 mt-1">days</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t flex justify-between items-center">
+                            <div class="text-sm text-gray-600"><strong>Risk/Reward:</strong> 1:${pair.riskReward}</div>
+                            <div class="text-sm text-gray-600"><strong>Mean Price:</strong> ${pair.meanPriceFormatted}</div>
+                        </div>
+                    ` : `
+                        <div class="text-center py-4 text-gray-500">
+                            ${pair.waitingMessage}
+                        </div>
+                    `}
+                </div>
+            `).join('');
+        }
+
+        // Open track modal
+        function openTrackModal(pair) {
+            const modal = document.getElementById('trackModal');
+            const content = document.getElementById('modalContent');
+            
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Pair</label>
+                        <input type="text" value="${pair.pair.replace('_', '/')}" disabled 
+                            class="w-full p-2 border rounded bg-gray-100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Direction</label>
+                        <input type="text" value="${pair.direction}" disabled 
+                            class="w-full p-2 border rounded bg-gray-100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Signal Entry Price</label>
+                        <input type="text" value="${pair.entry}" disabled 
+                            class="w-full p-2 border rounded bg-gray-100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Actual Fill Price</label>
+                        <input type="number" step="0.00001" id="fillPrice" value="${pair.entry}" 
+                            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Lot Size</label>
+                        <input type="number" step="0.01" id="lotSize" value="0.10" 
+                            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Take Profit</label>
+                        <input type="text" value="${pair.takeProfit}" disabled 
+                            class="w-full p-2 border rounded bg-gray-100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Stop Loss</label>
+                        <input type="text" value="${pair.stopLoss}" disabled 
+                            class="w-full p-2 border rounded bg-gray-100">
+                    </div>
+                    <div class="flex gap-4 pt-4">
+                        <button onclick="closeModal()" 
+                            class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold">
+                            Cancel
+                        </button>
+                        <button onclick='saveTrade(${JSON.stringify(pair)})' 
+                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">
+                            💾 Save Trade
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('trackModal').style.display = 'none';
+        }
+
+        // Save trade to localStorage
+        function saveTrade(pair) {
+            const fillPrice = parseFloat(document.getElementById('fillPrice').value);
+            const lotSize = parseFloat(document.getElementById('lotSize').value);
+            
+            const trade = {
+                id: Date.now().toString(),
+                pair: pair.pair,
+                direction: pair.direction,
+                entry: fillPrice,
+                tp: parseFloat(pair.takeProfit),
+                sl: parseFloat(pair.stopLoss),
+                lotSize: lotSize,
+                entryDate: new Date().toISOString(),
+                status: 'OPEN',
+                maxHoldDays: pair.maxHoldDays,
+                signalStrength: pair.signalStrength
+            };
+            
+            const activeTrades = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVE_TRADES) || '[]');
+            activeTrades.push(trade);
+            localStorage.setItem(STORAGE_KEYS.ACTIVE_TRADES, JSON.stringify(activeTrades));
+            
+            closeModal();
+            alert('✅ Trade tracked successfully!');
+            updateActiveCount();
+        }
+
+        // Load active trades
+        async function loadActiveTrades() {
+            const trades = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVE_TRADES) || '[]');
+            const container = document.getElementById('activeTradesContainer');
+            
+            if (trades.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">📊</div>
+                        <p class="text-gray-600">No active trades</p>
+                        <p class="text-sm text-gray-500 mt-2">Click "Track Trade" on a signal to start tracking</p>
+                    </div>
+                `;
+                document.getElementById('totalOpenPnL').textContent = '$0.00';
+                return;
+            }
+            
+            // Fetch current prices for all active trades
+            let totalPnL = 0;
+            const tradeRows = [];
+            
+            for (const trade of trades) {
+                const currentPrice = await fetchCurrentPrice(trade.pair);
+                const daysHeld = Math.floor((Date.now() - new Date(trade.entryDate).getTime()) / (1000 * 60 * 60 * 24));
+                
+                let pnl = 0;
+                if (currentPrice) {
+                    if (trade.direction === 'LONG') {
+                        pnl = (currentPrice - trade.entry) * trade.lotSize * 100000;
+                    } else {
+                        pnl = (trade.entry - currentPrice) * trade.lotSize * 100000;
+                    }
+                    
+                    // Adjust for JPY pairs
+                    if (trade.pair.includes('JPY')) {
+                        pnl = pnl / currentPrice;
+                    }
+                    
+                    totalPnL += pnl;
+                }
+                
+                const pnlClass = pnl >= 0 ? 'text-green-600' : 'text-red-600';
+                
+                tradeRows.push(`
+                    <div class="border-b last:border-b-0 py-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="font-bold text-lg">${trade.pair.replace('_', '/')}</span>
+                                <span class="ml-2 px-2 py-1 rounded text-xs font-semibold ${
+                                    trade.direction === 'LONG' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }">${trade.direction}</span>
+                                <span class="ml-2 text-xs text-gray-500">${trade.lotSize} lots</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="${pnlClass} text-2xl font-bold">$${pnl.toFixed(2)}</div>
+                                <div class="text-xs text-gray-500">${daysHeld} days</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 text-sm">
+                            <div>
+                                <div class="text-gray-500 text-xs">Entry</div>
+                                <div class="font-semibold">${trade.entry.toFixed(5)}</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500 text-xs">Current</div>
+                                <div class="font-semibold">${currentPrice ? currentPrice.toFixed(5) : '-'}</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500 text-xs">TP</div>
+                                <div class="font-semibold">${trade.tp.toFixed(5)}</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500 text-xs">SL</div>
+                                <div class="font-semibold">${trade.sl.toFixed(5)}</div>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex gap-2">
+                            <button onclick="closeTrade('${trade.id}', 'TP')" 
+                                class="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">
+                                ✅ Close at TP
+                            </button>
+                            <button onclick="closeTrade('${trade.id}', 'SL')" 
+                                class="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+                                ❌ Close at SL
+                            </button>
+                            <button onclick="closeTrade('${trade.id}', 'MANUAL')" 
+                                class="text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded">
+                                🔄 Close Manually
+                            </button>
+                        </div>
+                    </div>
+                `);
+            }
+            
+            container.innerHTML = tradeRows.join('');
+            
+            const totalPnLClass = totalPnL >= 0 ? 'text-green-600' : 'text-red-600';
+            document.getElementById('totalOpenPnL').textContent = `$${totalPnL.toFixed(2)}`;
+            document.getElementById('totalOpenPnL').className = `text-2xl font-bold ${totalPnLClass}`;
+        }
+
+        // Close trade
+        async function closeTrade(tradeId, closeType) {
+            const activeTrades = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVE_TRADES) || '[]');
+            const trade = activeTrades.find(t => t.id === tradeId);
+            
+            if (!trade) return;
+            
+            let exitPrice;
+            if (closeType === 'TP') {
+                exitPrice = trade.tp;
+            } else if (closeType === 'SL') {
+                exitPrice = trade.sl;
+            } else {
+                const currentPrice = await fetchCurrentPrice(trade.pair);
+                exitPrice = currentPrice || trade.entry;
+            }
+            
+            let pnl;
+            if (trade.direction === 'LONG') {
+                pnl = (exitPrice - trade.entry) * trade.lotSize * 100000;
+            } else {
+                pnl = (trade.entry - exitPrice) * trade.lotSize * 100000;
+            }
+            
+            if (trade.pair.includes('JPY')) {
+                pnl = pnl / exitPrice;
+            }
+            
+            const closedTrade = {
+                ...trade,
+                closeDate: new Date().toISOString(),
+                exit: exitPrice,
+                result: closeType,
+                pnl: pnl,
+                daysHeld: Math.floor((Date.now() - new Date(trade.entryDate).getTime()) / (1000 * 60 * 60 * 24))
+            };
+            
+            // Remove from active
+            const updatedActive = activeTrades.filter(t => t.id !== tradeId);
+            localStorage.setItem(STORAGE_KEYS.ACTIVE_TRADES, JSON.stringify(updatedActive));
+            
+            // Add to closed
+            const closedTrades = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLOSED_TRADES) || '[]');
+            closedTrades.push(closedTrade);
+            localStorage.setItem(STORAGE_KEYS.CLOSED_TRADES, JSON.stringify(closedTrades));
+            
+            loadActiveTrades();
+            updateActiveCount();
+            alert(`✅ Trade closed with ${pnl >= 0 ? 'profit' : 'loss'}: $${pnl.toFixed(2)}`);
+        }
+
+        // Load history
+        function loadHistory() {
+            const trades = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLOSED_TRADES) || '[]');
+            const container = document.getElementById('historyContainer');
+            
+            if (trades.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">📜</div>
+                        <p class="text-gray-600">No closed trades yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by close date descending
+            trades.sort((a, b) => new Date(b.closeDate) - new Date(a.closeDate));
+            
+            container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Date</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Pair</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Direction</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Entry</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Exit</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Result</th>
+                                <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600">P&L</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${trades.map(trade => {
+                                const pnlClass = trade.pnl >= 0 ? 'text-green-600' : 'text-red-600';
+                                const resultBadge = trade.result === 'TP' ? 'bg-green-100 text-green-800' :
+                                                   trade.result === 'SL' ? 'bg-red-100 text-red-800' :
+                                                   'bg-gray-100 text-gray-800';
+                                return `
+                                    <tr class="border-b hover:bg-gray-50">
+                                        <td class="px-4 py-3 text-sm">${new Date(trade.closeDate).toLocaleDateString()}</td>
+                                        <td class="px-4 py-3 text-sm font-semibold">${trade.pair.replace('_', '/')}</td>
+                                        <td class="px-4 py-3 text-sm">${trade.direction}</td>
+                                        <td class="px-4 py-3 text-sm">${trade.entry.toFixed(5)}</td>
+                                        <td class="px-4 py-3 text-sm">${trade.exit.toFixed(5)}</td>
+                                        <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs font-semibold ${resultBadge}">${trade.result}</span></td>
+                                        <td class="px-4 py-3 text-sm text-right font-bold ${pnlClass}">$${trade.pnl.toFixed(2)}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Load stats
+        function loadStats() {
+            const trades = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLOSED_TRADES) || '[]');
+            
+            if (trades.length === 0) {
+                document.getElementById('stats-total').textContent = '0';
+                document.getElementById('stats-winrate').textContent = '0%';
+                document.getElementById('stats-pnl').textContent = '$0.00';
+                document.getElementById('pairStatsContainer').innerHTML = '<p class="text-gray-500">No data yet</p>';
+                document.getElementById('recentPerformanceContainer').innerHTML = '<p class="text-gray-500">No data yet</p>';
+                return;
+            }
+            
+            const wins = trades.filter(t => t.pnl > 0).length;
+            const totalPnL = trades.reduce((sum, t) => sum + t.pnl, 0);
+            const winRate = (wins / trades.length * 100).toFixed(1);
+            
+            document.getElementById('stats-total').textContent = trades.length;
+            document.getElementById('stats-winrate').textContent = `${winRate}%`;
+            document.getElementById('stats-pnl').textContent = `$${totalPnL.toFixed(2)}`;
+            document.getElementById('stats-pnl').className = `text-3xl font-bold ${totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`;
+            
+            // Pair performance
+            const pairStats = {};
+            trades.forEach(trade => {
+                if (!pairStats[trade.pair]) {
+                    pairStats[trade.pair] = { trades: 0, wins: 0, pnl: 0 };
+                }
+                pairStats[trade.pair].trades++;
+                if (trade.pnl > 0) pairStats[trade.pair].wins++;
+                pairStats[trade.pair].pnl += trade.pnl;
+            });
+            
+            const pairRows = Object.entries(pairStats)
+                .sort((a, b) => b[1].pnl - a[1].pnl)
+                .map(([pair, stats]) => `
+                    <div class="flex justify-between items-center py-2 border-b">
+                        <div>
+                            <span class="font-semibold">${pair.replace('_', '/')}</span>
+                            <span class="text-xs text-gray-500 ml-2">${stats.trades} trades</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="${stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'} font-semibold">$${stats.pnl.toFixed(2)}</div>
+                            <div class="text-xs text-gray-500">${(stats.wins/stats.trades*100).toFixed(0)}% win rate</div>
+                        </div>
+                    </div>
+                `).join('');
+            
+            document.getElementById('pairStatsContainer').innerHTML = pairRows;
+            
+            // Recent performance (last 10 trades)
+            const recentTrades = trades.slice(-10).reverse();
+            const recentRows = recentTrades.map(trade => `
+                <div class="flex justify-between items-center py-2 border-b">
+                    <div>
+                        <span class="font-semibold">${trade.pair.replace('_', '/')}</span>
+                        <span class="text-xs text-gray-500 ml-2">${new Date(trade.closeDate).toLocaleDateString()}</span>
+                    </div>
+                    <div class="${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'} font-semibold">
+                        $${trade.pnl.toFixed(2)}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('recentPerformanceContainer').innerHTML = recentRows;
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            const trades = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLOSED_TRADES) || '[]');
+            
+            if (trades.length === 0) {
+                alert('No trades to export');
+                return;
+            }
+            
+            let csv = 'Date,Pair,Direction,Entry,Exit,TP,SL,Lot Size,Days Held,Result,P&L\n';
+            
+            trades.forEach(trade => {
+                csv += `${trade.closeDate},${trade.pair},${trade.direction},${trade.entry},${trade.exit},${trade.tp},${trade.sl},${trade.lotSize},${trade.daysHeld},${trade.result},${trade.pnl}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mean_reversion_trades_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Update active count badge
+        function updateActiveCount() {
+            const activeTrades = JSON.parse(localStorage.getItem(STORAGE_KEYS.ACTIVE_TRADES) || '[]');
+            document.getElementById('activeCount').textContent = activeTrades.length;
+        }
+
+        // Refresh data (same as original)
+        async function refreshData() {
+            const btn = document.getElementById('refreshBtn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>';
+            status.textContent = 'Loading...';
+
+            qualifiedPairsData = [];
+            const allPairs = [];
+
+            for (const pair of PAIRS) {
+                const candles = await fetchCandles(pair);
+                if (candles) {
+                    const analysis = analyzePair(pair, candles);
+                    if (analysis) {
+                        allPairs.push(analysis);
+                        if (analysis.qualified) {
+                            qualifiedPairsData.push(analysis);
+                        }
+                    }
+                }
+                await new Promise(r => setTimeout(r, 200));
+            }
+
+            qualifiedPairsData.sort((a, b) => {
+                if (a.hasSignal && !b.hasSignal) return -1;
+                if (!a.hasSignal && b.hasSignal) return 1;
+                return Math.abs(b.zScore) - Math.abs(a.zScore);
+            });
+
+            document.getElementById('totalPairs').textContent = PAIRS.length;
+            document.getElementById('qualifiedPairs').textContent = qualifiedPairsData.length;
+            document.getElementById('activeSignals').textContent = 
+                qualifiedPairsData.filter(p => p.hasSignal).length;
+            
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+            status.textContent = 'Live';
+
+            renderSignals();
+
+            btn.disabled = false;
+            btn.textContent = 'Refresh';
+        }
+
+        // Auto-refresh every 5 minutes
+        setInterval(refreshData, 5 * 60 * 1000);
+
+        // Update active trades P&L every minute
+        setInterval(() => {
+            if (currentTab === 'active') {
+                loadActiveTrades();
+            }
+        }, 60 * 1000);
+
+        // Initial load
+        refreshData();
+        updateActiveCount();
+    </script>
+</body>
+</html>
+
