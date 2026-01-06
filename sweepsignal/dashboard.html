@@ -1754,11 +1754,13 @@
                 validValues: ['BULLISH', 'BEARISH'],
                 blockValue: 'NEUTRAL'
             },
-            // Rule 2: Displacement minimum threshold
+            // Rule 2: Displacement (Closure Confirmation) - CRITICAL
+            // "Wait for price to close back inside" / "No closure = no trade"
             displacement: {
                 enabled: true,
-                minThreshold: 10,  // out of 25
-                maxScore: 25
+                minThreshold: 10,  // out of 25 - requires meaningful displacement
+                maxScore: 25,
+                criticalRule: true  // This is a must-have per strategy
             },
             // Rule 3: FVG minimum threshold
             fvg: {
@@ -1766,14 +1768,13 @@
                 minThreshold: 15,  // out of 20
                 maxScore: 20
             },
-            // Rule 4: Session timing (not strictly enforced by default)
+            // Rule 4: Session timing - DISABLED for global customers
+            // Users in different timezones trade different sessions
             session: {
-                enabled: false,  // Can be enabled later
-                validSessions: ['LONDON', 'NEW_YORK'],
-                londonStart: 2,
-                londonEnd: 11,
-                nyStart: 8,
-                nyEnd: 17
+                enabled: false,  // Disabled - customers may be in Asia/Europe/US
+                // Config kept for future use if needed
+                blockedSessions: [],
+                allowedSessions: ['ASIAN', 'LONDON', 'NEW_YORK', 'LONDON_NY_OVERLAP', 'OFF_HOURS']
             },
             // Rule 5: Minimum grade
             grade: {
@@ -1860,14 +1861,17 @@
             const config = ENFORCER_CONFIG.displacement;
             const displacement = signal.scoreBreakdown?.displacement?.points || 0;
             
+            // CRITICAL: "No closure = no trade"
+            // Displacement confirms price closed back inside after sweep
             return {
                 rule: 'R2_DISPLACEMENT',
-                name: 'Displacement',
+                name: 'Closure Confirmation',
                 passed: displacement >= config.minThreshold,
                 value: displacement,
                 threshold: config.minThreshold,
+                critical: true,
                 reason: displacement < config.minThreshold 
-                    ? `Weak displacement (${displacement}/${config.maxScore})` 
+                    ? `No closure confirmation (${displacement}/${config.maxScore}) — Price must close back inside` 
                     : null
             };
         }
@@ -1907,6 +1911,50 @@
             };
         }
         
+        function checkSession(signal) {
+            const config = ENFORCER_CONFIG.session;
+            if (!config.enabled) {
+                return { rule: 'R4_SESSION', name: 'Session', passed: true, value: 'Disabled', reason: null };
+            }
+            
+            // Get current hour in UTC
+            const now = new Date();
+            const utcHour = now.getUTCHours();
+            
+            // Determine current session
+            let currentSession = 'UNKNOWN';
+            
+            if (utcHour >= config.asianStart && utcHour < config.asianEnd) {
+                currentSession = 'ASIAN';
+            } else if (utcHour >= config.londonStart && utcHour < config.nyStart) {
+                currentSession = 'LONDON';
+            } else if (utcHour >= config.nyStart && utcHour < config.nyEnd) {
+                // Check for overlap
+                if (utcHour >= config.nyStart && utcHour < config.londonEnd) {
+                    currentSession = 'LONDON_NY_OVERLAP';
+                } else {
+                    currentSession = 'NEW_YORK';
+                }
+            } else {
+                // Late session or off-hours
+                currentSession = 'OFF_HOURS';
+            }
+            
+            // Check if session is blocked
+            const isBlocked = config.blockedSessions.includes(currentSession);
+            const isAllowed = config.allowedSessions.includes(currentSession) || currentSession === 'OFF_HOURS';
+            
+            return {
+                rule: 'R4_SESSION',
+                name: 'Session Timing',
+                passed: !isBlocked,
+                value: currentSession,
+                reason: isBlocked 
+                    ? `Asian session — Wait for London/NY (liquidity building phase)` 
+                    : null
+            };
+        }
+        
         function checkDirectionAlignment(signal) {
             const direction = (signal.direction || '').toUpperCase();
             const htf = (signal.htfBias || '').toUpperCase();
@@ -1941,7 +1989,7 @@
                 passedRules: []
             };
             
-            // Rule 1: HTF Bias
+            // Rule 1: HTF Bias - "Do not trade without bias"
             const htfResult = checkHTFBias(signal);
             if (!htfResult.passed) {
                 result.failedRules.push(htfResult);
@@ -1950,7 +1998,7 @@
                 result.passedRules.push(htfResult);
             }
             
-            // Rule 2: Displacement
+            // Rule 2: Displacement (Closure) - "No closure = no trade"
             const dispResult = checkDisplacement(signal);
             if (!dispResult.passed) {
                 result.failedRules.push(dispResult);
@@ -1959,7 +2007,7 @@
                 result.passedRules.push(dispResult);
             }
             
-            // Rule 3: FVG
+            // Rule 3: FVG - "Enter only at a fair value gap"
             const fvgResult = checkFVG(signal);
             if (!fvgResult.passed) {
                 result.failedRules.push(fvgResult);
@@ -1968,7 +2016,16 @@
                 result.passedRules.push(fvgResult);
             }
             
-            // Rule 5: Grade (skip Rule 4 session for now)
+            // Rule 4: Session - "Only trade after 8:00 AM" (Block Asian)
+            const sessionResult = checkSession(signal);
+            if (!sessionResult.passed) {
+                result.failedRules.push(sessionResult);
+                result.flags.push(sessionResult.reason);
+            } else {
+                result.passedRules.push(sessionResult);
+            }
+            
+            // Rule 5: Grade
             const gradeResult = checkGrade(signal);
             if (!gradeResult.passed) {
                 result.failedRules.push(gradeResult);
