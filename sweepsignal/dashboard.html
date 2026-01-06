@@ -112,6 +112,179 @@
         .grade-count.b { background: rgba(0,217,255,0.3); color: #00d9ff; }
         .grade-count.c { background: rgba(255,255,255,0.1); color: #888; }
         
+        /* ================================================
+           THE ENFORCER STYLES
+           ================================================ */
+        
+        /* Enforcer Dropdown */
+        .enforcer-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(139,92,246,0.3);
+        }
+        
+        .enforcer-selector label {
+            color: #8b5cf6;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .enforcer-selector select {
+            background: rgba(139,92,246,0.15);
+            color: #a78bfa;
+            border: 1px solid rgba(139,92,246,0.4);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        
+        .enforcer-selector select:hover {
+            border-color: rgba(139,92,246,0.6);
+            background: rgba(139,92,246,0.25);
+        }
+        
+        .enforcer-selector select.mode-passive {
+            background: rgba(100,100,100,0.2);
+            border-color: rgba(150,150,150,0.4);
+            color: #999;
+        }
+        
+        .enforcer-selector select.mode-soft {
+            background: rgba(249,115,22,0.15);
+            border-color: rgba(249,115,22,0.4);
+            color: #fb923c;
+        }
+        
+        .enforcer-selector select.mode-hard {
+            background: rgba(139,92,246,0.15);
+            border-color: rgba(139,92,246,0.4);
+            color: #a78bfa;
+        }
+        
+        /* Flagged Signal Card (Soft Mode) */
+        .signal-card.flagged {
+            border-color: rgba(249,115,22,0.6) !important;
+            box-shadow: 0 0 15px rgba(249,115,22,0.15);
+            position: relative;
+        }
+        
+        .signal-card.flagged::before {
+            content: '⚠️ LOW ALIGNMENT';
+            position: absolute;
+            top: 8px;
+            left: 15px;
+            background: rgba(249,115,22,0.2);
+            color: #fb923c;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Enforcement Warning Box inside flagged cards */
+        .enforcement-warning {
+            background: rgba(249,115,22,0.1);
+            border: 1px solid rgba(249,115,22,0.3);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .enforcement-warning-title {
+            color: #fb923c;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .enforcement-warning-list {
+            color: #f97316;
+            line-height: 1.6;
+        }
+        
+        .enforcement-warning-list .rule-fail {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .enforcement-warning-list .rule-fail::before {
+            content: '✗';
+            color: #ef4444;
+            font-weight: bold;
+        }
+        
+        /* Enforcer Stats Footer */
+        .enforcer-stats {
+            text-align: center;
+            padding: 15px;
+            color: #888;
+            font-size: 0.85rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .enforcer-stats.mode-passive {
+            border-color: rgba(100,100,100,0.3);
+        }
+        
+        .enforcer-stats.mode-soft {
+            border-color: rgba(249,115,22,0.3);
+            color: #fb923c;
+        }
+        
+        .enforcer-stats.mode-hard {
+            border-color: rgba(139,92,246,0.3);
+            color: #a78bfa;
+        }
+        
+        .enforcer-stats .stat-highlight {
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        .enforcer-stats .filtered-count {
+            color: #ef4444;
+        }
+        
+        .enforcer-stats .passed-count {
+            color: #22c55e;
+        }
+        
+        /* Enforcer Filter Tag */
+        .filter-tag.enforcer {
+            background: rgba(139,92,246,0.2);
+            color: #a78bfa;
+        }
+        
+        .filter-tag.enforcer.passive {
+            background: rgba(100,100,100,0.2);
+            color: #999;
+        }
+        
+        .filter-tag.enforcer.soft {
+            background: rgba(249,115,22,0.2);
+            color: #fb923c;
+        }
+        
+        .filter-tag.enforcer.hard {
+            background: rgba(139,92,246,0.2);
+            color: #a78bfa;
+        }
+        
         /* User Info */
         .user-info {
             display: flex;
@@ -1147,6 +1320,16 @@
                 <button class="news-btn bearish" onclick="toggleNewsBias('BEARISH')">📉 Bear</button>
             </div>
             
+            <!-- THE ENFORCER -->
+            <div class="enforcer-selector">
+                <label>🛡️ ENFORCER:</label>
+                <select id="enforcerMode" onchange="changeEnforcerMode(this.value)">
+                    <option value="passive">🔓 Passive</option>
+                    <option value="soft">⚠️ Soft</option>
+                    <option value="hard" selected>🛡️ Hard</option>
+                </select>
+            </div>
+            
             <button class="btn btn-primary" id="scanBtn" onclick="runScan(true)">🔄 Scan</button>
             <button class="btn btn-settings" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
             <button class="btn btn-secondary" id="toggleBtn" onclick="toggleInstruments()">📊</button>
@@ -1222,6 +1405,7 @@
             <span class="filter-tag grade" id="tagGrade">A+ Only</span>
             <span class="filter-tag direction" id="tagDirection">All Directions</span>
             <span class="filter-tag news" id="tagNews" style="display:none;">No News Bias</span>
+            <span class="filter-tag enforcer hard" id="tagEnforcer">🛡️ Hard</span>
         </div>
         
         <!-- Instruments Table -->
@@ -1252,6 +1436,10 @@
                     <div class="spinner"></div>
                     <p>Scanning for A+ setups...</p>
                 </div>
+            </div>
+            <!-- Enforcer Stats Footer -->
+            <div class="enforcer-stats mode-hard" id="enforcerStats">
+                🛡️ Hard Mode — Waiting for scan...
             </div>
         </div>
     </div>
@@ -1556,6 +1744,333 @@
         let lastData = null;
         
         // ================================================
+        // THE ENFORCER - Strategy Enforcement Layer
+        // ================================================
+        
+        const ENFORCER_CONFIG = {
+            // Rule 1: HTF Bias must be directional
+            htfBias: {
+                enabled: true,
+                validValues: ['BULLISH', 'BEARISH'],
+                blockValue: 'NEUTRAL'
+            },
+            // Rule 2: Displacement minimum threshold
+            displacement: {
+                enabled: true,
+                minThreshold: 10,  // out of 25
+                maxScore: 25
+            },
+            // Rule 3: FVG minimum threshold
+            fvg: {
+                enabled: true,
+                minThreshold: 15,  // out of 20
+                maxScore: 20
+            },
+            // Rule 4: Session timing (not strictly enforced by default)
+            session: {
+                enabled: false,  // Can be enabled later
+                validSessions: ['LONDON', 'NEW_YORK'],
+                londonStart: 2,
+                londonEnd: 11,
+                nyStart: 8,
+                nyEnd: 17
+            },
+            // Rule 5: Minimum grade
+            grade: {
+                enabled: true,
+                validGrades: ['A+', 'A', 'B'],
+                minScore: 65
+            },
+            // Rule 6: Direction must align with HTF
+            directionAlignment: {
+                enabled: true
+            }
+        };
+        
+        let enforcerMode = 'hard'; // passive, soft, hard
+        
+        // Load saved enforcer mode
+        function loadEnforcerMode() {
+            try {
+                const saved = localStorage.getItem('enforcerMode');
+                if (saved && ['passive', 'soft', 'hard'].includes(saved)) {
+                    enforcerMode = saved;
+                }
+            } catch (e) { console.error(e); }
+            
+            // Apply to UI
+            const dropdown = document.getElementById('enforcerMode');
+            if (dropdown) {
+                dropdown.value = enforcerMode;
+                updateEnforcerDropdownStyle(enforcerMode);
+            }
+            updateEnforcerTag();
+        }
+        
+        function updateEnforcerDropdownStyle(mode) {
+            const dropdown = document.getElementById('enforcerMode');
+            if (dropdown) {
+                dropdown.classList.remove('mode-passive', 'mode-soft', 'mode-hard');
+                dropdown.classList.add('mode-' + mode);
+            }
+        }
+        
+        function updateEnforcerTag() {
+            const tag = document.getElementById('tagEnforcer');
+            if (tag) {
+                tag.className = 'filter-tag enforcer ' + enforcerMode;
+                if (enforcerMode === 'passive') {
+                    tag.textContent = '🔓 Passive';
+                } else if (enforcerMode === 'soft') {
+                    tag.textContent = '⚠️ Soft';
+                } else {
+                    tag.textContent = '🛡️ Hard';
+                }
+            }
+        }
+        
+        function changeEnforcerMode(mode) {
+            enforcerMode = mode;
+            localStorage.setItem('enforcerMode', mode);
+            updateEnforcerDropdownStyle(mode);
+            updateEnforcerTag();
+            
+            // Re-render signals with new mode
+            if (lastData && lastData.signals) {
+                renderSignals(lastData.signals);
+            }
+        }
+        
+        // Enforcer Rule Functions
+        function checkHTFBias(signal) {
+            const config = ENFORCER_CONFIG.htfBias;
+            const htf = (signal.htfBias || 'NEUTRAL').toUpperCase();
+            
+            return {
+                rule: 'R1_HTF_BIAS',
+                name: 'HTF Bias',
+                passed: config.validValues.includes(htf),
+                value: htf,
+                reason: htf === 'NEUTRAL' || !config.validValues.includes(htf) 
+                    ? 'No directional bias (HTF Neutral)' : null
+            };
+        }
+        
+        function checkDisplacement(signal) {
+            const config = ENFORCER_CONFIG.displacement;
+            const displacement = signal.scoreBreakdown?.displacement?.points || 0;
+            
+            return {
+                rule: 'R2_DISPLACEMENT',
+                name: 'Displacement',
+                passed: displacement >= config.minThreshold,
+                value: displacement,
+                threshold: config.minThreshold,
+                reason: displacement < config.minThreshold 
+                    ? `Weak displacement (${displacement}/${config.maxScore})` 
+                    : null
+            };
+        }
+        
+        function checkFVG(signal) {
+            const config = ENFORCER_CONFIG.fvg;
+            const fvg = signal.scoreBreakdown?.fvg?.points || 0;
+            
+            return {
+                rule: 'R3_FVG',
+                name: 'FVG Entry',
+                passed: fvg >= config.minThreshold,
+                value: fvg,
+                threshold: config.minThreshold,
+                reason: fvg < config.minThreshold 
+                    ? `Weak FVG (${fvg}/${config.maxScore})` 
+                    : null
+            };
+        }
+        
+        function checkGrade(signal) {
+            const config = ENFORCER_CONFIG.grade;
+            const grade = signal.grade || 'D';
+            const score = signal.score || 0;
+            
+            const gradeValid = config.validGrades.includes(grade);
+            const scoreValid = score >= config.minScore;
+            
+            return {
+                rule: 'R5_GRADE',
+                name: 'Grade',
+                passed: gradeValid && scoreValid,
+                value: `${grade} (${score}/100)`,
+                reason: (!gradeValid || !scoreValid) 
+                    ? `Low probability (${grade}, ${score}/100)` 
+                    : null
+            };
+        }
+        
+        function checkDirectionAlignment(signal) {
+            const direction = (signal.direction || '').toUpperCase();
+            const htf = (signal.htfBias || '').toUpperCase();
+            
+            let aligned = true;
+            let reason = null;
+            
+            if (direction === 'LONG' && htf === 'BEARISH') {
+                aligned = false;
+                reason = 'Long against bearish HTF';
+            } else if (direction === 'SHORT' && htf === 'BULLISH') {
+                aligned = false;
+                reason = 'Short against bullish HTF';
+            }
+            
+            return {
+                rule: 'R6_DIRECTION',
+                name: 'Direction Alignment',
+                passed: aligned,
+                value: `${direction} vs ${htf}`,
+                reason: reason
+            };
+        }
+        
+        // Main Enforcer Function
+        function enforceSignal(signal) {
+            const result = {
+                signal: signal,
+                passed: true,
+                flags: [],
+                failedRules: [],
+                passedRules: []
+            };
+            
+            // Rule 1: HTF Bias
+            const htfResult = checkHTFBias(signal);
+            if (!htfResult.passed) {
+                result.failedRules.push(htfResult);
+                result.flags.push(htfResult.reason);
+            } else {
+                result.passedRules.push(htfResult);
+            }
+            
+            // Rule 2: Displacement
+            const dispResult = checkDisplacement(signal);
+            if (!dispResult.passed) {
+                result.failedRules.push(dispResult);
+                result.flags.push(dispResult.reason);
+            } else {
+                result.passedRules.push(dispResult);
+            }
+            
+            // Rule 3: FVG
+            const fvgResult = checkFVG(signal);
+            if (!fvgResult.passed) {
+                result.failedRules.push(fvgResult);
+                result.flags.push(fvgResult.reason);
+            } else {
+                result.passedRules.push(fvgResult);
+            }
+            
+            // Rule 5: Grade (skip Rule 4 session for now)
+            const gradeResult = checkGrade(signal);
+            if (!gradeResult.passed) {
+                result.failedRules.push(gradeResult);
+                result.flags.push(gradeResult.reason);
+            } else {
+                result.passedRules.push(gradeResult);
+            }
+            
+            // Rule 6: Direction Alignment
+            const alignResult = checkDirectionAlignment(signal);
+            if (!alignResult.passed) {
+                result.failedRules.push(alignResult);
+                result.flags.push(alignResult.reason);
+            } else {
+                result.passedRules.push(alignResult);
+            }
+            
+            // Final verdict
+            result.passed = result.failedRules.length === 0;
+            
+            return result;
+        }
+        
+        // Apply Enforcer to All Signals
+        function applyEnforcer(signals, mode) {
+            const results = {
+                passed: [],
+                flagged: [],
+                blocked: [],
+                stats: {
+                    total: signals.length,
+                    passedCount: 0,
+                    flaggedCount: 0,
+                    blockedCount: 0
+                }
+            };
+            
+            signals.forEach(signal => {
+                const enforcement = enforceSignal(signal);
+                
+                if (enforcement.passed) {
+                    // Signal passes all rules
+                    results.passed.push({
+                        ...signal,
+                        enforcement: enforcement,
+                        displayMode: 'normal'
+                    });
+                    results.stats.passedCount++;
+                } else {
+                    // Signal fails one or more rules
+                    if (mode === 'passive') {
+                        // Passive: Show all, no flags
+                        results.passed.push({
+                            ...signal,
+                            enforcement: enforcement,
+                            displayMode: 'normal'
+                        });
+                        results.stats.passedCount++;
+                    } else if (mode === 'soft') {
+                        // Soft: Show all, but flag failures
+                        results.flagged.push({
+                            ...signal,
+                            enforcement: enforcement,
+                            displayMode: 'flagged'
+                        });
+                        results.stats.flaggedCount++;
+                    } else if (mode === 'hard') {
+                        // Hard: Block failures
+                        results.blocked.push({
+                            ...signal,
+                            enforcement: enforcement,
+                            displayMode: 'blocked'
+                        });
+                        results.stats.blockedCount++;
+                    }
+                }
+            });
+            
+            return results;
+        }
+        
+        // Update Enforcer Stats Footer
+        function updateEnforcerStats(stats, mode) {
+            const footer = document.getElementById('enforcerStats');
+            if (!footer) return;
+            
+            footer.className = 'enforcer-stats mode-' + mode;
+            
+            if (mode === 'passive') {
+                footer.innerHTML = `🔓 <strong>Passive Mode</strong> — Showing all <span class="stat-highlight">${stats.total}</span> signals (no filtering)`;
+            } else if (mode === 'soft') {
+                footer.innerHTML = `⚠️ <strong>Soft Mode</strong> — <span class="passed-count">${stats.passedCount}</span> aligned, <span class="filtered-count">${stats.flaggedCount}</span> flagged`;
+            } else if (mode === 'hard') {
+                if (stats.blockedCount > 0) {
+                    footer.innerHTML = `🛡️ <strong>Hard Mode</strong> — Showing <span class="passed-count">${stats.passedCount}</span> of ${stats.total} signals (<span class="filtered-count">${stats.blockedCount}</span> filtered for quality)`;
+                } else {
+                    footer.innerHTML = `🛡️ <strong>Hard Mode</strong> — Showing all <span class="passed-count">${stats.passedCount}</span> signals (all passed enforcement)`;
+                }
+            }
+        }
+        
+        // ================================================
         // SETTINGS
         // ================================================
         function loadSettings() {
@@ -1802,22 +2317,60 @@
                         <p>Scanning ${lastData?.instrumentsScanned || 28} pairs on ${settings.timeframe}</p>
                         <p style="margin-top:8px;color:#ffc107;font-size:0.85rem;">Try lowering grade filter or different timeframe</p>
                     </div>`;
+                updateEnforcerStats({ total: 0, passedCount: 0, flaggedCount: 0, blockedCount: 0 }, enforcerMode);
                 return;
             }
             
-            container.innerHTML = signals.map(s => {
+            // Apply The Enforcer
+            const enforced = applyEnforcer(signals, enforcerMode);
+            
+            // Combine passed and flagged for display
+            const displaySignals = [...enforced.passed, ...enforced.flagged];
+            
+            // Sort by score descending
+            displaySignals.sort((a, b) => b.score - a.score);
+            
+            // Update enforcer stats
+            updateEnforcerStats(enforced.stats, enforcerMode);
+            
+            // Check if no signals to display after enforcement
+            if (displaySignals.length === 0) {
+                container.innerHTML = `
+                    <div class="no-signals">
+                        <div class="no-signals-icon">🛡️</div>
+                        <h3>No Signals Meet Enforcement Criteria</h3>
+                        <p>${enforced.stats.total} signals detected, ${enforced.stats.blockedCount} filtered by Enforcer</p>
+                        <p style="margin-top:8px;color:#a78bfa;font-size:0.85rem;">Try Soft or Passive mode to see flagged signals</p>
+                    </div>`;
+                return;
+            }
+            
+            container.innerHTML = displaySignals.map(s => {
                 const gradeClass = s.grade === 'A+' ? 'a-plus' : s.grade.toLowerCase();
                 const cardGradeClass = s.grade === 'A+' ? 'grade-a-plus' : `grade-${s.grade.toLowerCase()}`;
                 const scoreBarClass = s.grade === 'A+' ? 'a-plus' : s.grade.toLowerCase();
                 const scorePct = Math.min(100, (s.score / 100) * 100);
+                const isFlagged = s.displayMode === 'flagged';
                 
                 const bd = s.scoreBreakdown || {};
                 
+                // Build enforcement warning for flagged signals
+                let enforcementWarningHtml = '';
+                if (isFlagged && s.enforcement && s.enforcement.flags.length > 0) {
+                    enforcementWarningHtml = `
+                        <div class="enforcement-warning">
+                            <div class="enforcement-warning-title">⚠️ Strategy Alignment Issues</div>
+                            <div class="enforcement-warning-list">
+                                ${s.enforcement.flags.map(f => `<div class="rule-fail">${f}</div>`).join('')}
+                            </div>
+                        </div>`;
+                }
+                
                 return `
-                <div class="signal-card ${cardGradeClass}">
+                <div class="signal-card ${cardGradeClass} ${isFlagged ? 'flagged' : ''}">
                     <div class="grade-badge ${gradeClass}">${s.grade}</div>
                     
-                    <div class="signal-header">
+                    <div class="signal-header" style="${isFlagged ? 'margin-top: 20px;' : ''}">
                         <span class="signal-pair">${s.instrument.replace('_','/')}</span>
                         <span class="signal-direction ${s.direction.toLowerCase()}">${s.direction}</span>
                     </div>
@@ -1901,6 +2454,8 @@
                         ${s.scoreBreakdown?.newsBias?.points > 0 ? '<span class="badge badge-news">📰 News ↑</span>' : ''}
                         ${s.scoreBreakdown?.newsBias?.points < 0 ? '<span class="badge badge-news-against">📰 News ↓</span>' : ''}
                     </div>
+                    
+                    ${enforcementWarningHtml}
                 </div>`;
             }).join('');
         }
@@ -2029,6 +2584,7 @@
         // ================================================
         function initDashboard() {
             loadSettings();
+            loadEnforcerMode();  // Load The Enforcer mode
             runScan();
             
             setInterval(() => {
